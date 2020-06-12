@@ -60,8 +60,8 @@
 	"publishConfig": {},
 	"dependencies": {
 		"thaw-common-utilities.ts": "^0.0.1",
-		"thaw-grammar": "file:thaw-grammar.tgz",
-		"thaw-lexical-analyzer": "file:thaw-lexical-analyzer.tgz"
+		"thaw-grammar": "^0.0.0",
+		"thaw-lexical-analyzer": "^0.0.0"
 	},
 	"devDependencies": {
 		"@types/jest": "^26.0.0",
