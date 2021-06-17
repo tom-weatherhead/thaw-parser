@@ -68,17 +68,15 @@ export class LL1Parser extends ParserBase {
 
 	private fillParseTable(): void {
 		this.grammar.productions.forEach((p: Production) => {
-			const predictIterator = (this.predict.get(p) as Set<
-				number
-			>).getIterator();
+			const predictIterator = (
+				this.predict.get(p) as Set<number>
+			).getIterator();
 
 			while (!predictIterator.isDone()) {
 				const t = predictIterator.next() as number;
 				// const sp = new SymbolPair(p.lhs, t);
 				const sp = `(${p.lhs}, ${t})`;
-				const pParseTableSPRaw = this.parseTable.get(
-					sp
-				) as Production;
+				const pParseTableSPRaw = this.parseTable.get(sp) as Production;
 
 				if (pParseTableSPRaw !== undefined) {
 					throw new ParserException(

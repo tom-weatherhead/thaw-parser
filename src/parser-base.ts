@@ -69,9 +69,7 @@ export abstract class ParserBase implements IParser {
 			let i;
 
 			for (i = 1; i < k; ++i) {
-				const firstSetForAlphaiMinus1 = this.firstSet.get(
-					alpha[i - 1]
-				);
+				const firstSetForAlphaiMinus1 = this.firstSet.get(alpha[i - 1]);
 
 				if (typeof firstSetForAlphaiMinus1 === 'undefined') {
 					break;
@@ -231,9 +229,7 @@ export abstract class ParserBase implements IParser {
 
 					// HashSet<Symbol> s = ComputeFirst(ExtractSymbols(beta));
 					const s = this.computeFirst(beta);
-					const sWithoutLambda = this.withoutLambda(
-						s.getIterator()
-					);
+					const sWithoutLambda = this.withoutLambda(s.getIterator());
 					const followSetOfB = this.followSet.get(B) as Set<number>;
 
 					if (!sWithoutLambda.isASubsetOf(followSetOfB)) {
@@ -243,9 +239,9 @@ export abstract class ParserBase implements IParser {
 
 					if (
 						s.contains(Symbol.Lambda) &&
-						!(this.followSet.get(p.lhs) as Set<
-							number
-						>).isASubsetOf(followSetOfB)
+						!(this.followSet.get(p.lhs) as Set<number>).isASubsetOf(
+							followSetOfB
+						)
 					) {
 						followSetOfB.unionInPlace(
 							this.followSet.get(p.lhs) as Set<number>

@@ -2,9 +2,14 @@
 
 'use strict';
 
+import {
+	createTokenizer,
+	LexicalAnalyzerSelector
+} from 'thaw-lexical-analyzer';
+
 import { createGrammar, LanguageSelector } from 'thaw-grammar';
 
-import { createParser, ParserSelector } from '../lib/main';
+import { createParser, ParserSelector } from '..';
 
 test('LL(1) parser instance creation test - MinimalLanguage', () => {
 	// Arrange
@@ -44,4 +49,27 @@ test('LL(1) parser instance creation test - Scheme', () => {
 	// Act
 	// Assert
 	expect(parser).toBeTruthy();
+});
+
+test('LL(1) parser instance creation test - Prolog', () => {
+	// Arrange
+	const ls = LanguageSelector.Prolog2;
+	const grammar = createGrammar(ls);
+	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
+	const parser = createParser(ParserSelector.LL1, grammar);
+
+	const inputString = 'pred1.';
+	const listOfTokens = tokenizer.tokenize(inputString);
+	const parseResult = parser.parse(listOfTokens);
+
+	console.log(
+		`thaw-parser: Prolog test: parseResult of '${inputString}' is:`,
+		typeof parseResult,
+		parseResult
+	);
+
+	// Act
+	// Assert
+	expect(parser).toBeTruthy();
+	expect(parseResult).toBeTruthy();
 });
