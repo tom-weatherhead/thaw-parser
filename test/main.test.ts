@@ -55,42 +55,21 @@ test('LL(1) parser instance creation test - Scheme', () => {
 	expect(parser).toBeTruthy();
 });
 
+// **** Prolog ****
+
 test('LL(1) parser instance creation test - Prolog', () => {
 	// Arrange
 	const ls = LanguageSelector.Prolog2;
 	const grammar = createGrammar(ls);
-	// const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
-	const parser = createParser(ParserSelector.LL1, grammar);
-
-	// const inputString = 'pred1.';
-	// const listOfTokens = tokenizer.tokenize(inputString);
-	// const parseResult = parser.parse(listOfTokens);
-
-	// console.log(
-	// 	`thaw-parser: Prolog test: parseResult of '${inputString}' is:`,
-	// 	typeof parseResult,
-	// 	parseResult
-	// );
 
 	// Act
+	const parser = createParser(ParserSelector.LL1, grammar);
+
 	// Assert
 	expect(parser).toBeTruthy();
-	// expect(parseResult).toBeTruthy();
 });
 
-function parseProlog(
-	input: string,
-	tokenizer: ITokenizer,
-	parser: IParser,
-	prologGlobalInfo: PrologGlobalInfo
-): string {
-	const listOfTokens = tokenizer.tokenize(input);
-	const parseResult = parser.parse(listOfTokens);
-
-	return parseResult.eval();
-}
-
-test('LL(1) Prolog interpret test 1', () => {
+function prologTest(data: Array<[input: string, expectedResult: string]>): void {
 	// Arrange
 	const ls = LanguageSelector.Prolog2;
 	const prologGlobalInfo = new PrologGlobalInfo();
@@ -98,23 +77,48 @@ test('LL(1) Prolog interpret test 1', () => {
 	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
 	const parser = createParser(ParserSelector.LL1, grammar);
 
-	const input1 = 'pred1.';
-	const input2 = '?- pred1.';
-	// const listOfTokens = tokenizer.tokenize(inputString);
-	// const parseResult = parser.parse(listOfTokens);
+	for (const [input, expectedResult] of data) {
+		// Act
+		const actualResult = prologGlobalInfo.ProcessInput(parser.parse(tokenizer.tokenize(input)));
 
-	// console.log(
-	// 	`thaw-parser: Prolog test: parseResult of '${inputString}' is:`,
-	// 	typeof parseResult,
-	// 	parseResult
-	// );
+		// Assert
+		expect(actualResult).toBe(expectedResult);
+	}
+}
 
-	// Act
-	// Assert
-	expect(
-		prologGlobalInfo.ProcessInput(parser.parse(tokenizer.tokenize(input1)))
-	).toBe(PrologGlobalInfo.ClauseAdded);
-	expect(
-		prologGlobalInfo.ProcessInput(parser.parse(tokenizer.tokenize(input2)))
-	).toBe(PrologGlobalInfo.Satisfied);
+// test('LL(1) Prolog interpret test 1', () => {
+// 	// Arrange
+// 	const ls = LanguageSelector.Prolog2;
+// 	const prologGlobalInfo = new PrologGlobalInfo();
+// 	const grammar = createGrammar(ls);
+// 	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
+// 	const parser = createParser(ParserSelector.LL1, grammar);
+
+// 	const input1 = 'pred1.';
+// 	const input2 = '?- pred1.';
+// 	// const listOfTokens = tokenizer.tokenize(inputString);
+// 	// const parseResult = parser.parse(listOfTokens);
+
+// 	// console.log(
+// 	// 	`thaw-parser: Prolog test: parseResult of '${inputString}' is:`,
+// 	// 	typeof parseResult,
+// 	// 	parseResult
+// 	// );
+
+// 	// Act
+// 	// Assert
+// 	expect(
+// 		prologGlobalInfo.ProcessInput(parser.parse(tokenizer.tokenize(input1)))
+// 	).toBe(PrologGlobalInfo.ClauseAdded);
+// 	expect(
+// 		prologGlobalInfo.ProcessInput(parser.parse(tokenizer.tokenize(input2)))
+// 	).toBe(PrologGlobalInfo.Satisfied);
+// });
+
+test('LL(1) Prolog interpret test 1', () => {
+	prologTest([
+		// ['', PrologGlobalInfo.],
+		['pred1.', PrologGlobalInfo.ClauseAdded],
+		['?- pred1.', PrologGlobalInfo.Satisfied]
+	]);
 });
