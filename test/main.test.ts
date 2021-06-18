@@ -69,7 +69,9 @@ test('LL(1) parser instance creation test - Prolog', () => {
 	expect(parser).toBeTruthy();
 });
 
-function prologTest(data: Array<[input: string, expectedResult: string]>): void {
+function prologTest(
+	data: Array<[input: string, expectedResult: string]>
+): void {
 	// Arrange
 	const ls = LanguageSelector.Prolog2;
 	const prologGlobalInfo = new PrologGlobalInfo();
@@ -79,7 +81,9 @@ function prologTest(data: Array<[input: string, expectedResult: string]>): void 
 
 	for (const [input, expectedResult] of data) {
 		// Act
-		const actualResult = prologGlobalInfo.ProcessInput(parser.parse(tokenizer.tokenize(input)));
+		const actualResult = prologGlobalInfo.ProcessInput(
+			parser.parse(tokenizer.tokenize(input))
+		);
 
 		// Assert
 		expect(actualResult).toBe(expectedResult);
@@ -120,5 +124,21 @@ test('LL(1) Prolog interpret test 1', () => {
 		// ['', PrologGlobalInfo.],
 		['pred1.', PrologGlobalInfo.ClauseAdded],
 		['?- pred1.', PrologGlobalInfo.Satisfied]
+	]);
+});
+
+test('LL(1) Prolog interpret test 2', () => {
+	prologTest([
+		['foo :- bar, baz.', PrologGlobalInfo.ClauseAdded],
+		['bar.', PrologGlobalInfo.ClauseAdded],
+		['baz.', PrologGlobalInfo.ClauseAdded],
+		['?- foo.', PrologGlobalInfo.Satisfied]
+	]);
+});
+
+test('LL(1) Prolog interpret test 3', () => {
+	prologTest([
+		['pred(V).', PrologGlobalInfo.ClauseAdded],
+		['?- pred(1337).', PrologGlobalInfo.Satisfied]
 	]);
 });
