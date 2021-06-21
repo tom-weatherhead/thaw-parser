@@ -43,6 +43,8 @@ function prologTest(
 			parser.parse(tokenizer.tokenize(input))
 		);
 
+		console.log(`input: ${input}\nactualResult: ${actualResult}\n\n`);
+
 		// Assert
 		if (typeof expectedResult === 'string') {
 			expect(actualResult).toBe(expectedResult);
@@ -77,8 +79,8 @@ test('LL(1) Prolog interpret test 2', () => {
 
 test('LL(1) Prolog interpret test 3', () => {
 	prologTest([
-		['pred(V).', PrologGlobalInfo.ClauseAdded],
-		['?- pred(1337).', getSatisfied('V -> 1337')]
+		['pred(1337).', PrologGlobalInfo.ClauseAdded],
+		['?- pred(V).', getSatisfied('V -> 1337')]
 	]);
 });
 
