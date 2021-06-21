@@ -17,16 +17,16 @@ const pkg = require('./package.json');
 const supportedNodeVersion = semver.minVersion(pkg.engines.node).version;
 
 module.exports = {
-	"presets": [
+	'presets': [
 		[
-			"@babel/preset-env",
+			'@babel/preset-env',
 			{
 				targets: {
-					// node: "current"
+					// node: 'current'
 					node: supportedNodeVersion
 				}
 			}
 		],
-		"@babel/preset-typescript"
+		'@babel/preset-typescript'
 	]
 };

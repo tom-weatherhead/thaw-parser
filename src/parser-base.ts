@@ -1,7 +1,5 @@
 // tom-weatherhead/thaw-parser/src/parser-base.ts
 
-'use strict';
-
 import { IIterator, Set } from 'thaw-common-utilities.ts';
 
 import { Token } from 'thaw-lexical-analyzer';
@@ -27,7 +25,7 @@ export abstract class ParserBase implements IParser {
 
 	public abstract recognize(tokenList: Token[]): void;
 
-	public abstract parse(tokenList: Token[]): any;
+	public abstract parse(tokenList: Token[]): unknown;
 
 	protected withoutLambda(ie: IIterator<number>): Set<number> {
 		const pred = (n: number) => n !== Symbol.Lambda;

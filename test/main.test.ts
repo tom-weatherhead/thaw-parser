@@ -2,15 +2,15 @@
 
 'use strict';
 
-import {
-	createTokenizer,
-	LexicalAnalyzerSelector
-} from 'thaw-lexical-analyzer';
+// import {
+// 	createTokenizer,
+// 	LexicalAnalyzerSelector
+// } from 'thaw-lexical-analyzer';
 
 import {
 	createGrammar,
-	LanguageSelector,
-	PrologGlobalInfo
+	LanguageSelector // ,
+	// PrologGlobalInfo
 } from 'thaw-grammar';
 
 import { createParser, ParserSelector } from '..';

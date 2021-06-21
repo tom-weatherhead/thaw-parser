@@ -1,7 +1,5 @@
 // tom-weatherhead/thaw-parser/src/ll1-parser.ts
 
-'use strict';
-
 import {
 	arrayIncludes, // Handy for arrays of basic types, e.g. number[]
 	Set,
@@ -49,7 +47,7 @@ export class LL1Parser extends ParserBase {
 		this.llDriver(tokenList, false);
 	}
 
-	public parse(tokenList: Token[]): any {
+	public parse(tokenList: Token[]): unknown {
 		return this.llDriver(tokenList, true);
 	}
 
@@ -97,15 +95,15 @@ export class LL1Parser extends ParserBase {
 
 	// Adapted from Fischer and LeBlanc, page 121 (function lldriver())
 
-	private llDriver(tokenList: Token[], parse: boolean): any {
+	private llDriver(tokenList: Token[], parse: boolean): unknown {
 		if (tokenList.length === 0) {
 			throw new ParserException('Token list is empty');
 		}
 
 		let tokenNum = 0;
 		let tokenAsSymbol = this.grammar.tokenToSymbol(tokenList[tokenNum]);
-		const parseStack = new Stack<any>(); // The parse stack
-		const semanticStack = new Stack<any>();
+		const parseStack = new Stack<unknown>(); // The parse stack
+		const semanticStack = new Stack<unknown>();
 
 		parseStack.push(this.grammar.startSymbol);
 

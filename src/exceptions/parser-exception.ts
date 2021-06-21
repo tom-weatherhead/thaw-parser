@@ -1,7 +1,5 @@
 // tom-weatherhead/thaw-parser/src/exceptions/parser-exception.ts
 
-'use strict';
-
 // import { ExceptionBase } from 'thaw-grammar';
 
 export class ParserException {

@@ -15,8 +15,6 @@ import {
 
 import { createParser, ParserSelector } from '..';
 
-// **** Prolog ****
-
 test('LL(1) parser instance creation test - Prolog', () => {
 	// Arrange
 	const ls = LanguageSelector.Prolog2;
@@ -30,7 +28,7 @@ test('LL(1) parser instance creation test - Prolog', () => {
 });
 
 function prologTest(
-	data: Array<[input: string, expectedResult: string]>
+	data: Array<[input: string, expectedResult: string | string[]]>
 ): void {
 	// Arrange
 	const ls = LanguageSelector.Prolog2;
@@ -46,44 +44,25 @@ function prologTest(
 		);
 
 		// Assert
-		expect(actualResult).toBe(expectedResult);
+		if (typeof expectedResult === 'string') {
+			expect(actualResult).toBe(expectedResult);
+		} else {
+			for (const str of expectedResult) {
+				expect(actualResult.includes(str)).toBe(true);
+			}
+		}
 	}
 }
 
-// test('LL(1) Prolog interpret test 1', () => {
-// 	// Arrange
-// 	const ls = LanguageSelector.Prolog2;
-// 	const prologGlobalInfo = new PrologGlobalInfo();
-// 	const grammar = createGrammar(ls);
-// 	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
-// 	const parser = createParser(ParserSelector.LL1, grammar);
-
-// 	const input1 = 'pred1.';
-// 	const input2 = '?- pred1.';
-// 	// const listOfTokens = tokenizer.tokenize(inputString);
-// 	// const parseResult = parser.parse(listOfTokens);
-
-// 	// console.log(
-// 	// 	`thaw-parser: Prolog test: parseResult of '${inputString}' is:`,
-// 	// 	typeof parseResult,
-// 	// 	parseResult
-// 	// );
-
-// 	// Act
-// 	// Assert
-// 	expect(
-// 		prologGlobalInfo.ProcessInput(parser.parse(tokenizer.tokenize(input1)))
-// 	).toBe(PrologGlobalInfo.ClauseAdded);
-// 	expect(
-// 		prologGlobalInfo.ProcessInput(parser.parse(tokenizer.tokenize(input2)))
-// 	).toBe(PrologGlobalInfo.Satisfied);
-// });
+function getSatisfied(sub = ''): string {
+	return `Satisfying substitution is: [${sub}]\n${PrologGlobalInfo.Satisfied}`;
+}
 
 test('LL(1) Prolog interpret test 1', () => {
 	prologTest([
 		// ['', PrologGlobalInfo.],
 		['pred1.', PrologGlobalInfo.ClauseAdded],
-		['?- pred1.', 'Satisfying substitution is: []\n' + PrologGlobalInfo.Satisfied]
+		['?- pred1.', getSatisfied()]
 	]);
 });
 
@@ -92,13 +71,28 @@ test('LL(1) Prolog interpret test 2', () => {
 		['foo :- bar, baz.', PrologGlobalInfo.ClauseAdded],
 		['bar.', PrologGlobalInfo.ClauseAdded],
 		['baz.', PrologGlobalInfo.ClauseAdded],
-		['?- foo.', 'Satisfying substitution is: []\n' + PrologGlobalInfo.Satisfied]
+		['?- foo.', getSatisfied()]
 	]);
 });
 
 test('LL(1) Prolog interpret test 3', () => {
 	prologTest([
 		['pred(V).', PrologGlobalInfo.ClauseAdded],
-		['?- pred(1337).', 'Satisfying substitution is: [?V -> 1337]\n' + PrologGlobalInfo.Satisfied]
+		['?- pred(1337).', getSatisfied('V -> 1337')]
+	]);
+});
+
+test('LL(1) Prolog append test 1', () => {
+	prologTest([
+		['append([], L, L).', PrologGlobalInfo.ClauseAdded],
+		[
+			'append([X | Y], L, [X | Z]) :- append(Y, L, Z).',
+			PrologGlobalInfo.ClauseAdded
+		],
+		['?- append([], [1], A).', ['Satisfied', 'A -> [1]']], // Y
+		['?- append([1], [2], A).', ['Satisfied', 'A -> [1, 2]']], // Y
+		['?- append([1], [3, 4], A).', ['Satisfied', 'A -> [1, 3, 4]']], // Y
+		['?- append([1, 2], [3], A).', ['Satisfied', 'A -> [1, 2, 3]']], // N
+		['?- append([1, 2], [3, 4], A).', ['Satisfied', 'A -> [1, 2, 3, 4]']] // N
 	]);
 });
