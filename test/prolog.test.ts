@@ -53,6 +53,8 @@ test('LL(1) mini-Prolog recognize test', () => {
 	f('pred1([1, 2, 3]).');
 	f('pred1([1 | [2, 3]]).');
 
+	f('unique_list([X|L]) :- \\+ member(X, L), unique_list(L).');
+
 	expect(() => f('pred1(A.')).toThrow(ParserException);
 });
 
@@ -213,3 +215,26 @@ test('LL(1) Prolog list reversal test 1', () => {
 // 		// ['?- accRev(cons(1, cons(2, nil)), nil, R).', ['Satisfied']] // ,
 // 	]);
 // });
+
+test('LL(1) Prolog Italian crossword test', () => {
+	prologTest([
+		['word(astante,  a,s,t,a,n,t,e).', PrologGlobalInfo.ClauseAdded],
+		['word(astoria,  a,s,t,o,r,i,a).', PrologGlobalInfo.ClauseAdded],
+		['word(baratto,  b,a,r,a,t,t,o).', PrologGlobalInfo.ClauseAdded],
+		['word(cobalto,  c,o,b,a,l,t,o).', PrologGlobalInfo.ClauseAdded],
+		['word(pistola,  p,i,s,t,o,l,a).', PrologGlobalInfo.ClauseAdded],
+		['word(statale,  s,t,a,t,a,l,e).', PrologGlobalInfo.ClauseAdded],
+		['member(X,[X|_]).', PrologGlobalInfo.ClauseAdded],
+		['member(X,[_|L]) :- member(X,L).', PrologGlobalInfo.ClauseAdded],
+		['unique_list([]).', PrologGlobalInfo.ClauseAdded],
+		[
+			'unique_list([X|L]) :- \\+ member(X, L), unique_list(L).',
+			PrologGlobalInfo.ClauseAdded
+		],
+		[
+			'crossword(V1, V2, V3, H1, H2, H3) :- word(V1, _, V12, _, V14, _, V16, _), word(V2, _, V22, _, V24, _, V26, _), word(V3, _, V32, _, V34, _, V36, _), word(H1, _, V12, _, V22, _, V32, _), word(H2, _, V14, _, V24, _, V34, _), word(H3, _, V16, _, V26, _, V36, _), unique_list([V1, V2, V3, H1, H2, H3]).',
+			PrologGlobalInfo.ClauseAdded
+		],
+		['?- crossword(V1, V2, V3, H1, H2, H3).', ['Satisfied']]
+	]);
+});
