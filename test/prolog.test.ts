@@ -181,23 +181,23 @@ test('LL(1) mini-Prolog list reverse test', () => {
 // 	]);
 // });
 
-// test('LL(1) Prolog list reversal test 1', () => {
-// 	prologTest([
-// 		[
-// 			'accRev([H | T], A, R):-  accRev(T, [H | A], R).',
-// 			PrologGlobalInfo.ClauseAdded
-// 		],
-// 		['accRev([], A, A).', PrologGlobalInfo.ClauseAdded],
-// 		// ['rev(L, R) :- accRev(L, [], R).', PrologGlobalInfo.ClauseAdded],
-// 		// ['?- rev([1, 2, 3, 4], R).', ['Satisfied', 'R -> [4, 3, 2, 1]']]
-// 		// ['?- accRev([1, 2, 3, 4], [], R).', ['Satisfied']],
-// 		['?- accRev([], [], R).', ['Satisfied', '[R -> []]']],
-// 		['?- accRev([1], [], R).', ['Satisfied', '[R -> [1]]']],
-// 		['?- accRev([1, 2], [], R).', ['Satisfied', '[R -> [2, 1]]']] // ,
-// 		// TODO 2021-06-21: Find out why this fails:
-// 		// ['?- accRev([1, 2, 3], [], R).', ['Satisfied', '[R -> [3, 2, 1]]']]
-// 	]);
-// });
+test('LL(1) Prolog list reversal test 1', () => {
+	prologTest([
+		[
+			'accRev([H | T], A, R):-  accRev(T, [H | A], R).',
+			PrologGlobalInfo.ClauseAdded
+		],
+		['accRev([], A, A).', PrologGlobalInfo.ClauseAdded],
+		['rev(L, R) :- accRev(L, [], R).', PrologGlobalInfo.ClauseAdded],
+		['?- rev([1, 2, 3, 4], R).', ['Satisfied', 'R -> [4, 3, 2, 1]']],
+		['?- accRev([1, 2, 3, 4], [], R).', ['Satisfied']],
+		['?- accRev([], [], R).', ['Satisfied', '[R -> []]']],
+		['?- accRev([1], [], R).', ['Satisfied', '[R -> [1]]']],
+		['?- accRev([1, 2], [], R).', ['Satisfied', '[R -> [2, 1]]']],
+		['?- accRev([1, 2, 3], [], R).', ['Satisfied', '[R -> [3, 2, 1]]']],
+		['?- accRev([1, 2, 3, 4], [], R).', ['Satisfied', '[R -> [4, 3, 2, 1]]']]
+	]);
+});
 
 // test('LL(1) Prolog list reversal test 2', () => {
 // 	prologTest([
