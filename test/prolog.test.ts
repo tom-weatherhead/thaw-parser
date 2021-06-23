@@ -47,37 +47,69 @@ test('LL(1) mini-Prolog recognize test', () => {
 	f('accRev(nil, A, A).');
 	f('?- accRev(cons(1, cons(2, nil)), nil, R).');
 
+	f('pred1([]).');
+	f('pred1([1]).');
+	f('pred1([1, 2]).');
+	f('pred1([1, 2, 3]).');
+	f('pred1([1 | [2, 3]]).');
+
 	expect(() => f('pred1(A.')).toThrow(ParserException);
 });
 
-// function prologTest(
-// 	data: Array<[input: string, expectedResult: string | string[]]>
-// ): void {
-// 	// Arrange
-// 	const ls = LanguageSelector.Prolog2;
-// 	const prologGlobalInfo = new PrologGlobalInfo();
-// 	const grammar = createGrammar(ls);
-// 	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
-// 	const parser = createParser(ParserSelector.LL1, grammar);
+function prologTest(
+	data: Array<[input: string, expectedResult: string | string[]]>
+): void {
+	// Arrange
+	const ls = LanguageSelector.Prolog2;
+	const prologGlobalInfo = new PrologGlobalInfo();
+	const grammar = createGrammar(ls);
+	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
+	const parser = createParser(ParserSelector.LL1, grammar);
 
-// 	for (const [input, expectedResult] of data) {
-// 		// Act
-// 		const actualResult = prologGlobalInfo.ProcessInput(
-// 			parser.parse(tokenizer.tokenize(input))
-// 		);
+	for (const [input, expectedResult] of data) {
+		// Act
+		const actualResult = prologGlobalInfo.ProcessInput(
+			parser.parse(tokenizer.tokenize(input))
+		);
 
-// 		console.log(`input: ${input}\nactualResult: ${actualResult}\n\n`);
+		console.log(`input: ${input}\nactualResult: ${actualResult}\n\n`);
 
-// 		// Assert
-// 		if (typeof expectedResult === 'string') {
-// 			expect(actualResult).toBe(expectedResult);
-// 		} else {
-// 			for (const str of expectedResult) {
-// 				expect(actualResult.includes(str)).toBe(true);
-// 			}
-// 		}
-// 	}
-// }
+		// Assert
+		if (typeof expectedResult === 'string') {
+			expect(actualResult).toBe(expectedResult);
+		} else {
+			for (const str of expectedResult) {
+				expect(actualResult.includes(str)).toBe(true);
+			}
+		}
+	}
+}
+
+test('LL(1) mini-Prolog list reverse test', () => {
+	prologTest([
+		[
+			'accRev(cons(H, T), A, R):-  accRev(T, cons(H, A), R).',
+			PrologGlobalInfo.ClauseAdded
+		],
+		['accRev(nil, A, A).', PrologGlobalInfo.ClauseAdded],
+		['?- accRev(nil, nil, R).', ['Satisfied']],
+		['?- accRev(cons(1, cons(2, nil)), nil, R).', ['Satisfied']],
+		[
+			'?- accRev(cons(1, cons(2, cons(3, nil))), nil, R).',
+			[
+				'Satisfying substitution is: [R -> cons(3, cons(2, cons(1, nil)))]',
+				'Satisfied'
+			]
+		],
+		[
+			'?- accRev(cons(1, cons(2, cons(3, cons(4, nil)))), nil, R).',
+			[
+				'Satisfying substitution is: [R -> cons(4, cons(3, cons(2, cons(1, nil))))]',
+				'Satisfied'
+			]
+		]
+	]);
+});
 
 // function getSatisfied(sub = ''): string {
 // 	return `Satisfying substitution is: [${sub}]\n${PrologGlobalInfo.Satisfied}`;
