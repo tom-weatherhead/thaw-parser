@@ -1,6 +1,6 @@
 // tom-weatherhead/thaw-parser/src/parser-base.ts
 
-import { IIterator, Set } from 'thaw-common-utilities.ts';
+import { Set } from 'thaw-common-utilities.ts';
 
 import { Token } from 'thaw-lexical-analyzer';
 
@@ -27,13 +27,13 @@ export abstract class ParserBase implements IParser {
 
 	public abstract parse(tokenList: Token[]): unknown;
 
-	protected withoutLambda(ie: IIterator<number>): Set<number> {
+	protected withoutLambda(ie: Iterable<number>): Set<number> {
 		const pred = (n: number) => n !== Symbol.Lambda;
 		const result = new Set<number>();
 
-		while (!ie.isDone()) {
-			const element = ie.next() as number;
-
+		// while (!ie.isDone()) {
+		// 	const element = ie.next() as number;
+		for (const element of ie) {
 			if (pred(element)) {
 				result.add(element);
 			}
@@ -90,11 +90,7 @@ export abstract class ParserBase implements IParser {
 					);
 				}
 
-				result.unionInPlace(
-					this.withoutLambda(
-						(firstSetForAlphai as Set<number>).getIterator()
-					)
-				);
+				result.unionInPlace(this.withoutLambda(firstSetForAlphai));
 			}
 
 			const firstSetForAlphakMinus1 = this.firstSet.get(alpha[k - 1]);
@@ -227,7 +223,7 @@ export abstract class ParserBase implements IParser {
 
 					// HashSet<Symbol> s = ComputeFirst(ExtractSymbols(beta));
 					const s = this.computeFirst(beta);
-					const sWithoutLambda = this.withoutLambda(s.getIterator());
+					const sWithoutLambda = this.withoutLambda(s);
 					const followSetOfB = this.followSet.get(B) as Set<number>;
 
 					if (!sWithoutLambda.isASubsetOf(followSetOfB)) {

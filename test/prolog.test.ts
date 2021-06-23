@@ -195,7 +195,10 @@ test('LL(1) Prolog list reversal test 1', () => {
 		['?- accRev([1], [], R).', ['Satisfied', '[R -> [1]]']],
 		['?- accRev([1, 2], [], R).', ['Satisfied', '[R -> [2, 1]]']],
 		['?- accRev([1, 2, 3], [], R).', ['Satisfied', '[R -> [3, 2, 1]]']],
-		['?- accRev([1, 2, 3, 4], [], R).', ['Satisfied', '[R -> [4, 3, 2, 1]]']]
+		[
+			'?- accRev([1, 2, 3, 4], [], R).',
+			['Satisfied', '[R -> [4, 3, 2, 1]]']
+		]
 	]);
 });
 

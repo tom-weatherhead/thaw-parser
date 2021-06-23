@@ -56,7 +56,7 @@ export class LL1Parser extends ParserBase {
 			let s = this.computeFirst(p.RHSWithNoSemanticActions());
 
 			if (s.contains(Symbol.Lambda)) {
-				s = this.withoutLambda(s.getIterator());
+				s = this.withoutLambda(s);
 				s.unionInPlace(this.followSet.get(p.lhs) as Set<number>);
 			}
 
@@ -66,12 +66,20 @@ export class LL1Parser extends ParserBase {
 
 	private fillParseTable(): void {
 		this.grammar.productions.forEach((p: Production) => {
-			const predictIterator = (
-				this.predict.get(p) as Set<number>
-			).getIterator();
+			// const predictIterator = (
+			// 	this.predict.get(p) as Set<number>
+			// ).getIterator();
+			const pValue = this.predict.get(p);
 
-			while (!predictIterator.isDone()) {
-				const t = predictIterator.next() as number;
+			if (typeof pValue === 'undefined') {
+				throw new Error(
+					'LL1Parser.fillParseTable() : pValue is undefined'
+				);
+			}
+
+			// while (!predictIterator.isDone()) {
+			// 	const t = predictIterator.next() as number;
+			for (const t of pValue) {
 				// const sp = new SymbolPair(p.lhs, t);
 				const sp = `(${p.lhs}, ${t})`;
 				const pParseTableSPRaw = this.parseTable.get(sp) as Production;
