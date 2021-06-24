@@ -239,6 +239,45 @@ test('LL(1) Prolog Italian crossword test', () => {
 	]);
 });
 
-test('LL(1) Prolog Italian crossword test', () => {
-	prologTest([['?- add(2, 3, N).', ['Satisfying substitution is: [N -> 5]', 'Satisfied']]]);
+test('LL(1) Prolog math test 1 : addition', () => {
+	prologTest([
+		[
+			'?- add(2, 3, N).',
+			['Satisfying substitution is: [N -> 5]', 'Satisfied']
+		]
+	]);
+});
+
+test('LL(1) Prolog math test 2 : subtraction', () => {
+	prologTest([
+		[
+			'?- subtract(8, 5, N).',
+			['Satisfying substitution is: [N -> 3]', 'Satisfied']
+		]
+	]);
+});
+
+test('LL(1) Prolog math test 3 : multiplication', () => {
+	prologTest([
+		[
+			'?- multiply(7, 13, N).',
+			['Satisfying substitution is: [N -> 91]', 'Satisfied']
+		]
+	]);
+});
+
+test('LL(1) Prolog arithmetic comparison test 1', () => {
+	prologTest([
+		[
+			'?- lt(7, 13).', ['Satisfied']
+		]
+	]);
+});
+
+test('LL(1) Prolog arithmetic comparison test 1', () => {
+	prologTest([
+		[
+			'?- lt(17, 13).', ['Not satisfied']
+		]
+	]);
 });
