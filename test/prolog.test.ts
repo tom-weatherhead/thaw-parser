@@ -235,7 +235,7 @@ test('LL(1) Prolog Italian crossword test', () => {
 			'crossword(V1, V2, V3, H1, H2, H3) :- word(V1, _, V12, _, V14, _, V16, _), word(V2, _, V22, _, V24, _, V26, _), word(V3, _, V32, _, V34, _, V36, _), word(H1, _, V12, _, V22, _, V32, _), word(H2, _, V14, _, V24, _, V34, _), word(H3, _, V16, _, V26, _, V36, _), unique_list([V1, V2, V3, H1, H2, H3]).',
 			PrologGlobalInfo.ClauseAdded
 		],
-		['?- crossword(V1, V2, V3, H1, H2, H3).', ['Satisfied']]
+		['?- crossword(V1, V2, V3, H1, H2, H3).', ['Satisfying substitution is: [H1 -> astoria; H2 -> baratto; H3 -> statale; V1 -> astante; V2 -> cobalto; V3 -> pistola]', 'Satisfied']]
 	]);
 });
 
@@ -251,7 +251,7 @@ test('LL(1) Prolog math test 1 : addition', () => {
 test('LL(1) Prolog math test 2 : subtraction', () => {
 	prologTest([
 		[
-			'?- subtract(8, 5, N).',
+			'?- sub(8, 5, N).',
 			['Satisfying substitution is: [N -> 3]', 'Satisfied']
 		]
 	]);
@@ -260,24 +260,16 @@ test('LL(1) Prolog math test 2 : subtraction', () => {
 test('LL(1) Prolog math test 3 : multiplication', () => {
 	prologTest([
 		[
-			'?- multiply(7, 13, N).',
+			'?- mult(7, 13, N).',
 			['Satisfying substitution is: [N -> 91]', 'Satisfied']
 		]
 	]);
 });
 
 test('LL(1) Prolog arithmetic comparison test 1', () => {
-	prologTest([
-		[
-			'?- lt(7, 13).', ['Satisfied']
-		]
-	]);
+	prologTest([['?- lt(7, 13).', ['Satisfied']]]);
 });
 
 test('LL(1) Prolog arithmetic comparison test 1', () => {
-	prologTest([
-		[
-			'?- lt(17, 13).', ['Not satisfied']
-		]
-	]);
+	prologTest([['?- lt(17, 13).', ['Not satisfied']]]);
 });
