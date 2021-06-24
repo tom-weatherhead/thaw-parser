@@ -238,3 +238,7 @@ test('LL(1) Prolog Italian crossword test', () => {
 		['?- crossword(V1, V2, V3, H1, H2, H3).', ['Satisfied']]
 	]);
 });
+
+test('LL(1) Prolog Italian crossword test', () => {
+	prologTest([['?- add(2, 3, N).', ['Satisfying substitution is: [N -> 5]', 'Satisfied']]]);
+});
