@@ -59,7 +59,8 @@ test('LL(1) mini-Prolog recognize test', () => {
 });
 
 function prologTest(
-	data: Array<[input: string, expectedResult: string | string[]]>
+	data: Array<[input: string, expectedResult: string | string[]]>,
+	allMode = false
 ): void {
 	// Arrange
 	const ls = LanguageSelector.Prolog2;
@@ -67,6 +68,10 @@ function prologTest(
 	const grammar = createGrammar(ls);
 	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
 	const parser = createParser(ParserSelector.LL1, grammar);
+
+	if (allMode) {
+		prologGlobalInfo.FindAllSolutions();
+	}
 
 	for (const [input, expectedResult] of data) {
 		// Act
@@ -84,6 +89,15 @@ function prologTest(
 				expect(actualResult.includes(str)).toBe(true);
 			}
 		}
+	}
+
+	console.log('allMode is', allMode);
+
+	if (allMode) {
+		console.log(
+			'prologGlobalInfo.getPrintedText() :',
+			prologGlobalInfo.getPrintedText()
+		);
 	}
 }
 
@@ -235,7 +249,13 @@ test('LL(1) Prolog Italian crossword test', () => {
 			'crossword(V1, V2, V3, H1, H2, H3) :- word(V1, _, V12, _, V14, _, V16, _), word(V2, _, V22, _, V24, _, V26, _), word(V3, _, V32, _, V34, _, V36, _), word(H1, _, V12, _, V22, _, V32, _), word(H2, _, V14, _, V24, _, V34, _), word(H3, _, V16, _, V26, _, V36, _), unique_list([V1, V2, V3, H1, H2, H3]).',
 			PrologGlobalInfo.ClauseAdded
 		],
-		['?- crossword(V1, V2, V3, H1, H2, H3).', ['Satisfying substitution is: [H1 -> astoria; H2 -> baratto; H3 -> statale; V1 -> astante; V2 -> cobalto; V3 -> pistola]', 'Satisfied']]
+		[
+			'?- crossword(V1, V2, V3, H1, H2, H3).',
+			[
+				'Satisfying substitution is: [H1 -> astoria; H2 -> baratto; H3 -> statale; V1 -> astante; V2 -> cobalto; V3 -> pistola]',
+				'Satisfied'
+			]
+		]
 	]);
 });
 
@@ -261,7 +281,10 @@ test('LL(1) Prolog math test 3 : multiplication', () => {
 	prologTest([
 		[
 			'?- mult(7, 13, N).',
-			['Satisfying substitution is: [N -> 91]', 'Satisfied']
+			[
+				'Satisfying substitution is: [N -> 91]',
+				PrologGlobalInfo.Satisfied
+			]
 		]
 	]);
 });
@@ -272,4 +295,34 @@ test('LL(1) Prolog arithmetic comparison test 1', () => {
 
 test('LL(1) Prolog arithmetic comparison test 1', () => {
 	prologTest([['?- lt(17, 13).', ['Not satisfied']]]);
+});
+
+test('LL(1) Prolog permutation test 1', () => {
+	prologTest(
+		[
+			['append([], L, L).', PrologGlobalInfo.ClauseAdded],
+			[
+				'append([X | Y], L, [X | Z]) :- append(Y, L, Z).',
+				PrologGlobalInfo.ClauseAdded
+			],
+			['permutation([], []).', PrologGlobalInfo.ClauseAdded],
+			[
+				'permutation(L, [H|T]) :- append(V, [H|U], L), append(V, U, W), permutation(W, T).',
+				PrologGlobalInfo.ClauseAdded
+			],
+			[
+				'?- permutation([red, green, blue], C).',
+				[
+					'C = [red, green, blue]',
+					'C = [red, blue, green]',
+					'C = [green, red, blue]',
+					'C = [green, blue, red]',
+					'C = [blue, red, green]',
+					'C = [blue, green, red]',
+					PrologGlobalInfo.NotSatisfied
+				]
+			]
+		],
+		true
+	);
 });
