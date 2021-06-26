@@ -90,15 +90,6 @@ function prologTest(
 			}
 		}
 	}
-
-	// console.log('allMode is', allMode);
-
-	// if (allMode) {
-	// 	console.log(
-	// 		'prologGlobalInfo.getPrintedText() :',
-	// 		prologGlobalInfo.getPrintedText()
-	// 	);
-	// }
 }
 
 test('LL(1) Prolog arithmetic comparison test 1', () => {
@@ -300,26 +291,15 @@ test('LL(1) Prolog permutation test 1', () => {
 			],
 			[
 				'?- permutation([red, green, blue], C).',
-				// [
-				// 	'Satisfying substitution is: [C -> [red, green, blue]]',
-				// 	'Satisfying substitution is: [C -> [red, blue, green]]',
-				// 	'Satisfying substitution is: [C -> [green, red, blue]]',
-				// 	'Satisfying substitution is: [C -> [green, blue, red]]',
-				// 	'Satisfying substitution is: [C -> [blue, red, green]]',
-				// 	'Satisfying substitution is: [C -> [blue, green, red]]',
-				// 	'Number of solutions found: 6',
-				// 	PrologGlobalInfo.Satisfied
-				// ]
-				// [
 				'Satisfying substitution is: [C -> [red, green, blue]]\n' +
-				'Satisfying substitution is: [C -> [red, blue, green]]\n' +
-				'Satisfying substitution is: [C -> [green, red, blue]]\n' +
-				'Satisfying substitution is: [C -> [green, blue, red]]\n' +
-				'Satisfying substitution is: [C -> [blue, red, green]]\n' +
-				'Satisfying substitution is: [C -> [blue, green, red]]\n' +
-				'Number of solutions found: 6\n' +
-				PrologGlobalInfo.Satisfied + '\n'
-				// ]
+					'Satisfying substitution is: [C -> [red, blue, green]]\n' +
+					'Satisfying substitution is: [C -> [green, red, blue]]\n' +
+					'Satisfying substitution is: [C -> [green, blue, red]]\n' +
+					'Satisfying substitution is: [C -> [blue, red, green]]\n' +
+					'Satisfying substitution is: [C -> [blue, green, red]]\n' +
+					'Number of solutions found: 6\n' +
+					PrologGlobalInfo.Satisfied +
+					'\n'
 			]
 		],
 		true
