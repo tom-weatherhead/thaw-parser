@@ -15,7 +15,7 @@ import {
 
 import { createParser, ParserException, ParserSelector } from '..';
 
-test('LL(1) parser instance creation test - Prolog', () => {
+test('LL(1) Prolog parser instance creation test', () => {
 	// Arrange
 	const ls = LanguageSelector.Prolog2;
 	const grammar = createGrammar(ls);
@@ -27,7 +27,7 @@ test('LL(1) parser instance creation test - Prolog', () => {
 	expect(parser).toBeTruthy();
 });
 
-test('LL(1) mini-Prolog recognize test', () => {
+test('LL(1) Prolog recognize test', () => {
 	// 	// Arrange
 	const ls = LanguageSelector.Prolog2;
 	// const prologGlobalInfo = new PrologGlobalInfo();
@@ -79,7 +79,7 @@ function prologTest(
 			parser.parse(tokenizer.tokenize(input))
 		);
 
-		console.log(`input: ${input}\nactualResult: ${actualResult}\n\n`);
+		console.log(`input: ${input}\nactualResult:\n${actualResult}\n\n`);
 
 		// Assert
 		if (typeof expectedResult === 'string') {
@@ -91,17 +91,55 @@ function prologTest(
 		}
 	}
 
-	console.log('allMode is', allMode);
+	// console.log('allMode is', allMode);
 
-	if (allMode) {
-		console.log(
-			'prologGlobalInfo.getPrintedText() :',
-			prologGlobalInfo.getPrintedText()
-		);
-	}
+	// if (allMode) {
+	// 	console.log(
+	// 		'prologGlobalInfo.getPrintedText() :',
+	// 		prologGlobalInfo.getPrintedText()
+	// 	);
+	// }
 }
 
-test('LL(1) mini-Prolog list reverse test', () => {
+test('LL(1) Prolog arithmetic comparison test 1', () => {
+	prologTest([['?- lt(7, 13).', ['Satisfied']]]);
+});
+
+test('LL(1) Prolog arithmetic comparison test 2', () => {
+	prologTest([['?- lt(17, 13).', ['Not satisfied']]]);
+});
+
+test('LL(1) Prolog math test 1 : addition', () => {
+	prologTest([
+		[
+			'?- add(2, 3, N).',
+			['Satisfying substitution is: [N -> 5]', 'Satisfied']
+		]
+	]);
+});
+
+test('LL(1) Prolog math test 2 : subtraction', () => {
+	prologTest([
+		[
+			'?- sub(8, 5, N).',
+			['Satisfying substitution is: [N -> 3]', 'Satisfied']
+		]
+	]);
+});
+
+test('LL(1) Prolog math test 3 : multiplication', () => {
+	prologTest([
+		[
+			'?- mult(7, 13, N).',
+			[
+				'Satisfying substitution is: [N -> 91]',
+				PrologGlobalInfo.Satisfied
+			]
+		]
+	]);
+});
+
+test('LL(1) Prolog list reverse test', () => {
 	prologTest([
 		[
 			'accRev(cons(H, T), A, R):-  accRev(T, cons(H, A), R).',
@@ -197,7 +235,7 @@ test('LL(1) mini-Prolog list reverse test', () => {
 // 	]);
 // });
 
-test('LL(1) Prolog list reversal test 1', () => {
+test('LL(1) Prolog list reversal test', () => {
 	prologTest([
 		[
 			'accRev([H | T], A, R):-  accRev(T, [H | A], R).',
@@ -217,18 +255,6 @@ test('LL(1) Prolog list reversal test 1', () => {
 		]
 	]);
 });
-
-// test('LL(1) Prolog list reversal test 2', () => {
-// 	prologTest([
-// 		[
-// 			'accRev(cons(H, T), A, R):-  accRev(T, cons(H, A), R).',
-// 			PrologGlobalInfo.ClauseAdded
-// 		],
-// 		['accRev(nil, A, A).', PrologGlobalInfo.ClauseAdded],
-// 		['?- accRev(nil, nil, R).', ['Satisfied']] // ,
-// 		// ['?- accRev(cons(1, cons(2, nil)), nil, R).', ['Satisfied']] // ,
-// 	]);
-// });
 
 test('LL(1) Prolog Italian crossword test', () => {
 	prologTest([
@@ -259,44 +285,6 @@ test('LL(1) Prolog Italian crossword test', () => {
 	]);
 });
 
-test('LL(1) Prolog math test 1 : addition', () => {
-	prologTest([
-		[
-			'?- add(2, 3, N).',
-			['Satisfying substitution is: [N -> 5]', 'Satisfied']
-		]
-	]);
-});
-
-test('LL(1) Prolog math test 2 : subtraction', () => {
-	prologTest([
-		[
-			'?- sub(8, 5, N).',
-			['Satisfying substitution is: [N -> 3]', 'Satisfied']
-		]
-	]);
-});
-
-test('LL(1) Prolog math test 3 : multiplication', () => {
-	prologTest([
-		[
-			'?- mult(7, 13, N).',
-			[
-				'Satisfying substitution is: [N -> 91]',
-				PrologGlobalInfo.Satisfied
-			]
-		]
-	]);
-});
-
-test('LL(1) Prolog arithmetic comparison test 1', () => {
-	prologTest([['?- lt(7, 13).', ['Satisfied']]]);
-});
-
-test('LL(1) Prolog arithmetic comparison test 1', () => {
-	prologTest([['?- lt(17, 13).', ['Not satisfied']]]);
-});
-
 test('LL(1) Prolog permutation test 1', () => {
 	prologTest(
 		[
@@ -312,15 +300,26 @@ test('LL(1) Prolog permutation test 1', () => {
 			],
 			[
 				'?- permutation([red, green, blue], C).',
-				[
-					'C = [red, green, blue]',
-					'C = [red, blue, green]',
-					'C = [green, red, blue]',
-					'C = [green, blue, red]',
-					'C = [blue, red, green]',
-					'C = [blue, green, red]',
-					PrologGlobalInfo.NotSatisfied
-				]
+				// [
+				// 	'Satisfying substitution is: [C -> [red, green, blue]]',
+				// 	'Satisfying substitution is: [C -> [red, blue, green]]',
+				// 	'Satisfying substitution is: [C -> [green, red, blue]]',
+				// 	'Satisfying substitution is: [C -> [green, blue, red]]',
+				// 	'Satisfying substitution is: [C -> [blue, red, green]]',
+				// 	'Satisfying substitution is: [C -> [blue, green, red]]',
+				// 	'Number of solutions found: 6',
+				// 	PrologGlobalInfo.Satisfied
+				// ]
+				// [
+				'Satisfying substitution is: [C -> [red, green, blue]]\n' +
+				'Satisfying substitution is: [C -> [red, blue, green]]\n' +
+				'Satisfying substitution is: [C -> [green, red, blue]]\n' +
+				'Satisfying substitution is: [C -> [green, blue, red]]\n' +
+				'Satisfying substitution is: [C -> [blue, red, green]]\n' +
+				'Satisfying substitution is: [C -> [blue, green, red]]\n' +
+				'Number of solutions found: 6\n' +
+				PrologGlobalInfo.Satisfied + '\n'
+				// ]
 			]
 		],
 		true
