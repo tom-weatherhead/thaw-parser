@@ -6,6 +6,8 @@ import { createGrammar, LanguageSelector } from 'thaw-grammar';
 
 import { createParser, ParserSelector } from '..';
 
+// **** LL(1) Parser Tests ****
+
 test('LL(1) parser instance creation test - MinimalLanguage', () => {
 	// Arrange
 	const grammar = createGrammar(LanguageSelector.MinimalLanguage);
@@ -40,6 +42,30 @@ test('LL(1) parser instance creation test - LISP', () => {
 // 	// Arrange
 // 	const grammar = createGrammar(LanguageSelector.Scheme);
 // 	const parser = createParser(ParserSelector.LL1, grammar);
+
+// 	// Act
+// 	// Assert
+// 	expect(parser).toBeTruthy();
+// });
+
+// **** LR(0) Parser Tests ****
+
+// test('LR(0) parser instance creation test - MinimalLanguage', () => {
+// 	// Arrange
+// 	const grammar = createGrammar(LanguageSelector.MinimalLanguage);
+// 	const parser = createParser(ParserSelector.LR0, grammar);
+
+// 	// Act
+// 	// Assert
+// 	expect(parser).toBeTruthy();
+// });
+
+// **** SLR(1) Parser Tests ****
+
+// test('SLR(1) parser instance creation test - MinimalLanguage', () => {
+// 	// Arrange
+// 	const grammar = createGrammar(LanguageSelector.MinimalLanguage);
+// 	const parser = createParser(ParserSelector.SLR1, grammar);
 
 // 	// Act
 // 	// Assert

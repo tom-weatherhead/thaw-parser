@@ -248,10 +248,19 @@ export class LR0Configuration implements IEqualityComparable {
 
 export class CFSMState {
 	public readonly ConfigurationSet: Set<LR0Configuration>;
+	// The Transitions graph could contain cycles.
 	public readonly Transitions = new Map<Symbol, CFSMState>();
 
 	constructor(cs: Set<LR0Configuration>) {
 		this.ConfigurationSet = cs;
+	}
+
+	public toString(): string {
+		const configs = this.ConfigurationSet.toArray();
+
+		configs.sort();
+
+		return `[${configs.join()}]`;
 	}
 
 	public Equals(obj: unknown): boolean {
@@ -332,6 +341,10 @@ class CFSMStateSymbolPair {
 		this.symbol = sy;
 	}
 
+	public toString(): string {
+		return `${this.state}, ${this.symbol}`;
+	}
+
 	public Equals(obj: unknown): boolean {
 		// if (object.ReferenceEquals(this, obj)) {
 		// 	return true;
@@ -341,6 +354,7 @@ class CFSMStateSymbolPair {
 
 		return (
 			typeof that !== 'undefined' &&
+			obj instanceof CFSMStateSymbolPair &&
 			this.state.Equals(that.state) &&
 			this.symbol === that.symbol
 		);
@@ -355,6 +369,8 @@ export class LR0Parser extends ParserBase {
 	private readonly AllSymbols: Set<Symbol>;
 	protected readonly machine: CharacteristicFiniteStateMachine;
 	private readonly GoToTable = new Map<CFSMStateSymbolPair, CFSMState>();
+	// TODO: Implement CFSMStateSymbolPair.toString() and then:
+	// private readonly GoToTable = new Map<string, CFSMState>();
 	private readonly startingProduction: Production;
 
 	constructor(g: IGrammar) {

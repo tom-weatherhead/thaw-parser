@@ -63,8 +63,8 @@ function schemeTest(
 		const parseResult = parser.parse(tokenizer.tokenize(input));
 		const expr = parseResult as IExpression<ISExpression>;
 		const actualResult = expr
-				.evaluate(schemeGlobalInfo.globalEnvironment, schemeGlobalInfo)
-				.toString();
+			.evaluate(schemeGlobalInfo.globalEnvironment, schemeGlobalInfo)
+			.toString();
 
 		console.log(`input: ${input}\nactualResult:\n${actualResult}\n\n`);
 
