@@ -9,11 +9,12 @@ import { IGrammar, Production, Symbol } from 'thaw-grammar';
 import { ParserException } from './exceptions/parser-exception';
 import { IParser } from './iparser';
 
+/* eslint-disable @typescript-eslint/ban-types */
 export abstract class ParserBase implements IParser {
 	protected readonly grammar: IGrammar;
-	protected readonly derivesLambda = new Set<number>();
-	protected readonly firstSet = new Map<number, Set<number>>();
-	protected readonly followSet = new Map<number, Set<number>>();
+	protected readonly derivesLambda = new Set<Symbol>();
+	protected readonly firstSet = new Map<Symbol, Set<Symbol>>();
+	protected readonly followSet = new Map<Symbol, Set<Symbol>>();
 
 	protected constructor(g: IGrammar) {
 		this.grammar = g;
@@ -27,9 +28,9 @@ export abstract class ParserBase implements IParser {
 
 	public abstract parse(tokenList: Token[]): unknown;
 
-	protected withoutLambda(ie: Iterable<number>): Set<number> {
-		const pred = (n: number) => n !== Symbol.Lambda;
-		const result = new Set<number>();
+	protected withoutLambda(ie: Iterable<Symbol>): Set<Symbol> {
+		const pred = (n: Symbol) => n !== Symbol.Lambda;
+		const result = new Set<Symbol>();
 
 		// while (!ie.isDone()) {
 		// 	const element = ie.next() as number;
@@ -44,9 +45,9 @@ export abstract class ParserBase implements IParser {
 
 	// Adapted from Fischer and LeBlanc, page 104
 
-	protected computeFirst(alpha: number[]): Set<number> {
+	protected computeFirst(alpha: Symbol[]): Set<Symbol> {
 		const k = alpha.length;
-		const result = new Set<number>();
+		const result = new Set<Symbol>();
 
 		if (k === 0 || (k === 1 && alpha[0] === Symbol.Lambda)) {
 			// ThAW: Originally, this line was just: if (k == 0)
@@ -62,7 +63,7 @@ export abstract class ParserBase implements IParser {
 				);
 			}
 
-			result.unionInPlace(firstSetForAlpha0 as Set<number>);
+			result.unionInPlace(firstSetForAlpha0 as Set<Symbol>);
 
 			let i;
 
@@ -74,7 +75,7 @@ export abstract class ParserBase implements IParser {
 				}
 
 				if (
-					!(firstSetForAlphaiMinus1 as Set<number>).contains(
+					!(firstSetForAlphaiMinus1 as Set<Symbol>).contains(
 						Symbol.Lambda
 					)
 				) {
@@ -119,8 +120,8 @@ export abstract class ParserBase implements IParser {
 	// Adapted from Fischer and LeBlanc, page 105
 
 	protected fillFirstSet(): void {
-		this.grammar.nonTerminals.forEach((A: number) => {
-			const s = new Set<number>();
+		this.grammar.nonTerminals.forEach((A: Symbol) => {
+			const s = new Set<Symbol>();
 
 			if (this.derivesLambda.contains(A)) {
 				s.add(Symbol.Lambda);
@@ -129,16 +130,16 @@ export abstract class ParserBase implements IParser {
 			this.firstSet.set(A, s);
 		});
 
-		this.grammar.terminals.forEach((a: number) => {
-			const s = new Set<number>();
+		this.grammar.terminals.forEach((a: Symbol) => {
+			const s = new Set<Symbol>();
 
 			s.add(a);
 			this.firstSet.set(a, s);
 
-			this.grammar.nonTerminals.forEach((A: number) => {
+			this.grammar.nonTerminals.forEach((A: Symbol) => {
 				// If there exists a production A -> a beta
 				if (this.productionExists(A, a)) {
-					(this.firstSet.get(A) as Set<number>).unionInPlace(s);
+					(this.firstSet.get(A) as Set<Symbol>).unionInPlace(s);
 				}
 			});
 		});
@@ -160,7 +161,7 @@ export abstract class ParserBase implements IParser {
 					);
 				}
 
-				const firstSetOfPLHS = firstSetOfPLHSRaw as Set<number>;
+				const firstSetOfPLHS = firstSetOfPLHSRaw as Set<Symbol>;
 
 				if (!s.isASubsetOf(firstSetOfPLHS)) {
 					firstSetOfPLHS.unionInPlace(s);
@@ -180,11 +181,11 @@ export abstract class ParserBase implements IParser {
 	// Adapted from Fischer and LeBlanc, page 106
 
 	protected fillFollowSet(): void {
-		this.grammar.nonTerminals.forEach((A: number) => {
-			this.followSet.set(A, new Set<number>());
+		this.grammar.nonTerminals.forEach((A: Symbol) => {
+			this.followSet.set(A, new Set<Symbol>());
 		});
 
-		(this.followSet.get(this.grammar.startSymbol) as Set<number>).add(
+		(this.followSet.get(this.grammar.startSymbol) as Set<Symbol>).add(
 			Symbol.Lambda
 		);
 
@@ -218,13 +219,13 @@ export abstract class ParserBase implements IParser {
 					}
 
 					// List<object> beta = Sublist(p.rhs, i + 1);
-					// const beta: number[] = rhs.Skip(i + 1).ToList();
-					const beta: number[] = rhs.slice(i + 1);
+					// const beta: Symbol[] = rhs.Skip(i + 1).ToList();
+					const beta: Symbol[] = rhs.slice(i + 1);
 
 					// HashSet<Symbol> s = ComputeFirst(ExtractSymbols(beta));
 					const s = this.computeFirst(beta);
 					const sWithoutLambda = this.withoutLambda(s);
-					const followSetOfB = this.followSet.get(B) as Set<number>;
+					const followSetOfB = this.followSet.get(B) as Set<Symbol>;
 
 					if (!sWithoutLambda.isASubsetOf(followSetOfB)) {
 						followSetOfB.unionInPlace(sWithoutLambda);
@@ -233,12 +234,12 @@ export abstract class ParserBase implements IParser {
 
 					if (
 						s.contains(Symbol.Lambda) &&
-						!(this.followSet.get(p.lhs) as Set<number>).isASubsetOf(
+						!(this.followSet.get(p.lhs) as Set<Symbol>).isASubsetOf(
 							followSetOfB
 						)
 					) {
 						followSetOfB.unionInPlace(
-							this.followSet.get(p.lhs) as Set<number>
+							this.followSet.get(p.lhs) as Set<Symbol>
 						);
 						changes = true;
 					}
@@ -251,10 +252,10 @@ export abstract class ParserBase implements IParser {
 		}
 	}
 
-	private productionExists(A: number, a: number): boolean {
+	private productionExists(A: Symbol, a: Symbol): boolean {
 		return this.grammar.productions.some(
 			(p: Production) =>
-				p.lhs === A && p.rhs.length > 0 && (p.rhs[0] as number) === a
+				p.lhs === A && p.rhs.length > 0 && (p.rhs[0] as Symbol) === a
 		);
 	}
 
@@ -270,7 +271,7 @@ export abstract class ParserBase implements IParser {
 				if (!this.derivesLambda.contains(p.lhs)) {
 					const rhsDerivesLambda = p
 						.RHSWithNoSemanticActions()
-						.every((rhsSymbol: number) =>
+						.every((rhsSymbol: Symbol) =>
 							this.derivesLambda.contains(rhsSymbol)
 						);
 
@@ -283,3 +284,4 @@ export abstract class ParserBase implements IParser {
 		} while (changes);
 	}
 }
+/* eslint-enable @typescript-eslint/ban-types */
