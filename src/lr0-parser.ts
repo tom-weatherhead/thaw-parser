@@ -368,9 +368,9 @@ class CFSMStateSymbolPair {
 export class LR0Parser extends ParserBase {
 	private readonly AllSymbols: Set<Symbol>;
 	protected readonly machine: CharacteristicFiniteStateMachine;
-	private readonly GoToTable = new Map<CFSMStateSymbolPair, CFSMState>();
+	// private readonly GoToTable = new Map<CFSMStateSymbolPair, CFSMState>();
 	// TODO: Implement CFSMStateSymbolPair.toString() and then:
-	// private readonly GoToTable = new Map<string, CFSMState>();
+	private readonly GoToTable = new Map<string, CFSMState>();
 	private readonly startingProduction: Production;
 
 	constructor(g: IGrammar) {
@@ -639,7 +639,10 @@ export class LR0Parser extends ParserBase {
 				const value = S.Transitions.get(X);
 
 				if (typeof value !== 'undefined') {
-					this.GoToTable.set(new CFSMStateSymbolPair(S, X), value);
+					const pair = new CFSMStateSymbolPair(S, X);
+
+					// this.GoToTable.set(new CFSMStateSymbolPair(S, X), value);
+					this.GoToTable.set(pair.toString(), value);
 				}
 			}
 		}
@@ -647,7 +650,7 @@ export class LR0Parser extends ParserBase {
 
 	public go_to(S: CFSMState, tokenAsSymbol: Symbol): CFSMState {
 		const pair = new CFSMStateSymbolPair(S, tokenAsSymbol);
-		const value = this.GoToTable.get(pair);
+		const value = this.GoToTable.get(pair.toString());
 
 		// if (!this.GoToTable.has(pair)) {
 		if (typeof value === 'undefined') {
