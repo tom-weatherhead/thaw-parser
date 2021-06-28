@@ -66,7 +66,7 @@ export abstract class ParserBase implements IParser {
 				);
 			}
 
-			result.unionInPlace(firstSetForAlpha0 as Set<Symbol>);
+			result.unionInPlace(firstSetForAlpha0);
 
 			let i;
 
@@ -77,11 +77,7 @@ export abstract class ParserBase implements IParser {
 					break;
 				}
 
-				if (
-					!(firstSetForAlphaiMinus1 as Set<Symbol>).contains(
-						Symbol.Lambda
-					)
-				) {
+				if (!firstSetForAlphaiMinus1.contains(Symbol.Lambda)) {
 					break;
 				}
 
@@ -133,19 +129,27 @@ export abstract class ParserBase implements IParser {
 			this.firstSet.set(A, s);
 		});
 
-		this.grammar.terminals.forEach((a: Symbol) => {
+		// this.grammar.terminals.forEach((a: Symbol) => {
+		for (const a of this.grammar.terminals) {
 			const s = new Set<Symbol>();
 
 			s.add(a);
 			this.firstSet.set(a, s);
 
-			this.grammar.nonTerminals.forEach((A: Symbol) => {
+			// this.grammar.nonTerminals.forEach((A: Symbol) => {
+			for (const A of this.grammar.nonTerminals) {
 				// If there exists a production A -> a beta
-				if (this.productionExists(A, a)) {
-					(this.firstSet.get(A) as Set<Symbol>).unionInPlace(s);
+				const value = this.firstSet.get(A);
+
+				if (
+					this.productionExists(A, a) &&
+					typeof value !== 'undefined'
+				) {
+					value.unionInPlace(s);
+					this.firstSet.set(A, value);
 				}
-			});
-		});
+			} // );
+		} // );
 
 		let changes = true;
 
@@ -164,7 +168,7 @@ export abstract class ParserBase implements IParser {
 					);
 				}
 
-				const firstSetOfPLHS = firstSetOfPLHSRaw as Set<Symbol>;
+				const firstSetOfPLHS = firstSetOfPLHSRaw; // as Set<Symbol>;
 
 				if (!s.isASubsetOf(firstSetOfPLHS)) {
 					firstSetOfPLHS.unionInPlace(s);
@@ -184,13 +188,17 @@ export abstract class ParserBase implements IParser {
 	// Adapted from Fischer and LeBlanc, page 106
 
 	protected fillFollowSet(): void {
-		this.grammar.nonTerminals.forEach((A: Symbol) => {
+		// this.grammar.nonTerminals.forEach((A: Symbol) => {
+		for (const A of this.grammar.nonTerminals) {
 			this.followSet.set(A, new Set<Symbol>());
-		});
+		}
+		// });
 
-		(this.followSet.get(this.grammar.startSymbol) as Set<Symbol>).add(
-			Symbol.Lambda
-		);
+		const value = this.followSet.get(this.grammar.startSymbol);
+
+		if (typeof value !== 'undefined') {
+			value.add(Symbol.Lambda);
+		}
 
 		let changes = true;
 
@@ -228,7 +236,12 @@ export abstract class ParserBase implements IParser {
 					// HashSet<Symbol> s = ComputeFirst(ExtractSymbols(beta));
 					const s = this.computeFirst(beta);
 					const sWithoutLambda = this.withoutLambda(s);
-					const followSetOfB = this.followSet.get(B) as Set<Symbol>;
+					const followSetOfB = this.followSet.get(B); // as Set<Symbol>;
+					const followSetOfPLhs = this.followSet.get(p.lhs);
+
+					if (typeof followSetOfB === 'undefined') {
+						continue;
+					}
 
 					if (!sWithoutLambda.isASubsetOf(followSetOfB)) {
 						followSetOfB.unionInPlace(sWithoutLambda);
@@ -236,14 +249,11 @@ export abstract class ParserBase implements IParser {
 					}
 
 					if (
+						typeof followSetOfPLhs !== 'undefined' &&
 						s.contains(Symbol.Lambda) &&
-						!(this.followSet.get(p.lhs) as Set<Symbol>).isASubsetOf(
-							followSetOfB
-						)
+						!followSetOfPLhs.isASubsetOf(followSetOfB)
 					) {
-						followSetOfB.unionInPlace(
-							this.followSet.get(p.lhs) as Set<Symbol>
-						);
+						followSetOfB.unionInPlace(followSetOfPLhs);
 						changes = true;
 					}
 
@@ -258,7 +268,10 @@ export abstract class ParserBase implements IParser {
 	private productionExists(A: Symbol, a: Symbol): boolean {
 		return this.grammar.productions.some(
 			(p: Production) =>
-				p.lhs === A && p.rhs.length > 0 && (p.rhs[0] as Symbol) === a
+				p.lhs === A &&
+				p.rhs.length > 0 &&
+				typeof p.rhs[0] !== 'string' &&
+				(p.rhs[0] as Symbol) === a
 		);
 	}
 
