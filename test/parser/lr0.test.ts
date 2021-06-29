@@ -86,7 +86,7 @@ class Grammar1 extends GrammarBase {
 	/* eslint-disable @typescript-eslint/no-unused-vars */
 
 	public executeSemanticAction(
-		semanticStack: Stack<object>,
+		semanticStack: Stack<any>,
 		action: string
 	): void {
 		throw new Error('Grammar1.ExecuteSemanticAction()'); // NotImplementedException
