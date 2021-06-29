@@ -60,7 +60,7 @@ export class LR0Configuration implements IEqualityComparable {
 
 		// sb.Append(lhs.ToString() + " ->");
 
-		// foreach (object o in rhs)
+		// for each (object o in rhs)
 		// {
 		// sb.Append(" " + o.ToString());
 		// }
@@ -123,7 +123,7 @@ export class LR0Configuration implements IEqualityComparable {
 	//     /*
 	//     int hashCode = ProductionLHS.GetHashCode();
 
-	//     foreach (Symbol symbol in ProductionRHS)
+	//     for each (Symbol symbol in ProductionRHS)
 	//     {
 	//         hashCode *= 101;
 	//         hashCode += symbol.GetHashCode();
@@ -230,10 +230,10 @@ export class LR0Configuration implements IEqualityComparable {
 
 		// const rhs: (string | Symbol)[] = [];
 
-		// .ForEach(symbol => rhs.Add(symbol)) is used because rhs is of type List<object>, not List<Symbol> .
+		// .For Each(symbol => rhs.Add(symbol)) is used because rhs is of type List<object>, not List<Symbol> .
 		// this.ProductionRHS.filter(
 		// 	(symbol: Symbol) => symbol !== Symbol.Dot
-		// ).forEach((symbol: Symbol) => rhs.push(symbol));
+		// ).for Each((symbol: Symbol) => rhs.push(symbol));
 
 		// return new Production(this.ProductionLHS, rhs);
 
@@ -287,13 +287,13 @@ export class CFSMState {
 	//     //int hashCode = 0;
 
 	//     /*
-	//     foreach (LR0Configuration conf in ConfigurationSet)
+	//     for each (LR0Configuration conf in ConfigurationSet)
 	//     {
 	//         // The order of the configurations in the set doesn't affect the hash code.
 	//         hashCode += conf.GetHashCode();
 	//     }
 	//      */
-	//     //ConfigurationSet.ToList().ForEach(conf => hashCode += conf.GetHashCode());
+	//     //ConfigurationSet.ToList().For Each(conf => hashCode += conf.GetHashCode());
 	//     //return ConfigurationSet.Select(conf => conf.GetHashCode()).Sum();
 
 	//     // "unchecked" suppresses the OverflowException.  Sum() always executes within a checked block, and may throw the exception.
@@ -561,7 +561,7 @@ export class LR0Parser extends ParserBase {
 		/*
 	    bool shiftResultFound = false;
 
-	    foreach (LR0Configuration c in S.ConfigurationSet)
+	    for each (LR0Configuration c in S.ConfigurationSet)
 	    {
 	        Symbol symbol;
 
@@ -602,7 +602,7 @@ export class LR0Parser extends ParserBase {
 	        StringBuilder sb = new StringBuilder();
 	        string separator = string.Empty;
 
-	        foreach (Symbol transitionSymbol in S.Transitions.Keys)
+	        for each (Symbol transitionSymbol in S.Transitions.Keys)
 	        {
 	            sb.Append(separator);
 	            sb.Append(transitionSymbol.ToString());
@@ -681,6 +681,7 @@ export class LR0Parser extends ParserBase {
 			const action = callerResult.action;
 			const reduceProductionNum = callerResult.reduceProductionNum;
 			let unstrippedProduction: Production;
+			let numNonLambdaSymbols: number;
 
 			switch (action) {
 				case ShiftReduceAction.Accept:
@@ -763,11 +764,15 @@ export class LR0Parser extends ParserBase {
 					);
 
 					// Pop the production's non-Lambda symbols off of the parse stack.
-					unstrippedProduction
+					numNonLambdaSymbols = unstrippedProduction
 						.RHSWithNoSemanticActions()
-						.filter((symbol: Symbol) => symbol !== Symbol.Lambda)
+						.filter((s: Symbol) => s !== Symbol.Lambda).length;
+
+					for (let i = 0; i < numNonLambdaSymbols; i++) {
 						// eslint-disable-next-line @typescript-eslint/no-unused-vars
-						.forEach((symbol: Symbol) => parseStack.pop());
+						// .for Each((symbol: Symbol) =>
+						parseStack.pop();
+					}
 
 					// const SPrime = parseStack.peek();
 

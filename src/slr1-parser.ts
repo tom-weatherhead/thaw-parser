@@ -108,7 +108,7 @@ export class SLR1Parser extends LR0Parser {
 		/*
 		bool shiftOrAcceptResultFound = false;
 
-		foreach (LR0Configuration c in S.ConfigurationSet) {
+		for each (LR0Configuration c in S.ConfigurationSet) {
 			Symbol symbol;
 
 			if (c.FindSymbolAfterDot(out symbol) && symbol == tokenAsSymbol) {
@@ -151,7 +151,7 @@ export class SLR1Parser extends LR0Parser {
 		// 	StringBuilder sb = new StringBuilder();
 		// 	string separator = string.Empty;
 
-		// 	foreach (Symbol transitionSymbol in S.Transitions.Keys) {
+		// 	for each (Symbol transitionSymbol in S.Transitions.Keys) {
 		// 		sb.Append(separator);
 		// 		sb.Append(transitionSymbol.ToString());
 		// 		separator = ", ";

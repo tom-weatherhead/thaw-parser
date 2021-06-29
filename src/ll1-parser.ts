@@ -52,7 +52,8 @@ export class LL1Parser extends ParserBase {
 	}
 
 	private fillPredict(): void {
-		this.grammar.productions.forEach((p: Production) => {
+		// this.grammar.productions.for Each((p: Production) => {
+		for (const p of this.grammar.productions) {
 			let s = this.computeFirst(p.RHSWithNoSemanticActions());
 
 			if (s.contains(Symbol.Lambda)) {
@@ -61,11 +62,12 @@ export class LL1Parser extends ParserBase {
 			}
 
 			this.predict.set(p, s);
-		});
+		} // );
 	}
 
 	private fillParseTable(): void {
-		this.grammar.productions.forEach((p: Production) => {
+		// this.grammar.productions.for Each((p: Production) => {
+		for (const p of this.grammar.productions) {
 			// const predictIterator = (
 			// 	this.predict.get(p) as Set<number>
 			// ).getIterator();
@@ -98,7 +100,7 @@ export class LL1Parser extends ParserBase {
 				// console.log(`Adding to parseTable: Key: ${sp}; value: ${p.lhs} => ${p.rhs}`);
 				this.parseTable.set(sp, p);
 			}
-		});
+		} // );
 	}
 
 	// Adapted from Fischer and LeBlanc, page 121 (function lldriver())

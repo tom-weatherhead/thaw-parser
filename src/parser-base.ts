@@ -108,7 +108,7 @@ export abstract class ParserBase implements IParser {
 	// protected List<Symbol> ExtractSymbols(List<object> list) {
 	// 	var result = new List<Symbol>();
 
-	// 	list.Where(o => o is Symbol).ToList().ForEach(o => result.Add((Symbol)o));
+	// 	list.Where(o => o is Symbol).ToList().For Each(o => result.Add((Symbol)o));
 
 	// 	return result;
 	// }
@@ -116,7 +116,8 @@ export abstract class ParserBase implements IParser {
 	// Adapted from Fischer and LeBlanc, page 105
 
 	protected fillFirstSet(): void {
-		this.grammar.nonTerminals.forEach((A: Symbol) => {
+		// this.grammar.nonTerminals.for Each((A: Symbol) => {
+		for (const A of this.grammar.nonTerminals) {
 			const s = new Set<Symbol>();
 
 			if (this.derivesLambda.contains(A)) {
@@ -124,16 +125,16 @@ export abstract class ParserBase implements IParser {
 			}
 
 			this.firstSet.set(A, s);
-		});
+		} // );
 
-		// this.grammar.terminals.forEach((a: Symbol) => {
+		// this.grammar.terminals.for Each((a: Symbol) => {
 		for (const a of this.grammar.terminals) {
 			const s = new Set<Symbol>();
 
 			s.add(a);
 			this.firstSet.set(a, s);
 
-			// this.grammar.nonTerminals.forEach((A: Symbol) => {
+			// this.grammar.nonTerminals.for Each((A: Symbol) => {
 			for (const A of this.grammar.nonTerminals) {
 				// If there exists a production A -> a beta
 				const value = this.firstSet.get(A);
@@ -153,7 +154,8 @@ export abstract class ParserBase implements IParser {
 		while (changes) {
 			changes = false;
 
-			this.grammar.productions.forEach((p: Production) => {
+			// this.grammar.productions.for Each((p: Production) => {
+			for (const p of this.grammar.productions) {
 				const s = this.computeFirst(p.RHSWithNoSemanticActions());
 				const firstSetOfPLHSRaw = this.firstSet.get(p.lhs);
 
@@ -171,7 +173,7 @@ export abstract class ParserBase implements IParser {
 					firstSetOfPLHS.unionInPlace(s);
 					changes = true;
 				}
-			});
+			} // );
 		}
 	}
 
@@ -185,7 +187,7 @@ export abstract class ParserBase implements IParser {
 	// Adapted from Fischer and LeBlanc, page 106
 
 	protected fillFollowSet(): void {
-		// this.grammar.nonTerminals.forEach((A: Symbol) => {
+		// this.grammar.nonTerminals.for Each((A: Symbol) => {
 		for (const A of this.grammar.nonTerminals) {
 			this.followSet.set(A, new Set<Symbol>());
 		}
@@ -204,7 +206,8 @@ export abstract class ParserBase implements IParser {
 
 			// For each production and each occurrence of a nonterminal in its right-hand side.
 
-			this.grammar.productions.forEach((p: Production) => {
+			// this.grammar.productions.for Each((p: Production) => {
+			for (const p of this.grammar.productions) {
 				const rhs = p.RHSWithNoSemanticActions();
 
 				// for (int i = 0; i < p.rhs.Count; ++i)
@@ -258,7 +261,7 @@ export abstract class ParserBase implements IParser {
 						this.followSet.set(B, followSetOfB);
 					}
 				}
-			});
+			} // );
 		}
 	}
 
@@ -280,7 +283,8 @@ export abstract class ParserBase implements IParser {
 		do {
 			changes = false;
 
-			this.grammar.productions.forEach((p: Production) => {
+			// this.grammar.productions.for Each((p: Production) => {
+			for (const p of this.grammar.productions) {
 				if (!this.derivesLambda.contains(p.lhs)) {
 					const rhsDerivesLambda = p
 						.RHSWithNoSemanticActions()
@@ -293,7 +297,7 @@ export abstract class ParserBase implements IParser {
 						changes = true;
 					}
 				}
-			});
+			} // );
 		} while (changes);
 	}
 }

@@ -21,22 +21,22 @@
 import { Stack } from 'thaw-common-utilities.ts';
 
 import {
-	createTokenizer,
-	LexicalAnalyzerSelector,
+	// createTokenizer,
+	// LexicalAnalyzerSelector,
 	LexicalState,
 	Token
 } from 'thaw-lexical-analyzer';
 
 import {
-	createGrammar,
+	// createGrammar,
 	GrammarBase,
 	GrammarException,
-	LanguageSelector,
+	// LanguageSelector,
 	Production,
 	Symbol
 } from 'thaw-grammar';
 
-import { createParser, ParserSelector } from '../..';
+// import { createParser, ParserSelector } from '../..';
 
 /* eslint-disable @typescript-eslint/ban-types */
 
@@ -135,6 +135,7 @@ export class Grammar3 extends GrammarBase {
 	/* eslint-disable @typescript-eslint/no-unused-vars */
 
 	public executeSemanticAction(
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		semanticStack: Stack<any>,
 		action: string
 	): void {
@@ -170,7 +171,8 @@ export class Grammar3 extends GrammarBase {
 	}
 
 	public pushTokenOntoSemanticStack(
-		semanticStack: Stack<object>,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		semanticStack: Stack<any>,
 		tokenAsSymbol: Symbol,
 		token: Token
 	): void {

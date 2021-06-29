@@ -2,22 +2,20 @@
 
 'use strict';
 
-import { Stack } from 'thaw-common-utilities.ts';
-
 import {
 	createTokenizer,
-	LexicalAnalyzerSelector,
-	LexicalState,
-	Token
+	LexicalAnalyzerSelector
+	// LexicalState,
+	// Token
 } from 'thaw-lexical-analyzer';
 
 import {
 	// createGrammar,
-	GrammarBase,
-	GrammarException,
-	LanguageSelector,
-	Production,
-	Symbol
+	// GrammarBase,
+	// GrammarException,
+	LanguageSelector // ,
+	// Production,
+	// Symbol
 } from 'thaw-grammar';
 
 import { createParser, ParserSelector } from '../..';
