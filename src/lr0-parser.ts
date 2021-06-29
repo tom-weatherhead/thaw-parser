@@ -97,7 +97,7 @@ export class LR0Configuration implements IEqualityComparable {
 	//     return true;
 	// }
 
-	public strictEquals(other: unknown): boolean {
+	public equals(other: unknown): boolean {
 		const otherConfig = other as LR0Configuration;
 
 		if (
@@ -540,16 +540,14 @@ export class LR0Parser extends ParserBase {
 				const productionToCompare =
 					this.grammar.productions[i].StripOutSemanticActions();
 
-				if (matchedProduction.strictEquals(productionToCompare)) {
+				if (matchedProduction.equals(productionToCompare)) {
 					if (reduceOrAcceptResultFound && reduceProductionNum != i) {
 						throw new Error(
 							'GetAction() : Multiple actions found; grammar is not LR(0).'
 						); // ReduceReduceConflictException
 					}
 
-					result = matchedProduction.strictEquals(
-						this.startingProduction
-					)
+					result = matchedProduction.equals(this.startingProduction)
 						? ShiftReduceAction.Accept
 						: ShiftReduceAction.Reduce;
 
