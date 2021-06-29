@@ -46,6 +46,8 @@ export class SLR1Parser extends LR0Parser {
 		for (const c of S.ConfigurationSet) {
 			const matchedProduction = c.ConvertToProductionIfAllMatched();
 
+			console.log(`matchedProduction is ${matchedProduction}`);
+
 			if (typeof matchedProduction === 'undefined') {
 				continue;
 			}
@@ -56,6 +58,10 @@ export class SLR1Parser extends LR0Parser {
 				const productionToCompare =
 					this.grammar.productions[i].StripOutSemanticActions();
 
+				console.log(
+					`Comparing ${matchedProduction} to ${productionToCompare}...`
+				);
+
 				if (matchedProduction.strictEquals(productionToCompare)) {
 					// Is tokenAsSymbol in Follow(productionToCompare.lhs) ?
 
@@ -63,7 +69,9 @@ export class SLR1Parser extends LR0Parser {
 						const value = this.followSet.get(matchedProduction.lhs);
 
 						if (typeof value === 'undefined') {
-							throw new Error('');
+							throw new Error(
+								'matchedProduction.lhs has no followSet'
+							);
 						}
 
 						currentFollowSet = value;
@@ -84,7 +92,7 @@ export class SLR1Parser extends LR0Parser {
 							// tokenAsSymbol, grammar.Productions[reduceProductionNum].ToString(), grammar.Productions[i].ToString())); // The .ToString() here may be unnecessary.
 
 							throw new Error(
-								`GetActionSLR1() : Multiple actions found; grammar is not SLR(1).  Symbol ${tokenAsSymbol}, productions ${this.grammar.productions[reduceProductionNum]} and ${this.grammar.productions[i]}.`
+								`GetActionSLR1() : Multiple actions found; grammar is not SLR(1). Symbol ${tokenAsSymbol}, productions ${this.grammar.productions[reduceProductionNum]} and ${this.grammar.productions[i]}.`
 							);
 						}
 

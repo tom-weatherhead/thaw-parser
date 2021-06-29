@@ -1,8 +1,5 @@
 // tom-weatherhead/thaw-parser/src/parser-base.ts
 
-// TODO 2021-06-28: Examine places where 'as' is used; check for safety.
-// E.g. result.unionInPlace(firstSetForAlpha0 as Set<Symbol>);
-
 import { Set } from 'thaw-common-utilities.ts';
 
 import { Token } from 'thaw-lexical-analyzer';

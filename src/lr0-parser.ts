@@ -686,6 +686,8 @@ export class LR0Parser extends ParserBase {
 
 			switch (action) {
 				case ShiftReduceAction.Accept:
+					console.log('Accept.');
+
 					if (!parse) {
 						return undefined;
 					}
@@ -721,6 +723,7 @@ export class LR0Parser extends ParserBase {
 
 				case ShiftReduceAction.Shift:
 					//Console.WriteLine("Shift: tokenAsSymbol is {0}.", tokenAsSymbol);   // Temporary debug code.
+					console.log(`Shift: tokenAsSymbol is ${tokenAsSymbol}.`);
 					parseStack.push(this.go_to(S, tokenAsSymbol));
 
 					if (parse) {
@@ -757,6 +760,9 @@ export class LR0Parser extends ParserBase {
 						this.grammar.productions[reduceProductionNum];
 
 					//Console.WriteLine("Reduce: Production is {0}.", unstrippedProduction);// Temporary debug code.
+					console.log(
+						`Reduce: Production is ${unstrippedProduction}.`
+					);
 
 					// Pop the production's non-Lambda symbols off of the parse stack.
 					unstrippedProduction
@@ -773,11 +779,13 @@ export class LR0Parser extends ParserBase {
 
 					if (parse && unstrippedProduction.rhs.length > 0) {
 						// Grammar requirement: Every semantic action string appears at the end of a production.
-						const semanticAction = unstrippedProduction.rhs[
-							unstrippedProduction.rhs.length - 1
-						] as string;
+						const semanticAction =
+							unstrippedProduction.rhs[
+								unstrippedProduction.rhs.length - 1
+							]; // as string;
 
-						if (typeof semanticAction !== 'undefined') {
+						// if (typeof semanticAction !== 'undefined') {
+						if (typeof semanticAction === 'string') {
 							this.grammar.executeSemanticAction(
 								semanticStack,
 								semanticAction
@@ -790,7 +798,7 @@ export class LR0Parser extends ParserBase {
 				default:
 					// I.e. Error
 					throw new Error(
-						`LR0Parser.shift_reduce_driver() : Syntax error at symbol ${tokenAsSymbol}, line ${tokenList[tokenNum].line}, column ${tokenList[tokenNum].column}.`
+						`LR0Parser.shift_reduce_driver() : Syntax error at symbol ${Symbol[tokenAsSymbol]} value ${tokenList[tokenNum].tokenValue}, line ${tokenList[tokenNum].line}, column ${tokenList[tokenNum].column}.`
 					); // SyntaxException
 			}
 		}
