@@ -685,7 +685,7 @@ export class LR0Parser extends ParserBase {
 
 			switch (action) {
 				case ShiftReduceAction.Accept:
-					console.log('Accept.');
+					// console.log('Accept.');
 
 					if (!parse) {
 						return undefined;
@@ -722,7 +722,7 @@ export class LR0Parser extends ParserBase {
 
 				case ShiftReduceAction.Shift:
 					//Console.WriteLine("Shift: tokenAsSymbol is {0}.", tokenAsSymbol);   // Temporary debug code.
-					console.log(`Shift: tokenAsSymbol is ${tokenAsSymbol}.`);
+					// console.log(`Shift: tokenAsSymbol is ${tokenAsSymbol}.`);
 					parseStack.push(this.go_to(S, tokenAsSymbol));
 
 					if (parse) {
@@ -758,10 +758,9 @@ export class LR0Parser extends ParserBase {
 					unstrippedProduction =
 						this.grammar.productions[reduceProductionNum];
 
-					//Console.WriteLine("Reduce: Production is {0}.", unstrippedProduction);// Temporary debug code.
-					console.log(
-						`Reduce: Production is ${unstrippedProduction}.`
-					);
+					// console.log(
+					// 	`Reduce: Production is ${unstrippedProduction}.`
+					// );
 
 					// Pop the production's non-Lambda symbols off of the parse stack.
 					numNonLambdaSymbols = unstrippedProduction

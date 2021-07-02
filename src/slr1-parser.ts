@@ -46,7 +46,7 @@ export class SLR1Parser extends LR0Parser {
 		for (const c of S.ConfigurationSet) {
 			const matchedProduction = c.ConvertToProductionIfAllMatched();
 
-			console.log(`matchedProduction is ${matchedProduction}`);
+			// console.log(`matchedProduction is ${matchedProduction}`);
 
 			if (typeof matchedProduction === 'undefined') {
 				continue;
@@ -58,9 +58,9 @@ export class SLR1Parser extends LR0Parser {
 				const productionToCompare =
 					this.grammar.productions[i].StripOutSemanticActions();
 
-				console.log(
-					`Comparing ${matchedProduction} to ${productionToCompare}...`
-				);
+				// console.log(
+				// 	`Comparing ${matchedProduction} to ${productionToCompare}...`
+				// );
 
 				if (matchedProduction.equals(productionToCompare)) {
 					// Is tokenAsSymbol in Follow(productionToCompare.lhs) ?

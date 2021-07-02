@@ -55,6 +55,9 @@ test('LL(1) Prolog recognize test', () => {
 
 	f('unique_list([X|L]) :- \\+ member(X, L), unique_list(L).');
 
+	f('factorial(0,1).');
+	f('factorial(N, F) :- gt(N, 0), sub(N, 1, N1), factorial(N1, F1), mult(N, F1, F).');
+
 	expect(() => f('pred1(A.')).toThrow(ParserException);
 });
 
@@ -304,4 +307,24 @@ test('LL(1) Prolog permutation test 1', () => {
 		],
 		true
 	);
+});
+
+test('LL(1) Prolog factorial test 1', () => {
+	// sub(N, 1, N1) means: N1 = N - 1
+	prologTest([
+		['factorial(0, 1).', PrologGlobalInfo.ClauseAdded],
+		[
+			// 'factorial(N, F) :- gt(N, 0), N1 is sub(N, 1), factorial(N1, F1), F is mult(N, F1).',
+			'factorial(N, F) :- gt(N, 0), sub(N, 1, N1), factorial(N1, F1), mult(N, F1, F).',
+			PrologGlobalInfo.ClauseAdded
+		],
+		['?- gt(1, 0).', [PrologGlobalInfo.Satisfied]],
+		['?- sub(1, 1, 0).', [PrologGlobalInfo.Satisfied]],
+		['?- sub(8, 5, 3).', [PrologGlobalInfo.Satisfied]],
+		['?- factorial(1, 1).', [PrologGlobalInfo.Satisfied]],
+		['?- factorial(2, 2).', [PrologGlobalInfo.Satisfied]],
+		['?- factorial(3, 6).', [PrologGlobalInfo.Satisfied]],
+		['?- factorial(4, 24).', [PrologGlobalInfo.Satisfied]],
+		['?- factorial(5, 120).', [PrologGlobalInfo.Satisfied]]
+	]);
 });
