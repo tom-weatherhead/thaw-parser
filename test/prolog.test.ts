@@ -155,7 +155,13 @@ test('LL(1) Prolog addition test', () => {
 });
 
 test('LL(1) Prolog subtraction test', () => {
-	prologTest([['?- sub(8, 5, N).', success('N -> 3')]]);
+	prologTest([
+		['?- sub(8, 5, 3).', success()],
+		['?- sub(8, 5, 77).', PrologGlobalInfo.NotSatisfied + '\n'],
+		['?- sub(N, 3, 5).', success('N -> 8')],
+		['?- sub(8, N, 3).', success('N -> 5')],
+		['?- sub(8, 5, N).', success('N -> 3')]
+	]);
 });
 
 test('LL(1) Prolog list reverse test', () => {
