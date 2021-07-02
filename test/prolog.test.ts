@@ -56,10 +56,21 @@ test('LL(1) Prolog recognize test', () => {
 	f('unique_list([X|L]) :- \\+ member(X, L), unique_list(L).');
 
 	f('factorial(0,1).');
-	f('factorial(N, F) :- gt(N, 0), sub(N, 1, N1), factorial(N1, F1), mult(N, F1, F).');
+	f(
+		'factorial(N, F) :- gt(N, 0), sub(N, 1, N1), factorial(N1, F1), mult(N, F1, F).'
+	);
 
 	expect(() => f('pred1(A.')).toThrow(ParserException);
 });
+
+function success(substitutionAsString = ''): string {
+	const satisfying =
+		substitutionAsString !== ''
+			? `Satisfying substitution is: [${substitutionAsString}]\n`
+			: '';
+
+	return `${satisfying}${PrologGlobalInfo.Satisfied}\n`;
+}
 
 function prologTest(
 	data: Array<[input: string, expectedResult: string | string[]]>,
@@ -131,6 +142,20 @@ test('LL(1) Prolog math test 3 : multiplication', () => {
 			]
 		]
 	]);
+});
+
+test('LL(1) Prolog addition test', () => {
+	prologTest([
+		['?- add(1, 2, 3).', success()],
+		['?- add(1, 1, 3).', PrologGlobalInfo.NotSatisfied + '\n'],
+		['?- add(N, 3, 5).', success('N -> 2')],
+		['?- add(2, N, 5).', success('N -> 3')],
+		['?- add(2, 3, N).', success('N -> 5')]
+	]);
+});
+
+test('LL(1) Prolog subtraction test', () => {
+	prologTest([['?- sub(8, 5, N).', success('N -> 3')]]);
 });
 
 test('LL(1) Prolog list reverse test', () => {
