@@ -74,59 +74,29 @@ export class Grammar3 extends GrammarBase {
 
 		// See Fischer and LeBlanc, page 158
 		this.productions.push(
-			new Production(
-				Symbol.nonterminalStart,
-				[Symbol.nonterminalExpression, Symbol.terminalEOF],
-				1
-			)
+			new Production(Symbol.nonterminalStart, [Symbol.nonterminalExpression, Symbol.terminalEOF], 1)
 		);
 		this.productions.push(
 			new Production(
 				Symbol.nonterminalExpression,
-				[
-					Symbol.nonterminalExpression,
-					Symbol.terminalPlus,
-					Symbol.nonterminalTerm
-				],
+				[Symbol.nonterminalExpression, Symbol.terminalPlus, Symbol.nonterminalTerm],
 				2
 			)
 		);
-		this.productions.push(
-			new Production(
-				Symbol.nonterminalExpression,
-				[Symbol.nonterminalTerm],
-				3
-			)
-		);
+		this.productions.push(new Production(Symbol.nonterminalExpression, [Symbol.nonterminalTerm], 3));
 		this.productions.push(
 			new Production(
 				Symbol.nonterminalTerm,
-				[
-					Symbol.nonterminalTerm,
-					Symbol.terminalMultiply,
-					Symbol.nonterminalPrimary
-				],
+				[Symbol.nonterminalTerm, Symbol.terminalMultiply, Symbol.nonterminalPrimary],
 				4
 			)
 		);
-		this.productions.push(
-			new Production(
-				Symbol.nonterminalTerm,
-				[Symbol.nonterminalPrimary],
-				5
-			)
-		);
-		this.productions.push(
-			new Production(Symbol.nonterminalPrimary, [Symbol.terminalID], 6)
-		);
+		this.productions.push(new Production(Symbol.nonterminalTerm, [Symbol.nonterminalPrimary], 5));
+		this.productions.push(new Production(Symbol.nonterminalPrimary, [Symbol.terminalID], 6));
 		this.productions.push(
 			new Production(
 				Symbol.nonterminalPrimary,
-				[
-					Symbol.terminalLeftBracket,
-					Symbol.nonterminalExpression,
-					Symbol.terminalRightBracket
-				],
+				[Symbol.terminalLeftBracket, Symbol.nonterminalExpression, Symbol.terminalRightBracket],
 				7
 			)
 		);
@@ -159,11 +129,9 @@ export class Grammar3 extends GrammarBase {
 
 			default:
 				throw new GrammarException(
-					`Grammar3: No grammar symbol matches token ${
-						token.tokenType
-					} ${LexicalState[token.tokenType]} (value '${
-						token.tokenValue
-					}')`,
+					`Grammar3: No grammar symbol matches token ${token.tokenType} ${
+						LexicalState[token.tokenType]
+					} (value '${token.tokenValue}')`,
 					token.line,
 					token.column
 				);

@@ -8,13 +8,7 @@ import {
 
 import { Token } from 'thaw-lexical-analyzer';
 
-import {
-	ArgumentException,
-	IGrammar,
-	ParserSelector,
-	Production,
-	Symbol
-} from 'thaw-grammar';
+import { ArgumentException, IGrammar, ParserSelector, Production, Symbol } from 'thaw-grammar';
 
 import { ParserException } from './exceptions/parser-exception';
 import { ParserBase } from './parser-base';
@@ -29,9 +23,7 @@ export class LL1Parser extends ParserBase {
 		// error TS2339: Property 'includes' does not exist on type 'number[]'.
 		// if(!g.selectorsOfCompatibleParsers.includes(ParserSelector.LL1)) {
 		// if (g.selectorsOfCompatibleParsers.indexOf(ParserSelector.LL1) < 0) {
-		if (
-			!arrayIncludes(g.selectorsOfCompatibleParsers, ParserSelector.LL1)
-		) {
+		if (!arrayIncludes(g.selectorsOfCompatibleParsers, ParserSelector.LL1)) {
 			throw new ArgumentException(
 				`LL1Parser constructor: Error: The provided grammar for ${g.languageName} cannot be parsed by an LL(1) parser`,
 				'g'
@@ -74,9 +66,7 @@ export class LL1Parser extends ParserBase {
 			const pValue = this.predict.get(p);
 
 			if (typeof pValue === 'undefined') {
-				throw new Error(
-					'LL1Parser.fillParseTable() : pValue is undefined'
-				);
+				throw new Error('LL1Parser.fillParseTable() : pValue is undefined');
 			}
 
 			// while (!predictIterator.isDone()) {
@@ -88,11 +78,9 @@ export class LL1Parser extends ParserBase {
 
 				if (pParseTableSPRaw !== undefined) {
 					throw new ParserException(
-						`Error in FillParseTable() : Table entry not unique; p.lhs = ${
-							p.lhs
-						} ${Symbol[p.lhs]}; t = ${t} ${
-							Symbol[t]
-						}; p1 = ${pParseTableSPRaw.toString()}; p2 = ${p.toString()}`
+						`Error in FillParseTable() : Table entry not unique; p.lhs = ${p.lhs} ${
+							Symbol[p.lhs]
+						}; t = ${t} ${Symbol[t]}; p1 = ${pParseTableSPRaw.toString()}; p2 = ${p.toString()}`
 					);
 				}
 
@@ -152,10 +140,7 @@ export class LL1Parser extends ParserBase {
 				// }
 
 				// if (this.grammar.nonTerminals.contains(symbolX) && this.parseTable.ContainsKey(sp)) {
-				if (
-					this.grammar.nonTerminals.indexOf(symbolX) >= 0 &&
-					parseTableGetSP !== undefined
-				) {
+				if (this.grammar.nonTerminals.indexOf(symbolX) >= 0 && parseTableGetSP !== undefined) {
 					// const p = this.parseTable[sp];
 					const p = parseTableGetSP;
 
@@ -185,33 +170,25 @@ export class LL1Parser extends ParserBase {
 						++tokenNum;
 
 						if (tokenNum >= tokenList.length) {
-							throw new ParserException(
-								'End of token list; parse stack is not empty'
-							);
+							throw new ParserException('End of token list; parse stack is not empty');
 						}
 
-						tokenAsSymbol = this.grammar.tokenToSymbol(
-							tokenList[tokenNum]
-						);
+						tokenAsSymbol = this.grammar.tokenToSymbol(tokenList[tokenNum]);
 					}
 				} else {
 					throw new ParserException(
-						`Failed to match symbol ${X} ${
-							Symbol[X]
-						} (type ${typeof X}) to symbol ${
+						`Failed to match symbol ${X} ${Symbol[X]} (type ${typeof X}) to symbol ${
 							Symbol[tokenAsSymbol]
-						} (${tokenAsSymbol}) (token ${
-							tokenList[tokenNum].tokenType
-						}) value ${tokenList[tokenNum].tokenValue}`,
+						} (${tokenAsSymbol}) (token ${tokenList[tokenNum].tokenType}) value ${
+							tokenList[tokenNum].tokenValue
+						}`,
 						tokenList[tokenNum].line,
 						tokenList[tokenNum].column
 					);
 				}
 			} else {
 				// throw new ParserException("Unrecognized parse stack entry of type " + ((X != null) ? X.GetType().FullName : "null"));
-				throw new ParserException(
-					`Unrecognized parse stack entry '${X}' of type ${typeof X}`
-				);
+				throw new ParserException(`Unrecognized parse stack entry '${X}' of type ${typeof X}`);
 			}
 		}
 
@@ -220,9 +197,7 @@ export class LL1Parser extends ParserBase {
 		}
 
 		if (semanticStack.isEmpty()) {
-			throw new ParserException(
-				'There were no objects on the semantic stack; expected exactly one'
-			);
+			throw new ParserException('There were no objects on the semantic stack; expected exactly one');
 		}
 
 		const result = semanticStack.pop();

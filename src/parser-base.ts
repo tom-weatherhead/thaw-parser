@@ -57,9 +57,9 @@ export abstract class ParserBase implements IParser {
 
 			if (typeof firstSetForAlpha0 === 'undefined') {
 				throw new ParserException(
-					`computeFirst() : firstSet does not contain the key ${
-						Symbol[alpha[0]]
-					} (${alpha[0]}); k is ${k}; alpha is ${alpha}`
+					`computeFirst() : firstSet does not contain the key ${Symbol[alpha[0]]} (${
+						alpha[0]
+					}); k is ${k}; alpha is ${alpha}`
 				);
 			}
 
@@ -139,10 +139,7 @@ export abstract class ParserBase implements IParser {
 				// If there exists a production A -> a beta
 				const value = this.firstSet.get(A);
 
-				if (
-					this.productionExists(A, a) &&
-					typeof value !== 'undefined'
-				) {
+				if (this.productionExists(A, a) && typeof value !== 'undefined') {
 					value.unionInPlace(s);
 					this.firstSet.set(A, value);
 				}
@@ -161,9 +158,7 @@ export abstract class ParserBase implements IParser {
 
 				if (typeof firstSetOfPLHSRaw === 'undefined') {
 					throw new ParserException(
-						`FillFirstSet() : ${Symbol[p.lhs]} (${
-							p.lhs
-						}) is not a key in firstSet`
+						`FillFirstSet() : ${Symbol[p.lhs]} (${p.lhs}) is not a key in firstSet`
 					);
 				}
 
@@ -268,10 +263,7 @@ export abstract class ParserBase implements IParser {
 	private productionExists(A: Symbol, a: Symbol): boolean {
 		return this.grammar.productions.some(
 			(p: Production) =>
-				p.lhs === A &&
-				p.rhs.length > 0 &&
-				typeof p.rhs[0] !== 'string' &&
-				(p.rhs[0] as Symbol) === a
+				p.lhs === A && p.rhs.length > 0 && typeof p.rhs[0] !== 'string' && (p.rhs[0] as Symbol) === a
 		);
 	}
 
@@ -288,9 +280,7 @@ export abstract class ParserBase implements IParser {
 				if (!this.derivesLambda.contains(p.lhs)) {
 					const rhsDerivesLambda = p
 						.RHSWithNoSemanticActions()
-						.every((rhsSymbol: Symbol) =>
-							this.derivesLambda.contains(rhsSymbol)
-						);
+						.every((rhsSymbol: Symbol) => this.derivesLambda.contains(rhsSymbol));
 
 					if (rhsDerivesLambda) {
 						this.derivesLambda.add(p.lhs);

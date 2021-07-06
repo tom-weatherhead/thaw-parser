@@ -23,8 +23,6 @@ export function createParser(ps: ParserSelector, g: IGrammar): IParser {
 		// case ParserSelector.LR1:
 		// case ParserSelector.LALR1:
 		default:
-			throw new ParserException(
-				`createParser() : Unsupported ParserSelector '${ps}'`
-			);
+			throw new ParserException(`createParser() : Unsupported ParserSelector '${ps}'`);
 	}
 }

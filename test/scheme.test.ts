@@ -2,18 +2,9 @@
 
 'use strict';
 
-import {
-	createTokenizer,
-	LexicalAnalyzerSelector
-} from 'thaw-lexical-analyzer';
+import { createTokenizer, LexicalAnalyzerSelector } from 'thaw-lexical-analyzer';
 
-import {
-	createGrammar,
-	IExpression,
-	ISExpression,
-	LanguageSelector,
-	SchemeGlobalInfo
-} from 'thaw-grammar';
+import { createGrammar, IExpression, ISExpression, LanguageSelector, SchemeGlobalInfo } from 'thaw-grammar';
 
 import { createParser, ParserException, ParserSelector } from '..';
 
@@ -48,9 +39,7 @@ test('LL(1) Scheme recognize test', () => {
 	expect(() => f('(* 7 13')).toThrow(ParserException);
 });
 
-function schemeTest(
-	data: Array<[input: string, expectedResult: string | string[]]>
-): void {
+function schemeTest(data: Array<[input: string, expectedResult: string | string[]]>): void {
 	// Arrange
 	const ls = LanguageSelector.Scheme;
 	const schemeGlobalInfo = new SchemeGlobalInfo();
@@ -62,9 +51,7 @@ function schemeTest(
 		// Act
 		const parseResult = parser.parse(tokenizer.tokenize(input));
 		const expr = parseResult as IExpression<ISExpression>;
-		const actualResult = expr
-			.evaluate(schemeGlobalInfo.globalEnvironment, schemeGlobalInfo)
-			.toString();
+		const actualResult = expr.evaluate(schemeGlobalInfo.globalEnvironment, schemeGlobalInfo).toString();
 
 		console.log(`input: ${input}\nactualResult:\n${actualResult}\n\n`);
 

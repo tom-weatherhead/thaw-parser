@@ -27,10 +27,7 @@ export enum ShiftReduceAction {
 /* eslint-disable @typescript-eslint/ban-types */
 export class LR0Configuration implements IEqualityComparable {
 	public static fromProduction(p: Production): LR0Configuration {
-		return new LR0Configuration(p.lhs, [
-			Symbol.Dot,
-			...p.RHSWithNoSemanticActions()
-		]);
+		return new LR0Configuration(p.lhs, [Symbol.Dot, ...p.RHSWithNoSemanticActions()]);
 	}
 
 	public readonly ProductionLHS: Symbol;
@@ -137,9 +134,7 @@ export class LR0Configuration implements IEqualityComparable {
 	// }
 
 	public FindDot(): number {
-		return this.ProductionRHS.findIndex(
-			(symbol: Symbol) => symbol === Symbol.Dot
-		);
+		return this.ProductionRHS.findIndex((symbol: Symbol) => symbol === Symbol.Dot);
 
 		// for (int i = 0; i < ProductionRHS.Count; ++i)
 		// {
@@ -195,15 +190,11 @@ export class LR0Configuration implements IEqualityComparable {
 			throw new Error('LR0Configuration.AdvanceDot() : No dot found.'); // InternalErrorException
 		}
 
-		const newRHS = this.ProductionRHS.filter(
-			(symbol: Symbol) => symbol !== Symbol.Dot
-		);
+		const newRHS = this.ProductionRHS.filter((symbol: Symbol) => symbol !== Symbol.Dot);
 		const newConf = new LR0Configuration(this.ProductionLHS, newRHS);
 
 		if (dotIndex >= this.ProductionRHS.length - 1) {
-			throw new Error(
-				'LR0Configuration.AdvanceDot() : The dot cannot be advanced any further.'
-			); // InternalErrorException
+			throw new Error('LR0Configuration.AdvanceDot() : The dot cannot be advanced any further.'); // InternalErrorException
 		}
 
 		// newConf.ProductionRHS.Insert(dotIndex + 1, Symbol.Dot); // splice
@@ -215,11 +206,7 @@ export class LR0Configuration implements IEqualityComparable {
 	public ConvertToProductionIfAllMatched(): Production | undefined {
 		const dotIndex = this.FindDot();
 
-		if (
-			this.ProductionRHS.length === 2 &&
-			dotIndex === 0 &&
-			this.ProductionRHS[1] === Symbol.Lambda
-		) {
+		if (this.ProductionRHS.length === 2 && dotIndex === 0 && this.ProductionRHS[1] === Symbol.Lambda) {
 			// A necessary hack.
 			return new Production(this.ProductionLHS, [Symbol.Lambda], 0);
 		}
@@ -239,9 +226,7 @@ export class LR0Configuration implements IEqualityComparable {
 
 		return new Production(
 			this.ProductionLHS,
-			this.ProductionRHS.filter(
-				(symbol: string | Symbol) => symbol !== Symbol.Dot
-			)
+			this.ProductionRHS.filter((symbol: string | Symbol) => symbol !== Symbol.Dot)
 		);
 	}
 }
@@ -320,14 +305,11 @@ export class CharacteristicFiniteStateMachine {
 		this.StateList.push(this.ErrorState);
 	}
 
-	public FindStateWithLabel(
-		cs: Set<LR0Configuration>
-	): CFSMState | undefined {
+	public FindStateWithLabel(cs: Set<LR0Configuration>): CFSMState | undefined {
 		// Returns null if no state has the given configuration set.
 		return this.StateList.find(
 			(state: CFSMState) =>
-				cs.isASubsetOf(state.ConfigurationSet) &&
-				state.ConfigurationSet.isASubsetOf(cs)
+				cs.isASubsetOf(state.ConfigurationSet) && state.ConfigurationSet.isASubsetOf(cs)
 		);
 	}
 }
@@ -405,10 +387,7 @@ export class LR0Parser extends ParserBase {
 				// Symbol A;
 				const A = conf1.FindSymbolAfterDot();
 
-				if (
-					typeof A === 'undefined' ||
-					!this.grammar.nonTerminals.includes(A)
-				) {
+				if (typeof A === 'undefined' || !this.grammar.nonTerminals.includes(A)) {
 					continue;
 				}
 
@@ -419,10 +398,7 @@ export class LR0Parser extends ParserBase {
 
 					const addition = LR0Configuration.fromProduction(p);
 
-					if (
-						!sPrime.contains(addition) &&
-						!additions.contains(addition)
-					) {
+					if (!sPrime.contains(addition) && !additions.contains(addition)) {
 						additions.add(addition);
 					}
 				}
@@ -457,9 +433,7 @@ export class LR0Parser extends ParserBase {
 	private compute_s0(): Set<LR0Configuration> {
 		const p = this.grammar.findStartingProduction();
 
-		return this.closure0(
-			new Set<LR0Configuration>([LR0Configuration.fromProduction(p)])
-		);
+		return this.closure0(new Set<LR0Configuration>([LR0Configuration.fromProduction(p)]));
 	}
 
 	// Adapted from Fischer and LeBlanc, page 148.
@@ -537,14 +511,11 @@ export class LR0Parser extends ParserBase {
 			}
 
 			for (let i = 0; i < this.grammar.productions.length; ++i) {
-				const productionToCompare =
-					this.grammar.productions[i].StripOutSemanticActions();
+				const productionToCompare = this.grammar.productions[i].StripOutSemanticActions();
 
 				if (matchedProduction.equals(productionToCompare)) {
 					if (reduceOrAcceptResultFound && reduceProductionNum != i) {
-						throw new Error(
-							'GetAction() : Multiple actions found; grammar is not LR(0).'
-						); // ReduceReduceConflictException
+						throw new Error('GetAction() : Multiple actions found; grammar is not LR(0).'); // ReduceReduceConflictException
 					}
 
 					result = matchedProduction.equals(this.startingProduction)
@@ -572,23 +543,16 @@ export class LR0Parser extends ParserBase {
 	    }
 	     */
 		// let symbol: Symbol;
-		const shiftResultFound = S.ConfigurationSet.toArray().some(
-			(c: LR0Configuration) => {
-				const symbol = c.FindSymbolAfterDot();
+		const shiftResultFound = S.ConfigurationSet.toArray().some((c: LR0Configuration) => {
+			const symbol = c.FindSymbolAfterDot();
 
-				// c.FindSymbolAfterDot(out symbol) && this.grammar.terminals.Contains(symbol));
-				return (
-					typeof symbol !== 'undefined' &&
-					this.grammar.terminals.includes(symbol)
-				);
-			}
-		);
+			// c.FindSymbolAfterDot(out symbol) && this.grammar.terminals.Contains(symbol));
+			return typeof symbol !== 'undefined' && this.grammar.terminals.includes(symbol);
+		});
 
 		if (shiftResultFound) {
 			if (reduceOrAcceptResultFound) {
-				throw new Error(
-					'GetAction() : Multiple actions found; grammar is not LR(0).'
-				); // ShiftReduceConflictException
+				throw new Error('GetAction() : Multiple actions found; grammar is not LR(0).'); // ShiftReduceConflictException
 			}
 
 			result = ShiftReduceAction.Shift;
@@ -741,22 +705,16 @@ export class LR0Parser extends ParserBase {
 						tokenNum = tokenList.length - 1; // Hack.  Even after the last token has been shifted, we still need to reduce.  So stick around.
 					}
 
-					tokenAsSymbol = this.grammar.tokenToSymbol(
-						tokenList[tokenNum]
-					);
+					tokenAsSymbol = this.grammar.tokenToSymbol(tokenList[tokenNum]);
 
 					break;
 
 				case ShiftReduceAction.Reduce:
-					if (
-						reduceProductionNum < 0 ||
-						reduceProductionNum >= this.grammar.productions.length
-					) {
+					if (reduceProductionNum < 0 || reduceProductionNum >= this.grammar.productions.length) {
 						throw new Error('Reduce: Invalid production number'); // InternalErrorException
 					}
 
-					unstrippedProduction =
-						this.grammar.productions[reduceProductionNum];
+					unstrippedProduction = this.grammar.productions[reduceProductionNum];
 
 					// console.log(
 					// 	`Reduce: Production is ${unstrippedProduction}.`
@@ -775,23 +733,15 @@ export class LR0Parser extends ParserBase {
 
 					// const SPrime = parseStack.peek();
 
-					parseStack.push(
-						this.go_to(parseStack.peek(), unstrippedProduction.lhs)
-					);
+					parseStack.push(this.go_to(parseStack.peek(), unstrippedProduction.lhs));
 
 					if (parse && unstrippedProduction.rhs.length > 0) {
 						// Grammar requirement: Every semantic action string appears at the end of a production.
-						const semanticAction =
-							unstrippedProduction.rhs[
-								unstrippedProduction.rhs.length - 1
-							]; // as string;
+						const semanticAction = unstrippedProduction.rhs[unstrippedProduction.rhs.length - 1]; // as string;
 
 						// if (typeof semanticAction !== 'undefined') {
 						if (typeof semanticAction === 'string') {
-							this.grammar.executeSemanticAction(
-								semanticStack,
-								semanticAction
-							);
+							this.grammar.executeSemanticAction(semanticStack, semanticAction);
 						}
 					}
 

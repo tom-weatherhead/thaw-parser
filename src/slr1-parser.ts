@@ -7,12 +7,7 @@ import { Set } from 'thaw-common-utilities.ts';
 
 import { IGrammar, Symbol } from 'thaw-grammar';
 
-import {
-	CFSMState,
-	LR0Configuration,
-	LR0Parser,
-	ShiftReduceAction
-} from './lr0-parser';
+import { CFSMState, LR0Configuration, LR0Parser, ShiftReduceAction } from './lr0-parser';
 
 // namespace Inference.Parser
 // {
@@ -55,8 +50,7 @@ export class SLR1Parser extends LR0Parser {
 			let currentFollowSet: Set<Symbol> | undefined;
 
 			for (let i = 0; i < this.grammar.productions.length; ++i) {
-				const productionToCompare =
-					this.grammar.productions[i].StripOutSemanticActions();
+				const productionToCompare = this.grammar.productions[i].StripOutSemanticActions();
 
 				// console.log(
 				// 	`Comparing ${matchedProduction} to ${productionToCompare}...`
@@ -69,18 +63,13 @@ export class SLR1Parser extends LR0Parser {
 						const value = this.followSet.get(matchedProduction.lhs);
 
 						if (typeof value === 'undefined') {
-							throw new Error(
-								'matchedProduction.lhs has no followSet'
-							);
+							throw new Error('matchedProduction.lhs has no followSet');
 						}
 
 						currentFollowSet = value;
 					}
 
-					if (
-						typeof currentFollowSet !== 'undefined' &&
-						currentFollowSet.contains(tokenAsSymbol)
-					) {
+					if (typeof currentFollowSet !== 'undefined' && currentFollowSet.contains(tokenAsSymbol)) {
 						if (reduceResultFound && reduceProductionNum !== i) {
 							//throw new ReduceReduceConflictException("GetActionSLR1() : Multiple actions found; grammar is not SLR(1).");
 
@@ -118,15 +107,11 @@ export class SLR1Parser extends LR0Parser {
 		 */
 
 		// Symbol symbol;
-		const shiftOrAcceptResultFound = S.ConfigurationSet.toArray().some(
-			(c: LR0Configuration) => {
-				const symbol = c.FindSymbolAfterDot();
+		const shiftOrAcceptResultFound = S.ConfigurationSet.toArray().some((c: LR0Configuration) => {
+			const symbol = c.FindSymbolAfterDot();
 
-				return (
-					typeof symbol !== 'undefined' && symbol === tokenAsSymbol
-				);
-			}
-		);
+			return typeof symbol !== 'undefined' && symbol === tokenAsSymbol;
+		});
 
 		if (shiftOrAcceptResultFound) {
 			if (reduceResultFound) {
@@ -140,9 +125,7 @@ export class SLR1Parser extends LR0Parser {
 			}
 
 			result =
-				tokenAsSymbol === Symbol.terminalEOF
-					? ShiftReduceAction.Accept
-					: ShiftReduceAction.Shift;
+				tokenAsSymbol === Symbol.terminalEOF ? ShiftReduceAction.Accept : ShiftReduceAction.Shift;
 		}
 
 		// Test:
