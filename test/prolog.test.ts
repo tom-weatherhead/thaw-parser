@@ -51,6 +51,9 @@ test('LL(1) Prolog recognize test', () => {
 	f('factorial(0,1).');
 	f('factorial(N, F) :- gt(N, 0), sub(N, 1, N1), factorial(N1, F1), mult(N, F1, F).');
 
+	// f('G(X) :- H(X), !, I(X).');
+	f('g(X) :- h(X), !, i(X).');
+
 	expect(() => f('pred1(A.')).toThrow(ParserException);
 });
 
@@ -323,5 +326,35 @@ test('LL(1) Prolog not test', () => {
 		['bar(7).', PrologGlobalInfo.ClauseAdded],
 		['?- foo(7).', [PrologGlobalInfo.NotSatisfied]],
 		['?- foo(13).', [PrologGlobalInfo.Satisfied]]
+	]);
+});
+
+test('LL(1) Prolog basic cut test', () => {
+	// C# version of this test: 2014/03/08
+
+	// Assert.AreEqual(clauseAdded, globalInfo.ProcessInputString("G(X) :- H(X), !, I(X)."));
+	// Assert.AreEqual(clauseAdded, globalInfo.ProcessInputString("G(20)."));
+	// Assert.AreEqual(clauseAdded, globalInfo.ProcessInputString("H(7)."));
+	// Assert.AreEqual(clauseAdded, globalInfo.ProcessInputString("H(13)."));
+	// Assert.AreEqual(clauseAdded, globalInfo.ProcessInputString("I(13)."));
+
+	// Assert.AreEqual(notSatisfied, globalInfo.ProcessInputString("?- G(X)."));
+
+	// Assert.AreEqual(notSatisfied, globalInfo.ProcessInputString("?- G(_).")); // Before 2014/03/13 : This assert fails; the query is satisfied.
+
+	// My guess is that G(_) unifies with G(X) via the substitution X = _
+	// Then it satisfies G(_) via the rule by satisfying H(_) and I(_) via H(7) and I(13).
+	// This illustrates a potential hazard relating to the use of non-binding variables.
+	// Does real Prolog suffer from this same hazard?
+	// 2014/03/13 : Fixed: See PrologVariable.Unify(); we no longer create bindings such as { X = _ }
+
+	prologTest([
+		['g(X) :- h(X), !, i(X).', PrologGlobalInfo.ClauseAdded],
+		['g(20).', PrologGlobalInfo.ClauseAdded],
+		['h(7).', PrologGlobalInfo.ClauseAdded],
+		['h(13).', PrologGlobalInfo.ClauseAdded],
+		['i(13).', PrologGlobalInfo.ClauseAdded],
+		['?- g(X).', [PrologGlobalInfo.NotSatisfied]],
+		['?- g(_).', [PrologGlobalInfo.NotSatisfied]]
 	]);
 });
