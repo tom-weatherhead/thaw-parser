@@ -361,14 +361,6 @@ test('LL(1) Prolog basic cut test', () => {
 
 test('LL(1) Prolog cut in query test', () => {
 	// 2014/04/10.  See the last part of exercise 1 on http://www.learnprolognow.org/lpnpage.php?pagetype=html&pageid=lpn-htmlse46
-	// Assert.AreEqual(clauseAdded, globalInfo.ProcessInputString("p(1)."));
-	// Assert.AreEqual(clauseAdded, globalInfo.ProcessInputString("p(2) :- !."));
-	// Assert.AreEqual(clauseAdded, globalInfo.ProcessInputString("p(3)."));
-
-	// globalInfo.FindAllSolutions();
-
-	// Assert.AreEqual("X = 1, Y = 1;\r\nX = 1, Y = 2;\r\n" + notSatisfied, globalInfo.ProcessInputString("?- p(X), !, p(Y)."));
-
 	prologTest(
 		[
 			['p(1).', PrologGlobalInfo.ClauseAdded],
@@ -386,4 +378,15 @@ test('LL(1) Prolog cut in query test', () => {
 		],
 		true
 	);
+});
+
+test('LL(1) Prolog notEqual via cut test', () => {
+	// From Kamin section 8.5.2, page 387.
+	prologTest([
+		['equal(X, X).', PrologGlobalInfo.ClauseAdded],
+		['notEqual(X, Y) :- equal(X, Y), !, fail.', PrologGlobalInfo.ClauseAdded],
+		['notEqual(X, Y).', PrologGlobalInfo.ClauseAdded],
+		['?- notEqual(7, 7).', [PrologGlobalInfo.NotSatisfied]],
+		['?- notEqual(7, 13).', [PrologGlobalInfo.Satisfied]]
+	]);
 });
