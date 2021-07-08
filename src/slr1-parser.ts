@@ -151,7 +151,7 @@ export class SLR1Parser extends LR0Parser {
 		};
 	}
 
-	protected GetActionCaller(
+	protected override GetActionCaller(
 		S: CFSMState,
 		tokenAsSymbol: Symbol
 	): {
