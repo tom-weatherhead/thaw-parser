@@ -358,3 +358,32 @@ test('LL(1) Prolog basic cut test', () => {
 		['?- g(_).', [PrologGlobalInfo.NotSatisfied]]
 	]);
 });
+
+test('LL(1) Prolog cut in query test', () => {
+	// 2014/04/10.  See the last part of exercise 1 on http://www.learnprolognow.org/lpnpage.php?pagetype=html&pageid=lpn-htmlse46
+	// Assert.AreEqual(clauseAdded, globalInfo.ProcessInputString("p(1)."));
+	// Assert.AreEqual(clauseAdded, globalInfo.ProcessInputString("p(2) :- !."));
+	// Assert.AreEqual(clauseAdded, globalInfo.ProcessInputString("p(3)."));
+
+	// globalInfo.FindAllSolutions();
+
+	// Assert.AreEqual("X = 1, Y = 1;\r\nX = 1, Y = 2;\r\n" + notSatisfied, globalInfo.ProcessInputString("?- p(X), !, p(Y)."));
+
+	prologTest(
+		[
+			['p(1).', PrologGlobalInfo.ClauseAdded],
+			['p(2) :- !.', PrologGlobalInfo.ClauseAdded],
+			['p(3).', PrologGlobalInfo.ClauseAdded],
+			[
+				'?- p(X), !, p(Y).',
+				[
+					'Satisfying substitution is: [X -> 1; Y -> 1]',
+					'Satisfying substitution is: [X -> 1; Y -> 2]',
+					'Number of solutions found: 2',
+					PrologGlobalInfo.Satisfied
+				]
+			]
+		],
+		true
+	);
+});
