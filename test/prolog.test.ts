@@ -111,9 +111,7 @@ test('LL(1) Prolog math test 2 : subtraction', () => {
 });
 
 test('LL(1) Prolog math test 3 : multiplication', () => {
-	prologTest([
-		['?- mult(7, 13, N).', success('N -> 91')]
-	]);
+	prologTest([['?- mult(7, 13, N).', success('N -> 91')]]);
 });
 
 test('LL(1) Prolog addition test', () => {
@@ -316,5 +314,14 @@ test('LL(1) Prolog list length test', () => {
 		['?- length([2], 1).', [PrologGlobalInfo.Satisfied]],
 		['?- length([2, 3, 5, 7], 4).', [PrologGlobalInfo.Satisfied]],
 		['?- length([2, 3, 5, 7], N).', success('N -> 4')]
+	]);
+});
+
+test('LL(1) Prolog not test', () => {
+	prologTest([
+		['foo(X) :- \\+ bar(X).', PrologGlobalInfo.ClauseAdded],
+		['bar(7).', PrologGlobalInfo.ClauseAdded],
+		['?- foo(7).', [PrologGlobalInfo.NotSatisfied]],
+		['?- foo(13).', [PrologGlobalInfo.Satisfied]]
 	]);
 });
