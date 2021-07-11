@@ -194,7 +194,9 @@ export class LR0Configuration implements IEqualityComparable {
 		const newConf = new LR0Configuration(this.ProductionLHS, newRHS);
 
 		if (dotIndex >= this.ProductionRHS.length - 1) {
-			throw new Error('LR0Configuration.AdvanceDot() : The dot cannot be advanced any further.'); // InternalErrorException
+			throw new Error(
+				'LR0Configuration.AdvanceDot() : The dot cannot be advanced any further.'
+			); // InternalErrorException
 		}
 
 		// newConf.ProductionRHS.Insert(dotIndex + 1, Symbol.Dot); // splice
@@ -206,7 +208,11 @@ export class LR0Configuration implements IEqualityComparable {
 	public ConvertToProductionIfAllMatched(): Production | undefined {
 		const dotIndex = this.FindDot();
 
-		if (this.ProductionRHS.length === 2 && dotIndex === 0 && this.ProductionRHS[1] === Symbol.Lambda) {
+		if (
+			this.ProductionRHS.length === 2 &&
+			dotIndex === 0 &&
+			this.ProductionRHS[1] === Symbol.Lambda
+		) {
 			// A necessary hack.
 			return new Production(this.ProductionLHS, [Symbol.Lambda], 0);
 		}
@@ -515,7 +521,9 @@ export class LR0Parser extends ParserBase {
 
 				if (matchedProduction.equals(productionToCompare)) {
 					if (reduceOrAcceptResultFound && reduceProductionNum != i) {
-						throw new Error('GetAction() : Multiple actions found; grammar is not LR(0).'); // ReduceReduceConflictException
+						throw new Error(
+							'GetAction() : Multiple actions found; grammar is not LR(0).'
+						); // ReduceReduceConflictException
 					}
 
 					result = matchedProduction.equals(this.startingProduction)
@@ -710,7 +718,10 @@ export class LR0Parser extends ParserBase {
 					break;
 
 				case ShiftReduceAction.Reduce:
-					if (reduceProductionNum < 0 || reduceProductionNum >= this.grammar.productions.length) {
+					if (
+						reduceProductionNum < 0 ||
+						reduceProductionNum >= this.grammar.productions.length
+					) {
 						throw new Error('Reduce: Invalid production number'); // InternalErrorException
 					}
 
@@ -737,7 +748,8 @@ export class LR0Parser extends ParserBase {
 
 					if (parse && unstrippedProduction.rhs.length > 0) {
 						// Grammar requirement: Every semantic action string appears at the end of a production.
-						const semanticAction = unstrippedProduction.rhs[unstrippedProduction.rhs.length - 1]; // as string;
+						const semanticAction =
+							unstrippedProduction.rhs[unstrippedProduction.rhs.length - 1]; // as string;
 
 						// if (typeof semanticAction !== 'undefined') {
 						if (typeof semanticAction === 'string') {

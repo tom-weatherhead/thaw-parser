@@ -43,7 +43,11 @@ export class Grammar1 extends GrammarBase {
 
 		// See Fischer and LeBlanc, page 152
 		this.productions.push(
-			new Production(Symbol.nonterminalStart, [Symbol.nonterminalExpression, Symbol.terminalEOF], 1)
+			new Production(
+				Symbol.nonterminalStart,
+				[Symbol.nonterminalExpression, Symbol.terminalEOF],
+				1
+			)
 		);
 		this.productions.push(
 			new Production(
@@ -52,12 +56,18 @@ export class Grammar1 extends GrammarBase {
 				2
 			)
 		);
-		this.productions.push(new Production(Symbol.nonterminalExpression, [Symbol.nonterminalPrimary], 3));
+		this.productions.push(
+			new Production(Symbol.nonterminalExpression, [Symbol.nonterminalPrimary], 3)
+		);
 		this.productions.push(new Production(Symbol.nonterminalPrimary, [Symbol.terminalID], 4));
 		this.productions.push(
 			new Production(
 				Symbol.nonterminalPrimary,
-				[Symbol.terminalLeftBracket, Symbol.nonterminalExpression, Symbol.terminalRightBracket],
+				[
+					Symbol.terminalLeftBracket,
+					Symbol.nonterminalExpression,
+					Symbol.terminalRightBracket
+				],
 				5
 			)
 		);

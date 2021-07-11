@@ -69,7 +69,10 @@ export class SLR1Parser extends LR0Parser {
 						currentFollowSet = value;
 					}
 
-					if (typeof currentFollowSet !== 'undefined' && currentFollowSet.contains(tokenAsSymbol)) {
+					if (
+						typeof currentFollowSet !== 'undefined' &&
+						currentFollowSet.contains(tokenAsSymbol)
+					) {
 						if (reduceResultFound && reduceProductionNum !== i) {
 							//throw new ReduceReduceConflictException("GetActionSLR1() : Multiple actions found; grammar is not SLR(1).");
 
@@ -107,11 +110,13 @@ export class SLR1Parser extends LR0Parser {
 		 */
 
 		// Symbol symbol;
-		const shiftOrAcceptResultFound = S.ConfigurationSet.toArray().some((c: LR0Configuration) => {
-			const symbol = c.FindSymbolAfterDot();
+		const shiftOrAcceptResultFound = S.ConfigurationSet.toArray().some(
+			(c: LR0Configuration) => {
+				const symbol = c.FindSymbolAfterDot();
 
-			return typeof symbol !== 'undefined' && symbol === tokenAsSymbol;
-		});
+				return typeof symbol !== 'undefined' && symbol === tokenAsSymbol;
+			}
+		);
 
 		if (shiftOrAcceptResultFound) {
 			if (reduceResultFound) {
@@ -125,7 +130,9 @@ export class SLR1Parser extends LR0Parser {
 			}
 
 			result =
-				tokenAsSymbol === Symbol.terminalEOF ? ShiftReduceAction.Accept : ShiftReduceAction.Shift;
+				tokenAsSymbol === Symbol.terminalEOF
+					? ShiftReduceAction.Accept
+					: ShiftReduceAction.Shift;
 		}
 
 		// Test:

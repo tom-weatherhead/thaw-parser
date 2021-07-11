@@ -42,7 +42,10 @@ function grammar1RecognizeTest(
 	// const ls = LanguageSelector.Scheme;
 	// const schemeGlobalInfo = new SchemeGlobalInfo();
 	const grammar = new Grammar1();
-	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, LanguageSelector.Inference);
+	const tokenizer = createTokenizer(
+		LexicalAnalyzerSelector.MidnightHack,
+		LanguageSelector.Inference
+	);
 	const parser = createParser(ParserSelector.LR0, grammar);
 
 	parser.recognize(tokenizer.tokenize(input));

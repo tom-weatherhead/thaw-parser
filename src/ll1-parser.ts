@@ -80,7 +80,9 @@ export class LL1Parser extends ParserBase {
 					throw new ParserException(
 						`Error in FillParseTable() : Table entry not unique; p.lhs = ${p.lhs} ${
 							Symbol[p.lhs]
-						}; t = ${t} ${Symbol[t]}; p1 = ${pParseTableSPRaw.toString()}; p2 = ${p.toString()}`
+						}; t = ${t} ${
+							Symbol[t]
+						}; p1 = ${pParseTableSPRaw.toString()}; p2 = ${p.toString()}`
 					);
 				}
 
@@ -140,7 +142,10 @@ export class LL1Parser extends ParserBase {
 				// }
 
 				// if (this.grammar.nonTerminals.contains(symbolX) && this.parseTable.ContainsKey(sp)) {
-				if (this.grammar.nonTerminals.indexOf(symbolX) >= 0 && parseTableGetSP !== undefined) {
+				if (
+					this.grammar.nonTerminals.indexOf(symbolX) >= 0 &&
+					parseTableGetSP !== undefined
+				) {
 					// const p = this.parseTable[sp];
 					const p = parseTableGetSP;
 
@@ -170,7 +175,9 @@ export class LL1Parser extends ParserBase {
 						++tokenNum;
 
 						if (tokenNum >= tokenList.length) {
-							throw new ParserException('End of token list; parse stack is not empty');
+							throw new ParserException(
+								'End of token list; parse stack is not empty'
+							);
 						}
 
 						tokenAsSymbol = this.grammar.tokenToSymbol(tokenList[tokenNum]);
@@ -188,7 +195,9 @@ export class LL1Parser extends ParserBase {
 				}
 			} else {
 				// throw new ParserException("Unrecognized parse stack entry of type " + ((X != null) ? X.GetType().FullName : "null"));
-				throw new ParserException(`Unrecognized parse stack entry '${X}' of type ${typeof X}`);
+				throw new ParserException(
+					`Unrecognized parse stack entry '${X}' of type ${typeof X}`
+				);
 			}
 		}
 
@@ -197,7 +206,9 @@ export class LL1Parser extends ParserBase {
 		}
 
 		if (semanticStack.isEmpty()) {
-			throw new ParserException('There were no objects on the semantic stack; expected exactly one');
+			throw new ParserException(
+				'There were no objects on the semantic stack; expected exactly one'
+			);
 		}
 
 		const result = semanticStack.pop();

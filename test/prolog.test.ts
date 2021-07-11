@@ -59,7 +59,9 @@ test('LL(1) Prolog recognize test', () => {
 
 function success(substitutionAsString = ''): string {
 	const satisfying =
-		substitutionAsString !== '' ? `Satisfying substitution is: [${substitutionAsString}]\n` : '';
+		substitutionAsString !== ''
+			? `Satisfying substitution is: [${substitutionAsString}]\n`
+			: '';
 
 	return `${satisfying}${PrologGlobalInfo.Satisfied}\n`;
 }
@@ -68,7 +70,10 @@ function failure(): string {
 	return `${PrologGlobalInfo.NotSatisfied}\n`;
 }
 
-function prologTest(data: Array<[input: string, expectedResult: string | string[]]>, allMode = false): void {
+function prologTest(
+	data: Array<[input: string, expectedResult: string | string[]]>,
+	allMode = false
+): void {
 	// Arrange
 	const ls = LanguageSelector.Prolog2;
 	const prologGlobalInfo = new PrologGlobalInfo();
@@ -149,7 +154,10 @@ test('LL(1) Prolog list reverse test', () => {
 		],
 		[
 			'?- accRev(cons(1, cons(2, cons(3, cons(4, nil)))), nil, R).',
-			['Satisfying substitution is: [R -> cons(4, cons(3, cons(2, cons(1, nil))))]', 'Satisfied']
+			[
+				'Satisfying substitution is: [R -> cons(4, cons(3, cons(2, cons(1, nil))))]',
+				'Satisfied'
+			]
 		]
 	]);
 });

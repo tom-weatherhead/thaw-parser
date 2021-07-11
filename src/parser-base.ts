@@ -263,7 +263,10 @@ export abstract class ParserBase implements IParser {
 	private productionExists(A: Symbol, a: Symbol): boolean {
 		return this.grammar.productions.some(
 			(p: Production) =>
-				p.lhs === A && p.rhs.length > 0 && typeof p.rhs[0] !== 'string' && (p.rhs[0] as Symbol) === a
+				p.lhs === A &&
+				p.rhs.length > 0 &&
+				typeof p.rhs[0] !== 'string' &&
+				(p.rhs[0] as Symbol) === a
 		);
 	}
 
