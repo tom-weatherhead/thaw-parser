@@ -61,7 +61,7 @@ function schemeTest(data: Array<[input: string, expectedResult: string | string[
 			.evaluate(schemeGlobalInfo.globalEnvironment, schemeGlobalInfo)
 			.toString();
 
-		console.log(`input: ${input}\nactualResult:\n${actualResult}\n\n`);
+		// console.log(`input: ${input}\nactualResult:\n${actualResult}\n\n`);
 
 		// Assert
 		if (typeof expectedResult === 'string') {

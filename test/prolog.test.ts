@@ -89,7 +89,7 @@ function prologTest(
 		// Act
 		const actualResult = prologGlobalInfo.ProcessInput(parser.parse(tokenizer.tokenize(input)));
 
-		console.log(`input: ${input}\nactualResult:\n${actualResult}\n\n`);
+		// console.log(`input: ${input}\nactualResult:\n${actualResult}\n\n`);
 
 		// Assert
 		if (typeof expectedResult === 'string') {

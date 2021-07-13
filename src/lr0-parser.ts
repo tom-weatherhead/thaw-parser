@@ -496,6 +496,47 @@ export class LR0Parser extends ParserBase {
 		return cfsm;
 	}
 
+	// private productionEquals(p1: Production, other: unknown): boolean {
+	// 	const otherProduction = other as Production;
+
+	// 	if (
+	// 		typeof otherProduction === 'undefined' ||
+	// 		!(other instanceof Production) ||
+	// 		p1.lhs !== otherProduction.lhs ||
+	// 		p1.rhs.length !== otherProduction.rhs.length
+	// 	) {
+	// 		//  || this.num !== otherProduction.num // Ignore the production number in this equality comparison.
+	// 		return false;
+	// 	}
+
+	// 	for (let i = 0; i < p1.rhs.length; i++) {
+	// 		if (p1.rhs[i] !== otherProduction.rhs[i]) {
+	// 			return false;
+	// 		}
+	// 	}
+
+	// 	return true;
+	// }
+
+	private productionEquals(p1: Production, otherProduction: Production): boolean {
+		if (
+			// !(otherProduction instanceof Production) ||
+			p1.lhs !== otherProduction.lhs ||
+			p1.rhs.length !== otherProduction.rhs.length
+		) {
+			//  || this.num !== otherProduction.num // Ignore the production number in this equality comparison.
+			return false;
+		}
+
+		for (let i = 0; i < p1.rhs.length; i++) {
+			if (p1.rhs[i] !== otherProduction.rhs[i]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	// Adapted from Fischer and LeBlanc, pages 150-151.
 
 	private GetAction(S: CFSMState): {
@@ -519,14 +560,20 @@ export class LR0Parser extends ParserBase {
 			for (let i = 0; i < this.grammar.productions.length; ++i) {
 				const productionToCompare = this.grammar.productions[i].StripOutSemanticActions();
 
-				if (matchedProduction.equals(productionToCompare)) {
+				console.log(`Comparing prod ${matchedProduction} to ${productionToCompare} ...`);
+
+				// if (matchedProduction.equals(productionToCompare)) {
+				if (this.productionEquals(matchedProduction, productionToCompare)) {
+					console.log(`Yay! Prod ${matchedProduction} matches ${productionToCompare}`);
+
 					if (reduceOrAcceptResultFound && reduceProductionNum != i) {
 						throw new Error(
 							'GetAction() : Multiple actions found; grammar is not LR(0).'
 						); // ReduceReduceConflictException
 					}
 
-					result = matchedProduction.equals(this.startingProduction)
+					// result = matchedProduction.equals(this.startingProduction)
+					result = this.productionEquals(matchedProduction, this.startingProduction)
 						? ShiftReduceAction.Accept
 						: ShiftReduceAction.Reduce;
 
@@ -637,6 +684,14 @@ export class LR0Parser extends ParserBase {
 			throw new Error('Token list is empty'); // SyntaxException
 		}
 
+		console.log('shift_reduce_driver(): Tokens are:');
+
+		for (const t of tokenList) {
+			// const s: string = Token[t];
+
+			console.log(`Token: ${t.tokenValue} at ${t.line}, ${t.column}`);
+		}
+
 		let tokenNum = 0;
 		let tokenAsSymbol = this.grammar.tokenToSymbol(tokenList[tokenNum]);
 		const parseStack = new Stack<CFSMState>(); // The parse stack, which contains CFSM states.
@@ -644,9 +699,13 @@ export class LR0Parser extends ParserBase {
 
 		parseStack.push(this.machine.StartState);
 
+		console.log('shift_reduce_driver(): Initial parseStack.size is:', parseStack.size);
+
 		while (parseStack.size > 0) {
 			const S = parseStack.peek();
 			// let reduceProductionNum: number;
+
+			console.log(`S from parseStack.peek() is ${typeof S} ${S}`, S);
 
 			// Returns { reduceProductionNum: number; action: ShiftReduceAction; }
 			const callerResult = this.GetActionCaller(S, tokenAsSymbol);
@@ -655,9 +714,14 @@ export class LR0Parser extends ParserBase {
 			let unstrippedProduction: Production;
 			let numNonLambdaSymbols: number;
 
+			console.log(
+				`callerResult.action is ${typeof callerResult.action} ${callerResult.action}`,
+				callerResult.action
+			);
+
 			switch (action) {
 				case ShiftReduceAction.Accept:
-					// console.log('Accept.');
+					console.log('Accept.');
 
 					if (!parse) {
 						return undefined;
@@ -666,25 +730,6 @@ export class LR0Parser extends ParserBase {
 					// const semanticStackSize = semanticStack.size;
 
 					if (semanticStack.size !== 1) {
-						/*
-	                    Console.WriteLine("Beginning of semantic stack dump:");
-
-	                    while (semanticStack.Count > 0)
-	                    {
-	                        object o = semanticStack.Pop();
-
-	                        if (o == null)
-	                        {
-	                            Console.WriteLine("  null");
-	                        }
-	                        else
-	                        {
-	                            Console.WriteLine("  {0}: {1}", o.GetType().FullName, o.ToString());
-	                        }
-	                    }
-
-	                    Console.WriteLine("End of semantic stack dump.");
-	                     */
 						throw new GrammarException(
 							`There were ${semanticStack.size} objects on the semantic stack; expected exactly one`
 						);
@@ -694,7 +739,9 @@ export class LR0Parser extends ParserBase {
 
 				case ShiftReduceAction.Shift:
 					//Console.WriteLine("Shift: tokenAsSymbol is {0}.", tokenAsSymbol);   // Temporary debug code.
-					// console.log(`Shift: tokenAsSymbol is ${tokenAsSymbol}.`);
+					console.log(
+						`Shift: tokenAsSymbol is ${tokenAsSymbol} ${Symbol[tokenAsSymbol]}`
+					);
 					parseStack.push(this.go_to(S, tokenAsSymbol));
 
 					if (parse) {
@@ -718,6 +765,10 @@ export class LR0Parser extends ParserBase {
 					break;
 
 				case ShiftReduceAction.Reduce:
+					console.log(
+						`Reduce: tokenAsSymbol is ${tokenAsSymbol} ${Symbol[tokenAsSymbol]}`
+					);
+
 					if (
 						reduceProductionNum < 0 ||
 						reduceProductionNum >= this.grammar.productions.length
@@ -727,22 +778,29 @@ export class LR0Parser extends ParserBase {
 
 					unstrippedProduction = this.grammar.productions[reduceProductionNum];
 
-					// console.log(
-					// 	`Reduce: Production is ${unstrippedProduction}.`
-					// );
+					console.log(`Reduce: Production is ${unstrippedProduction}.`);
+					console.log(
+						`Reduce: Production RHSWithNoSemanticActions is ${unstrippedProduction.RHSWithNoSemanticActions()}.`
+					);
 
 					// Pop the production's non-Lambda symbols off of the parse stack.
 					numNonLambdaSymbols = unstrippedProduction
 						.RHSWithNoSemanticActions()
 						.filter((s: Symbol) => s !== Symbol.Lambda).length;
 
+					console.log(`Reduce: numNonLambdaSymbols is ${numNonLambdaSymbols}.`);
+
 					for (let i = 0; i < numNonLambdaSymbols; i++) {
 						// eslint-disable-next-line @typescript-eslint/no-unused-vars
 						// .for Each((symbol: Symbol) =>
-						parseStack.pop();
+						const obj = parseStack.pop();
+
+						console.log(`Reduce: Popped ${obj} off of the parseStack.`);
 					}
 
-					// const SPrime = parseStack.peek();
+					// const sPrime = parseStack.peek();
+
+					console.log(`Reduce: Done popping; parseStack.peek() is ${parseStack.peek()}`);
 
 					parseStack.push(this.go_to(parseStack.peek(), unstrippedProduction.lhs));
 
@@ -759,8 +817,17 @@ export class LR0Parser extends ParserBase {
 
 					break;
 
+				case ShiftReduceAction.Error:
+					console.log(`Error: S from parseStack.peek() is ${typeof S} ${S}`, S);
+					console.log(
+						`Error: tokenAsSymbol is ${tokenAsSymbol} ${Symbol[tokenAsSymbol]}`
+					);
+					throw new Error('LR0Parser.shift_reduce_driver() : action === Error');
+
 				default:
-					// I.e. Error
+					console.log(
+						`default: tokenAsSymbol is ${tokenAsSymbol} ${Symbol[tokenAsSymbol]}`
+					);
 					throw new Error(
 						`LR0Parser.shift_reduce_driver() : Syntax error at symbol ${Symbol[tokenAsSymbol]} value ${tokenList[tokenNum].tokenValue}, line ${tokenList[tokenNum].line}, column ${tokenList[tokenNum].column}.`
 					); // SyntaxException
@@ -782,6 +849,3 @@ export class LR0Parser extends ParserBase {
 	}
 }
 /* eslint-enable @typescript-eslint/ban-types */
-
-//     #endregion
-// }

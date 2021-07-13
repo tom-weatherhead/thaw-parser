@@ -18,26 +18,26 @@ export default {
 		{
 			file: 'dist/thaw-parser.cjs.js',
 			format: 'cjs',
-			exports: 'named',
-			plugins: [nodeResolve()]
+			exports: 'named' //,
+			// plugins: [nodeResolve()]
 		},
 		{
 			file: 'dist/thaw-parser.esm.js',
 			format: 'es',
 			esModule: true,
 			compact: true,
-			plugins: [nodeResolve(), terser()]
+			plugins: [terser()]
 		},
 		{
 			file: 'dist/thaw-parser.js',
 			name: 'thaw-parser',
 			format: 'umd',
 			compact: true,
-			plugins: [nodeResolve(), terser()]
+			plugins: [terser()]
 		}
 	],
-	context: 'this' // ,
-	// plugins: [nodeResolve(), terser()]
+	context: 'this',
+	plugins: [nodeResolve()]
 };
 
 // rollup.config.js
