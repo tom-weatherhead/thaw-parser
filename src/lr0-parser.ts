@@ -496,6 +496,8 @@ export class LR0Parser extends ParserBase {
 		return cfsm;
 	}
 
+	// This does not work:
+
 	// private productionEquals(p1: Production, other: unknown): boolean {
 	// 	const otherProduction = other as Production;
 
@@ -518,7 +520,43 @@ export class LR0Parser extends ParserBase {
 	// 	return true;
 	// }
 
-	private productionEquals(p1: Production, otherProduction: Production): boolean {
+	// This works:
+
+	// protected productionEquals(p1: Production, otherProduction: Production): boolean {
+	// 	if (
+	// 		// !(otherProduction instanceof Production) ||
+	// 		p1.lhs !== otherProduction.lhs ||
+	// 		p1.rhs.length !== otherProduction.rhs.length
+	// 	) {
+	// 		//  || this.num !== otherProduction.num // Ignore the production number in this equality comparison.
+	// 		return false;
+	// 	}
+
+	// 	for (let i = 0; i < p1.rhs.length; i++) {
+	// 		if (p1.rhs[i] !== otherProduction.rhs[i]) {
+	// 			return false;
+	// 		}
+	// 	}
+
+	// 	return true;
+	// }
+
+	protected productionEquals(p1: Production, other: any): boolean {
+		const otherProduction = other as Production;
+
+		console.log(
+			`productionEquals() : otherProduction is ${typeof otherProduction} ${otherProduction}`
+		); // typeof otherProduction === 'object'
+		console.log(
+			'productionEquals() : otherProduction instanceof Production is:',
+			otherProduction instanceof Production
+		); // false
+		console.log(
+			'productionEquals() : other instanceof Production is:',
+			other instanceof Production
+		); // false
+		console.log('productionEquals() : other.constructor.name is:', other.constructor.name); // 'Production'
+
 		if (
 			// !(otherProduction instanceof Production) ||
 			p1.lhs !== otherProduction.lhs ||

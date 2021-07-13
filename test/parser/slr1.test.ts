@@ -68,29 +68,29 @@ test('SLR(1) bogus test 1', () => {
 	expect(true).toBeTruthy();
 });
 
-// test('SLR(1) Grammar3 recognize test 1', () => {
-// 	const f = makeGrammar3Recognizer();
+test('SLR(1) Grammar3 recognize test 1', () => {
+	const f = makeGrammar3Recognizer();
 
-// 	f('a');
-// 	// f('a + b');
-// 	// f('a * b');
-// 	// f('(a + b) * c');
-// });
+	f('a');
+	// f('a + b');
+	// f('a * b');
+	// f('(a + b) * c');
+});
 
-// test('SLR(1) Scheme recognize test 1', () => {
-// 	const f = makeSchemeRecognizer();
+test('SLR(1) Scheme recognize test 1', () => {
+	const f = makeSchemeRecognizer();
 
-// 	// f('');
-// 	// f('@isMan(?x) -> @isMortal(?x)');
+	// f('');
+	// f('@isMan(?x) -> @isMortal(?x)');
 
-// 	// f('pred1.');
-// 	// f('?- pred1.');
+	// f('pred1.');
+	// f('?- pred1.');
 
-// 	// f('soln(13).');
-// 	// f('?- soln(X).');
+	// f('soln(13).');
+	// f('?- soln(X).');
 
-// 	f('(+ 2 3)');
-// });
+	f('(+ 2 3)');
+});
 
 // class SLR1Parser_Fixture {
 //     private readonly ITokenizer tokenizer;

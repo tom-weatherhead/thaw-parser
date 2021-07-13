@@ -56,7 +56,8 @@ export class SLR1Parser extends LR0Parser {
 				// 	`Comparing ${matchedProduction} to ${productionToCompare}...`
 				// );
 
-				if (matchedProduction.equals(productionToCompare)) {
+				// if (matchedProduction.equals(productionToCompare)) {
+				if (this.productionEquals(matchedProduction, productionToCompare)) {
 					// Is tokenAsSymbol in Follow(productionToCompare.lhs) ?
 
 					if (typeof currentFollowSet === 'undefined') {
