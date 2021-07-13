@@ -65,14 +65,15 @@
 	},
 	"publishConfig": {},
 	"dependencies": {
-		"thaw-common-utilities.ts": "^0.0.8",
-		"thaw-grammar": "^0.0.2",
-		"thaw-lexical-analyzer": "^0.0.2"
+		"thaw-common-utilities.ts": "file:thaw-common-utilities.ts.tgz",
+		"thaw-grammar": "file:thaw-grammar.tgz",
+		"thaw-lexical-analyzer": "file:thaw-lexical-analyzer.tgz"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.14.6",
 		"@babel/preset-env": "^7.14.7",
 		"@babel/preset-typescript": "^7.14.5",
+		"@rollup/plugin-node-resolve": "^13.0.0",
 		"@types/eslint": "^7.2.14",
 		"@types/jest": "^26.0.24",
 		"@types/node": "^16",
