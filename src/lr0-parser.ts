@@ -115,24 +115,6 @@ export class LR0Configuration implements IEqualityComparable {
 		return true;
 	}
 
-	// public override int GetHashCode()
-	// {
-	//     /*
-	//     int hashCode = ProductionLHS.GetHashCode();
-
-	//     for each (Symbol symbol in ProductionRHS)
-	//     {
-	//         hashCode *= 101;
-	//         hashCode += symbol.GetHashCode();
-	//     }
-
-	//     return hashCode;
-	//      */
-	//     return ProductionRHS
-	//         .Select(symbol => symbol.GetHashCode())
-	//         .Aggregate(ProductionLHS.GetHashCode(), (accumulator, hashCode) => accumulator * 101 + hashCode);
-	// }
-
 	public FindDot(): number {
 		return this.ProductionRHS.findIndex((symbol: Symbol) => symbol === Symbol.Dot);
 
@@ -522,7 +504,7 @@ export class LR0Parser extends ParserBase {
 
 	// This works:
 
-	// protected productionEquals(p1: Production, otherProduction: Production): boolean {
+	// protected productionEqualsX(p1: Production, otherProduction: Production): boolean {
 	// 	if (
 	// 		// !(otherProduction instanceof Production) ||
 	// 		p1.lhs !== otherProduction.lhs ||
@@ -541,38 +523,50 @@ export class LR0Parser extends ParserBase {
 	// 	return true;
 	// }
 
-	protected productionEquals(p1: Production, other: any): boolean {
-		const otherProduction = other as Production;
+	// protected productionEqualsY(p1: Production, other: any): boolean {
+	// 	const otherProduction = other as Production;
 
-		console.log(
-			`productionEquals() : otherProduction is ${typeof otherProduction} ${otherProduction}`
-		); // typeof otherProduction === 'object'
-		console.log(
-			'productionEquals() : otherProduction instanceof Production is:',
-			otherProduction instanceof Production
-		); // false
-		console.log(
-			'productionEquals() : other instanceof Production is:',
-			other instanceof Production
-		); // false
-		console.log('productionEquals() : other.constructor.name is:', other.constructor.name); // 'Production'
+	// 	console.log(
+	// 		`productionEquals() : otherProduction is ${typeof otherProduction} ${otherProduction}`
+	// 	); // typeof otherProduction === 'object'
+	// 	console.log(
+	// 		'productionEquals() : otherProduction instanceof Production is:',
+	// 		otherProduction instanceof Production
+	// 	); // false
+	// 	console.log(
+	// 		'productionEquals() : other instanceof Production is:',
+	// 		other instanceof Production
+	// 	); // false
+	// 	console.log('productionEquals() : p1.constructor.name is:', p1.constructor.name); // 'Production'
+	// 	console.log('productionEquals() : other.constructor.name is:', other.constructor.name); // 'Production'
+	// 	console.log(
+	// 		'productionEquals() : otherProduction.constructor.name is:',
+	// 		otherProduction.constructor.name
+	// 	); // 'Production'
 
-		if (
-			// !(otherProduction instanceof Production) ||
-			p1.lhs !== otherProduction.lhs ||
-			p1.rhs.length !== otherProduction.rhs.length
-		) {
-			//  || this.num !== otherProduction.num // Ignore the production number in this equality comparison.
-			return false;
-		}
+	// 	if (
+	// 		// !(otherProduction instanceof Production) ||
+	// 		// typeof otherProduction === 'undefined' ||
+	// 		// otherProduction.constructor.name !== p1.constructor.name ||
+	// 		// other.constructor.name !== p1.constructor.name ||
+	// 		p1.lhs !== otherProduction.lhs ||
+	// 		p1.rhs.length !== otherProduction.rhs.length
+	// 	) {
+	// 		//  || this.num !== otherProduction.num // Ignore the production number in this equality comparison.
+	// 		return false;
+	// 	}
 
-		for (let i = 0; i < p1.rhs.length; i++) {
-			if (p1.rhs[i] !== otherProduction.rhs[i]) {
-				return false;
-			}
-		}
+	// 	for (let i = 0; i < p1.rhs.length; i++) {
+	// 		if (p1.rhs[i] !== otherProduction.rhs[i]) {
+	// 			return false;
+	// 		}
+	// 	}
 
-		return true;
+	// 	return true;
+	// }
+
+	protected productionEquals(p1: Production, other: Production): boolean {
+		return p1.equals(other);
 	}
 
 	// Adapted from Fischer and LeBlanc, pages 150-151.
