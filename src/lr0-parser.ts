@@ -1,11 +1,4 @@
-// using System;
-// using System.Collections.Generic;
-// using System.Linq;
-// using System.Text;
-
-// namespace Inference.Parser
-// {
-//     #region LR0Configuration
+// lr0-parser.ts
 
 import { IEqualityComparable, Set, Stack } from 'thaw-common-utilities.ts';
 
@@ -14,7 +7,6 @@ import { Token } from 'thaw-lexical-analyzer';
 import { GrammarException, IGrammar, Production, Symbol } from 'thaw-grammar';
 
 // import { ParserException } from './exceptions/parser-exception';
-// import { IParser } from './iparser';
 import { ParserBase } from './parser-base';
 
 export enum ShiftReduceAction {
@@ -33,66 +25,14 @@ export class LR0Configuration implements IEqualityComparable {
 	public readonly ProductionLHS: Symbol;
 	public readonly ProductionRHS: Symbol[] = []; // Will contain exactly one instance of the symbol Dot.
 
-	// constructor(lhs: Symbol) {
-	// 	this.ProductionLHS = lhs;
-	// }
-
 	constructor(lhs: Symbol, rhs: Symbol[] = []) {
 		this.ProductionLHS = lhs;
 		this.ProductionRHS = rhs.slice(0); // Clone the array
 	}
 
-	// constructor(LR0Configuration src) {	// Copy constructor.
-	// 	this(src.ProductionLHS, src.ProductionRHS)
-	// }
-
-	// constructor(p: Production) {
-	// 	this.ProductionLHS = p.lhs;
-	// 	this.ProductionRHS.Add(Symbol.Dot);
-	// 	this.ProductionRHS.AddRange(p.RHSWithNoSemanticActions());
-	// }
-
 	public toString(): string {
-		// var sb = new StringBuilder();
-
-		// sb.Append(lhs.ToString() + " ->");
-
-		// for each (object o in rhs)
-		// {
-		// sb.Append(" " + o.ToString());
-		// }
-
-		// return sb.ToString();
-
 		return `${this.ProductionLHS} -> ${this.ProductionRHS.join(' ')}`;
 	}
-
-	// public override bool Equals(object obj)
-	// {
-
-	//     if (object.ReferenceEquals(this, obj))
-	//     {
-	//         return true;
-	//     }
-
-	//     var that = obj as LR0Configuration;
-
-	//     if (that == null || ProductionLHS != that.ProductionLHS || ProductionRHS.Count != that.ProductionRHS.Count)
-	//     {
-	//         return false;
-	//     }
-
-	//     for (int i = 0; i < ProductionRHS.Count; ++i)
-	//     {
-
-	//         if (ProductionRHS[i] != that.ProductionRHS[i])
-	//         {
-	//             return false;
-	//         }
-	//     }
-
-	//     return true;
-	// }
 
 	public equals(other: unknown): boolean {
 		const otherConfig = other as LR0Configuration;
@@ -117,20 +57,8 @@ export class LR0Configuration implements IEqualityComparable {
 
 	public FindDot(): number {
 		return this.ProductionRHS.findIndex((symbol: Symbol) => symbol === Symbol.Dot);
-
-		// for (int i = 0; i < ProductionRHS.Count; ++i)
-		// {
-
-		// if (ProductionRHS[i] == Symbol.Dot)
-		// {
-		//     return i;
-		// }
-		// }
-
-		// return -1;
 	}
 
-	// public FindSymbolAfterDot(out Symbol symbol): boolean {
 	public FindSymbolAfterDot(): Symbol | undefined {
 		const i = this.FindDot();
 
@@ -478,96 +406,9 @@ export class LR0Parser extends ParserBase {
 		return cfsm;
 	}
 
-	// This does not work:
-
-	// private productionEquals(p1: Production, other: unknown): boolean {
-	// 	const otherProduction = other as Production;
-
-	// 	if (
-	// 		typeof otherProduction === 'undefined' ||
-	// 		!(other instanceof Production) ||
-	// 		p1.lhs !== otherProduction.lhs ||
-	// 		p1.rhs.length !== otherProduction.rhs.length
-	// 	) {
-	// 		//  || this.num !== otherProduction.num // Ignore the production number in this equality comparison.
-	// 		return false;
-	// 	}
-
-	// 	for (let i = 0; i < p1.rhs.length; i++) {
-	// 		if (p1.rhs[i] !== otherProduction.rhs[i]) {
-	// 			return false;
-	// 		}
-	// 	}
-
-	// 	return true;
+	// protected productionEquals(p1: Production, other: Production): boolean {
+	// 	return p1.equals(other);
 	// }
-
-	// This works:
-
-	// protected productionEqualsX(p1: Production, otherProduction: Production): boolean {
-	// 	if (
-	// 		// !(otherProduction instanceof Production) ||
-	// 		p1.lhs !== otherProduction.lhs ||
-	// 		p1.rhs.length !== otherProduction.rhs.length
-	// 	) {
-	// 		//  || this.num !== otherProduction.num // Ignore the production number in this equality comparison.
-	// 		return false;
-	// 	}
-
-	// 	for (let i = 0; i < p1.rhs.length; i++) {
-	// 		if (p1.rhs[i] !== otherProduction.rhs[i]) {
-	// 			return false;
-	// 		}
-	// 	}
-
-	// 	return true;
-	// }
-
-	// protected productionEqualsY(p1: Production, other: any): boolean {
-	// 	const otherProduction = other as Production;
-
-	// 	console.log(
-	// 		`productionEquals() : otherProduction is ${typeof otherProduction} ${otherProduction}`
-	// 	); // typeof otherProduction === 'object'
-	// 	console.log(
-	// 		'productionEquals() : otherProduction instanceof Production is:',
-	// 		otherProduction instanceof Production
-	// 	); // false
-	// 	console.log(
-	// 		'productionEquals() : other instanceof Production is:',
-	// 		other instanceof Production
-	// 	); // false
-	// 	console.log('productionEquals() : p1.constructor.name is:', p1.constructor.name); // 'Production'
-	// 	console.log('productionEquals() : other.constructor.name is:', other.constructor.name); // 'Production'
-	// 	console.log(
-	// 		'productionEquals() : otherProduction.constructor.name is:',
-	// 		otherProduction.constructor.name
-	// 	); // 'Production'
-
-	// 	if (
-	// 		// !(otherProduction instanceof Production) ||
-	// 		// typeof otherProduction === 'undefined' ||
-	// 		// otherProduction.constructor.name !== p1.constructor.name ||
-	// 		// other.constructor.name !== p1.constructor.name ||
-	// 		p1.lhs !== otherProduction.lhs ||
-	// 		p1.rhs.length !== otherProduction.rhs.length
-	// 	) {
-	// 		//  || this.num !== otherProduction.num // Ignore the production number in this equality comparison.
-	// 		return false;
-	// 	}
-
-	// 	for (let i = 0; i < p1.rhs.length; i++) {
-	// 		if (p1.rhs[i] !== otherProduction.rhs[i]) {
-	// 			return false;
-	// 		}
-	// 	}
-
-	// 	return true;
-	// }
-
-	protected productionEquals(p1: Production, other: Production): boolean {
-		return p1.equals(other);
-	}
 
 	// Adapted from Fischer and LeBlanc, pages 150-151.
 
@@ -594,8 +435,8 @@ export class LR0Parser extends ParserBase {
 
 				console.log(`Comparing prod ${matchedProduction} to ${productionToCompare} ...`);
 
-				// if (matchedProduction.equals(productionToCompare)) {
-				if (this.productionEquals(matchedProduction, productionToCompare)) {
+				// if (this.productionEquals(matchedProduction, productionToCompare)) {
+				if (matchedProduction.equals(productionToCompare)) {
 					console.log(`Yay! Prod ${matchedProduction} matches ${productionToCompare}`);
 
 					if (reduceOrAcceptResultFound && reduceProductionNum != i) {
@@ -604,8 +445,8 @@ export class LR0Parser extends ParserBase {
 						); // ReduceReduceConflictException
 					}
 
-					// result = matchedProduction.equals(this.startingProduction)
-					result = this.productionEquals(matchedProduction, this.startingProduction)
+					// result = this.productionEquals(matchedProduction, this.startingProduction)
+					result = matchedProduction.equals(this.startingProduction)
 						? ShiftReduceAction.Accept
 						: ShiftReduceAction.Reduce;
 

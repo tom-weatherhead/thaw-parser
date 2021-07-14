@@ -1,7 +1,4 @@
-// using System;
-// using System.Collections.Generic;
-// using System.Linq;
-// using System.Text;
+// slr1-parser.ts
 
 import { Set } from 'thaw-common-utilities.ts';
 
@@ -56,8 +53,8 @@ export class SLR1Parser extends LR0Parser {
 				// 	`Comparing ${matchedProduction} to ${productionToCompare}...`
 				// );
 
-				// if (matchedProduction.equals(productionToCompare)) {
-				if (this.productionEquals(matchedProduction, productionToCompare)) {
+				// if (this.productionEquals(matchedProduction, productionToCompare)) {
+				if (matchedProduction.equals(productionToCompare)) {
 					// Is tokenAsSymbol in Follow(productionToCompare.lhs) ?
 
 					if (typeof currentFollowSet === 'undefined') {
