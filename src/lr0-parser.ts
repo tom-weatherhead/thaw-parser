@@ -76,20 +76,6 @@ export class LR0Configuration implements IEqualityComparable {
 			return undefined;
 		}
 
-		/*
-		List<Symbol> rho = new List<Symbol>();
-
-		i += numSymbolsToSkipAfterDot + 1;
-
-		while (i < ProductionRHS.Count)
-		{
-		rho.Add(ProductionRHS[i++]);
-		}
-
-		return rho;
-		*/
-
-		// return this.ProductionRHS.Skip(i + numSymbolsToSkipAfterDot + 1).ToList();
 		return this.ProductionRHS.slice(i + numSymbolsToSkipAfterDot + 1);
 	}
 
@@ -109,7 +95,6 @@ export class LR0Configuration implements IEqualityComparable {
 			); // InternalErrorException
 		}
 
-		// newConf.ProductionRHS.Insert(dotIndex + 1, Symbol.Dot); // splice
 		newConf.ProductionRHS.splice(dotIndex + 1, 0, Symbol.Dot);
 
 		return newConf;
@@ -130,15 +115,6 @@ export class LR0Configuration implements IEqualityComparable {
 		if (dotIndex !== this.ProductionRHS.length - 1) {
 			return undefined;
 		}
-
-		// const rhs: (string | Symbol)[] = [];
-
-		// .For Each(symbol => rhs.Add(symbol)) is used because rhs is of type List<object>, not List<Symbol> .
-		// this.ProductionRHS.filter(
-		// 	(symbol: Symbol) => symbol !== Symbol.Dot
-		// ).for Each((symbol: Symbol) => rhs.push(symbol));
-
-		// return new Production(this.ProductionLHS, rhs);
 
 		return new Production(
 			this.ProductionLHS,
@@ -167,10 +143,6 @@ export class CFSMState {
 	public Equals(obj: unknown): boolean {
 		// TODO: Find a better implementation for this function.  Beware of cycles in the finite state machine (or ignore the transitions in this function).
 
-		// if (object.ReferenceEquals(this, obj)) {
-		// 	return true;
-		// }
-
 		const that = obj as CFSMState;
 
 		// TODO: Should we also consider Transitions.Keys?
@@ -181,32 +153,6 @@ export class CFSMState {
 			that.ConfigurationSet.isASubsetOf(this.ConfigurationSet)
 		);
 	}
-
-	// public override int GetHashCode()
-	// {
-	//     // TODO: Find a better implementation for this function.  Beware of cycles in the finite state machine (or ignore the transitions in this function).
-	//     //int hashCode = 0;
-
-	//     /*
-	//     for each (LR0Configuration conf in ConfigurationSet)
-	//     {
-	//         // The order of the configurations in the set doesn't affect the hash code.
-	//         hashCode += conf.GetHashCode();
-	//     }
-	//      */
-	//     //ConfigurationSet.ToList().For Each(conf => hashCode += conf.GetHashCode());
-	//     //return ConfigurationSet.Select(conf => conf.GetHashCode()).Sum();
-
-	//     // "unchecked" suppresses the OverflowException.  Sum() always executes within a checked block, and may throw the exception.
-	//     //return unchecked(ConfigurationSet.Select(conf => conf.GetHashCode()).Aggregate((accumulator, element) => accumulator + element));
-
-	//     // The order of the configurations in the set doesn't affect the hash code.
-	//     // Passing a seed of 0 to Aggregate() avoids a possible "sequence contains no elements" error.
-	//     return ConfigurationSet.Select(conf => conf.GetHashCode()).Aggregate(0, (accumulator, element) => accumulator + element);
-
-	//     // TODO: Should we also consider Transitions.Keys?
-	//     //return hashCode;
-	// }
 }
 
 export class CharacteristicFiniteStateMachine {
@@ -222,7 +168,7 @@ export class CharacteristicFiniteStateMachine {
 	}
 
 	public FindStateWithLabel(cs: Set<LR0Configuration>): CFSMState | undefined {
-		// Returns null if no state has the given configuration set.
+		// Returns undefined if no state has the given configuration set.
 		return this.StateList.find(
 			(state: CFSMState) =>
 				cs.isASubsetOf(state.ConfigurationSet) && state.ConfigurationSet.isASubsetOf(cs)
@@ -244,10 +190,6 @@ class CFSMStateSymbolPair {
 	}
 
 	public Equals(obj: unknown): boolean {
-		// if (object.ReferenceEquals(this, obj)) {
-		// 	return true;
-		// }
-
 		const that = obj as CFSMStateSymbolPair;
 
 		return (
@@ -257,17 +199,11 @@ class CFSMStateSymbolPair {
 			this.symbol === that.symbol
 		);
 	}
-
-	// public override int GetHashCode() {
-	// 	return state.GetHashCode() * 101 + symbol.GetHashCode();
-	// }
 }
 
 export class LR0Parser extends ParserBase {
 	private readonly AllSymbols: Set<Symbol>;
 	protected readonly machine: CharacteristicFiniteStateMachine;
-	// private readonly GoToTable = new Map<CFSMStateSymbolPair, CFSMState>();
-	// TODO: Implement CFSMStateSymbolPair.toString() and then:
 	private readonly GoToTable = new Map<string, CFSMState>();
 	private readonly startingProduction: Production;
 
@@ -275,16 +211,10 @@ export class LR0Parser extends ParserBase {
 		super(g);
 
 		this.AllSymbols = new Set<Symbol>(g.terminals.concat(g.nonTerminals));
-		// this.AllSymbols.unionInPlace(g.nonTerminals);
 		this.machine = this.build_CFSM();
 		this.build_go_to_table();
 		this.startingProduction = g.findStartingProduction(); // No need to .StripOutSemanticActions(); they have already been removed.
 	}
-
-	// constructor(GrammarSelector gs)
-	//     : this(GrammarFactory.Create(gs))
-	// {
-	// }
 
 	public get NumberOfStates(): number {
 		return this.machine.StateList.length;
@@ -300,7 +230,6 @@ export class LR0Parser extends ParserBase {
 			additions.clear();
 
 			for (const conf1 of sPrime) {
-				// Symbol A;
 				const A = conf1.FindSymbolAfterDot();
 
 				if (typeof A === 'undefined' || !this.grammar.nonTerminals.includes(A)) {
@@ -435,7 +364,6 @@ export class LR0Parser extends ParserBase {
 
 				console.log(`Comparing prod ${matchedProduction} to ${productionToCompare} ...`);
 
-				// if (this.productionEquals(matchedProduction, productionToCompare)) {
 				if (matchedProduction.equals(productionToCompare)) {
 					console.log(`Yay! Prod ${matchedProduction} matches ${productionToCompare}`);
 
@@ -445,7 +373,6 @@ export class LR0Parser extends ParserBase {
 						); // ReduceReduceConflictException
 					}
 
-					// result = this.productionEquals(matchedProduction, this.startingProduction)
 					result = matchedProduction.equals(this.startingProduction)
 						? ShiftReduceAction.Accept
 						: ShiftReduceAction.Reduce;
@@ -457,24 +384,9 @@ export class LR0Parser extends ParserBase {
 		}
 
 		// 2) Search for Shift and Accept actions.
-		/*
-	    bool shiftResultFound = false;
-
-	    for each (LR0Configuration c in S.ConfigurationSet)
-	    {
-	        Symbol symbol;
-
-	        if (c.FindSymbolAfterDot(out symbol) && grammar.Terminals.Contains(symbol))
-	        {
-	            shiftResultFound = true;
-	        }
-	    }
-	     */
-		// let symbol: Symbol;
 		const shiftResultFound = S.ConfigurationSet.toArray().some((c: LR0Configuration) => {
 			const symbol = c.FindSymbolAfterDot();
 
-			// c.FindSymbolAfterDot(out symbol) && this.grammar.terminals.Contains(symbol));
 			return typeof symbol !== 'undefined' && this.grammar.terminals.includes(symbol);
 		});
 
@@ -531,7 +443,6 @@ export class LR0Parser extends ParserBase {
 				if (typeof value !== 'undefined') {
 					const pair = new CFSMStateSymbolPair(S, X);
 
-					// this.GoToTable.set(new CFSMStateSymbolPair(S, X), value);
 					this.GoToTable.set(pair.toString(), value);
 				}
 			}
@@ -542,7 +453,6 @@ export class LR0Parser extends ParserBase {
 		const pair = new CFSMStateSymbolPair(S, tokenAsSymbol);
 		const value = this.GoToTable.get(pair.toString());
 
-		// if (!this.GoToTable.has(pair)) {
 		if (typeof value === 'undefined') {
 			throw new Error(`go_to() failed on token ${tokenAsSymbol}`); // InternalErrorException
 		}
@@ -560,8 +470,6 @@ export class LR0Parser extends ParserBase {
 		console.log('shift_reduce_driver(): Tokens are:');
 
 		for (const t of tokenList) {
-			// const s: string = Token[t];
-
 			console.log(`Token: ${t.tokenValue} at ${t.line}, ${t.column}`);
 		}
 
