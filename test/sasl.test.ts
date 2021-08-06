@@ -99,6 +99,8 @@ test('SASL infinite list test', () => {
 		['(set ints (ints-from 0))', '(<thunk> <thunk>)'],
 		['ints', '(<thunk> <thunk>)'],
 		['(car ints)', '0'],
-		['(car (cdr ints))', '1']
+		['ints', '(0 <thunk>)'],
+		['(car (cdr ints))', '1'],
+		['ints', '(0 (1 <thunk>))']
 	]);
 });
