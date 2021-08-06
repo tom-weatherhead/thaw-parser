@@ -28,7 +28,7 @@ test('LL(1) SASL parser instance creation test', () => {
 });
 
 test('LL(1) SASL recognize test', () => {
-	// 	// Arrange
+	// Arrange
 	const ls = LanguageSelector.SASL;
 	// const prologGlobalInfo = new PrologGlobalInfo();
 	const grammar = createGrammar(ls);
