@@ -97,6 +97,8 @@ test('SASL infinite list test', () => {
 		['(set +1 (lambda (n) (+ n 1)))', '<closure>'],
 		['(set ints-from (lambda (i) (cons i (ints-from (+1 i)))))', '<closure>'],
 		['(set ints (ints-from 0))', '(<thunk> <thunk>)'],
-		['ints', '(<thunk> <thunk>)']
+		['ints', '(<thunk> <thunk>)'],
+		['(car ints)', '0'],
+		['(car (cdr ints))', '1']
 	]);
 });
