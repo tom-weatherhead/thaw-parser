@@ -130,15 +130,11 @@ test('LL(1) Scheme ClosureTest3', () => {
 });
 
 test('LL(1) Scheme let test', () => {
-	schemeTest([
-		['(let ((m (* 3 4)) (n (+ 2 3))) (list m n))', '(12 5)']
-	]);
+	schemeTest([['(let ((m (* 3 4)) (n (+ 2 3))) (list m n))', '(12 5)']]);
 });
 
 test('LL(1) Scheme let* test', () => {
-	schemeTest([
-		['(let* ((x (+ 2 3)) (y (* x x))) y)', '25']
-	]);
+	schemeTest([['(let* ((x (+ 2 3)) (y (* x x))) y)', '25']]);
 });
 
 // [Test]
@@ -156,18 +152,24 @@ test('LL(1) Scheme let* test', () => {
 
 test('LL(1) Scheme letrec test', () => {
 	schemeTest([
-		['(letrec ' +
-		'((countones (lambda (l) ' +
-		'(if (null? l) 0 ' +
-			'(if (= (car l) 1) (+ 1 (countones (cdr l))) ' +
+		[
+			'(letrec ' +
+				'((countones (lambda (l) ' +
+				'(if (null? l) 0 ' +
+				'(if (= (car l) 1) (+ 1 (countones (cdr l))) ' +
 				'(countones (cdr l))))))) ' +
-		'(countones \'(1 2 3 1 0 1 1 5)))', '4']
+				"(countones '(1 2 3 1 0 1 1 5)))",
+			'4'
+		]
 	]);
 });
 
 test('LL(1) Scheme cond test', () => {
 	schemeTest([
-		['(set condtest (lambda (n) (cond ((= n 1) \'First) ((= n 2) \'Second) ((= n 3) \'Third) (\'T \'Other))))', '<closure>'],
+		[
+			"(set condtest (lambda (n) (cond ((= n 1) 'First) ((= n 2) 'Second) ((= n 3) 'Third) ('T 'Other))))",
+			'<closure>'
+		],
 		['(condtest 0)', 'Other'],
 		['(condtest 1)', 'First'],
 		['(condtest 2)', 'Second'],
@@ -181,17 +183,20 @@ test('LL(1) Scheme call/cc test', () => {
 	schemeTest([
 		['(set mod (lambda (m n) (- m (* n (/ m n)))))', '<closure>'],
 		['(set gcd (lambda (m n) (if (= n 0) m (gcd n (mod m n)))))', '<closure>'],
-		['(set gcd* (lambda (l) ' +
-		'(call/cc (lambda (exit) ' +
-		'(letrec ((gcd*-aux (lambda (l) ' +
-		'    (if (= (car l) 1) (exit 1) ' +
-		'        (if (null? (cdr l)) (car l) ' +
-		'            (gcd (car l) (gcd*-aux (cdr l)))))))) ' +
-		'    (gcd*-aux l))))))', '<closure>'],
-		['(gcd* \'(9 27 81 60))', '3'],
-		['(gcd* \'(101 202 103))', '1'],
-		['(gcd* \'(9 27 1 81 60))', '1'],
-		['(gcd* \'(9 27 81 60 1 NotANumber))', '1']
+		[
+			'(set gcd* (lambda (l) ' +
+				'(call/cc (lambda (exit) ' +
+				'(letrec ((gcd*-aux (lambda (l) ' +
+				'    (if (= (car l) 1) (exit 1) ' +
+				'        (if (null? (cdr l)) (car l) ' +
+				'            (gcd (car l) (gcd*-aux (cdr l)))))))) ' +
+				'    (gcd*-aux l))))))',
+			'<closure>'
+		],
+		["(gcd* '(9 27 81 60))", '3'],
+		["(gcd* '(101 202 103))", '1'],
+		["(gcd* '(9 27 1 81 60))", '1'],
+		["(gcd* '(9 27 81 60 1 NotANumber))", '1']
 	]);
 });
 
@@ -200,7 +205,7 @@ test('LL(1) Scheme list test', () => {
 		['(list)', '()'],
 		['(list 1)', '(1)'],
 		['(list 1 2 3)', '(1 2 3)'],
-		['(list 1 + \'T)', '(1 + T)']
+		["(list 1 + 'T)", '(1 + T)']
 	]);
 });
 
@@ -247,29 +252,6 @@ test('LL(1) Scheme PrimOp and Closure Pred test', () => {
 	]);
 });
 
-// [Test]
-// public void PrimOpAndClosurePredTest()
-// {
-//     Evaluate("(set add +)");
-//     Evaluate("(set add1 (lambda (x) (+ x 1)))");
-//
-//     Assert.AreEqual("T", Evaluate("(primop? +)"));
-//     Assert.AreEqual("T", Evaluate("(primop? add)"));
-//     Assert.AreEqual("()", Evaluate("(primop? add1)"));
-//
-//     Assert.AreEqual("()", Evaluate("(closure? +)"));
-//     Assert.AreEqual("()", Evaluate("(closure? add)"));
-//     Assert.AreEqual("T", Evaluate("(closure? add1)"));
-//
-//     Assert.AreEqual("T", Evaluate("(primop? list)"));
-//
-//     // Just for fun:
-//     Assert.AreEqual("T", Evaluate("(primop? primop?)"));
-//     Assert.AreEqual("T", Evaluate("(primop? closure?)"));
-//     Assert.AreEqual("()", Evaluate("(closure? primop?)"));
-//     Assert.AreEqual("()", Evaluate("(closure? closure?)"));
-// }
-//
 // [Test]
 // public void StreamsTest()   // See Kamin pages 176-178 : "SASL vs. Scheme"
 // {
