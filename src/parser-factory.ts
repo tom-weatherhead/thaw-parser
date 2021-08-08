@@ -6,8 +6,9 @@ import { ParserException } from './exceptions/parser-exception';
 import { IParser } from './iparser';
 import { LL1Parser } from './ll1-parser';
 import { LR0Parser } from './lr0-parser';
+import { LR1Parser } from './lr1-parser';
 import { SLR1Parser } from './slr1-parser';
-// import { ParserSelector } from './parser-selectors';
+// import { LALR1Parser } from './lalr1-parser';
 
 export function createParser(ps: ParserSelector, g: IGrammar): IParser {
 	switch (ps) {
@@ -20,8 +21,12 @@ export function createParser(ps: ParserSelector, g: IGrammar): IParser {
 		case ParserSelector.SLR1:
 			return new SLR1Parser(g);
 
-		// case ParserSelector.LR1:
+		case ParserSelector.LR1:
+			return new LR1Parser(g);
+
 		// case ParserSelector.LALR1:
+		// 	return new LALR1Parser(g);
+
 		default:
 			throw new ParserException(`createParser() : Unsupported ParserSelector '${ps}'`);
 	}
