@@ -5,6 +5,8 @@ export { ParserSelector } from 'thaw-grammar';
 export { createParser } from './parser-factory';
 export { IParser } from './iparser';
 
+export { ParserException } from './exceptions/parser-exception';
+
 // export interface IParserInfrastructure {
 // 	readonly languageSelector: LanguageSelector;
 // 	readonly tokenizer: ITokenizer;

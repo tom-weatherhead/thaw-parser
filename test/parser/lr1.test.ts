@@ -18,7 +18,7 @@ import {
 	// Symbol
 } from 'thaw-grammar';
 
-import { createParser, ParserSelector } from '../..';
+import { createParser, ParserException, ParserSelector } from '../..';
 
 // import { Grammar1 } from '../test-grammars/grammar1';
 
@@ -50,7 +50,7 @@ test('LR(1) recognize test', () => {
 
 	f('(* 7 13)');
 
-	// expect(() => f('(* 7 13')).toThrow(ParserException);
+	expect(() => f('(* 7 13')).toThrow(ParserException);
 });
 
 // ****

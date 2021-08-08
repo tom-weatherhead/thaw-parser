@@ -22,6 +22,8 @@ import { LR0Configuration, ShiftReduceAction } from './lr0-parser';
 
 import { ParserBase } from './parser-base';
 
+import { ParserException } from './exceptions/parser-exception';
+
 // #region LR1Configuration
 
 /* eslint-disable @typescript-eslint/ban-types */
@@ -636,7 +638,7 @@ export class LR1Parser extends ParserBase {
 				default:
 					// I.e. Error
 					// SyntaxException
-					throw new Error(
+					throw new ParserException(
 						`LR1Parser.shift_reduce_driver() : Syntax error at symbol ${tokenAsSymbol}`
 					);
 				// tokenList[tokenNum].Line, tokenList[tokenNum].Column);
