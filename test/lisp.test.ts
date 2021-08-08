@@ -29,7 +29,6 @@ test('LL(1) LISP parser instance creation test', () => {
 test('LL(1) LISP recognize test', () => {
 	// 	// Arrange
 	const ls = LanguageSelector.LISP;
-	// const prologGlobalInfo = new PrologGlobalInfo();
 	const grammar = createGrammar(ls);
 	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
 	const parser = createParser(ParserSelector.LL1, grammar);
