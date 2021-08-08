@@ -10,9 +10,11 @@ import {
 } from 'thaw-lexical-analyzer';
 
 import {
+	Chapter1GlobalInfo,
 	createGrammar,
 	// GrammarBase,
 	// GrammarException,
+	IExpression,
 	LanguageSelector // ,
 	// Production,
 	// Symbol
@@ -36,7 +38,7 @@ test('LR(1) parser instance creation test', () => {
 });
 
 test('LR(1) recognize test', () => {
-	// 	// Arrange
+	// Arrange
 	const ls = LanguageSelector.Chapter1;
 	const grammar = createGrammar(ls);
 	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
@@ -51,6 +53,38 @@ test('LR(1) recognize test', () => {
 	f('(* 7 13)');
 
 	expect(() => f('(* 7 13')).toThrow(ParserException);
+});
+
+function lr1ParserTest(data: Array<[input: string, expectedResult: string | string[]]>): void {
+	// Arrange
+	const ls = LanguageSelector.Chapter1;
+	const globalInfo = new Chapter1GlobalInfo();
+	const grammar = createGrammar(ls);
+	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
+	const parser = createParser(ParserSelector.LR1, grammar);
+
+	for (const [input, expectedResult] of data) {
+		// Act
+		const parseResult = parser.parse(tokenizer.tokenize(input));
+		const expr = parseResult as IExpression<number>;
+		const actualResult = expr.evaluate(globalInfo.globalEnvironment, globalInfo).toString();
+
+		// console.log(`input: ${input}\nactualResult:\n${actualResult}\n\n`);
+
+		// Assert
+		if (typeof expectedResult === 'string') {
+			expect(actualResult).toBe(expectedResult);
+		} else {
+			for (const str of expectedResult) {
+				expect(actualResult.includes(str)).toBe(true);
+			}
+		}
+	}
+}
+
+test('LR(1) Chapter1 addition test', () => {
+	// Arrange
+	lr1ParserTest([['(+ 2 3)', '5']]);
 });
 
 // ****

@@ -6,8 +6,8 @@ import { createTokenizer, LexicalAnalyzerSelector } from 'thaw-lexical-analyzer'
 
 import {
 	createGrammar,
-	// IExpression,
-	// ISExpression,
+	IExpression,
+	ISExpression,
 	LanguageSelector,
 	SASLGlobalInfo
 	// SchemeGlobalInfo

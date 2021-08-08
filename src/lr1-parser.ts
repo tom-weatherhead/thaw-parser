@@ -628,7 +628,8 @@ export class LR1Parser extends ParserBase {
 							unstrippedProduction.rhs.length - 1
 						] as string;
 
-						if (typeof semanticAction !== 'undefined') {
+						// if (typeof semanticAction !== 'undefined') {
+						if (typeof semanticAction === 'string') {
 							this.grammar.executeSemanticAction(semanticStack, semanticAction);
 						}
 					}
