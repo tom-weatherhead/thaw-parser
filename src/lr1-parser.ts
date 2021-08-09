@@ -1,17 +1,5 @@
 // lr1-parser.ts
 
-// #region ShiftReduceAction
-//
-// public enum ShiftReduceAction
-// {
-//     Error,
-//     Accept,
-//     Shift,
-//     Reduce
-// }
-//
-// #endregion
-
 import { Set, Stack } from 'thaw-common-utilities.ts';
 
 import { Token } from 'thaw-lexical-analyzer';
@@ -79,10 +67,6 @@ export class LR1Configuration extends LR0Configuration {
 	}
 }
 
-// #endregion
-
-// #region FSMState
-
 export class FSMState {
 	public readonly ConfigurationSet = new Set<LR1Configuration>();
 	public readonly Transitions = new Map<Symbol, FSMState>();
@@ -98,7 +82,6 @@ export class FSMState {
 		this.asString = s.join(' ## ');
 	}
 
-	// public override bool Equals(object obj)
 	public equals(other: unknown): boolean {
 		// TODO: Find a better implementation for this function.  Beware of cycles in the finite state machine (or ignore the transitions in this function).
 		// Note: The LR(1) parser works with the current code.
@@ -142,19 +125,9 @@ export class FSMState {
 	// }
 
 	public toString(): string {
-		// let s = this.ConfigurationSet.toArray().map((c: LR1Configuration) => `${c}`);
-		//
-		// s.sort();
-		//
-		// return s.join(' ## ');
-
 		return this.asString;
 	}
 }
-
-// #endregion
-
-// #region FiniteStateMachine
 
 export class FiniteStateMachine {
 	public readonly StateList: FSMState[];
@@ -162,11 +135,11 @@ export class FiniteStateMachine {
 
 	constructor(ss: FSMState) {
 		this.StartState = ss;
-		this.StateList = [ss]; // .Add(ss);
+		this.StateList = [ss];
 	}
 
 	public FindStateWithLabel(cs: Set<LR1Configuration>): FSMState | undefined {
-		// Returns null if no state has the given configuration set.
+		// Returns undefined if no state has the given configuration set.
 		return this.StateList.find(
 			(state) =>
 				cs.isASubsetOf(state.ConfigurationSet) && state.ConfigurationSet.isASubsetOf(cs)
@@ -174,31 +147,8 @@ export class FiniteStateMachine {
 	}
 }
 
-// #endregion
-
-// #region StateSymbolPair
-
 export class StateSymbolPair {
-	// public readonly state: FSMState;
-	// public readonly symbol: Symbol;
-
-	constructor(public readonly state: FSMState, public readonly symbol: Symbol) {
-		// state = st;
-		// symbol = sy;
-	}
-
-	// public override bool Equals(object obj)
-	// {
-	//
-	//     // if (object.ReferenceEquals(this, obj))
-	//     // {
-	//     //     return true;
-	//     // }
-	//
-	//     StateSymbolPair that = obj as StateSymbolPair;
-	//
-	//     return that != null && state.Equals(that.state) && symbol == that.symbol;
-	// }
+	constructor(public readonly state: FSMState, public readonly symbol: Symbol) {}
 
 	public equals(other: unknown): boolean {
 		const that = other as StateSymbolPair;
@@ -210,19 +160,10 @@ export class StateSymbolPair {
 		);
 	}
 
-	// public override int GetHashCode()
-	// {
-	//     return state.GetHashCode() * 101 + symbol.GetHashCode();
-	// }
-
 	public toString(): string {
 		return `${this.state} ++ ${this.symbol}`;
 	}
 }
-
-// #endregion
-
-// #region LR1Parser
 
 export class LR1Parser extends ParserBase {
 	private readonly AllSymbols: Set<Symbol>;
@@ -234,7 +175,6 @@ export class LR1Parser extends ParserBase {
 		super(g);
 
 		this.AllSymbols = new Set<Symbol>(g.terminals.concat(g.nonTerminals));
-		// this.AllSymbols.unionInPlace(g.nonTerminals);
 		this.machine = this.build_LR1();
 		this.build_go_to_table();
 	}
@@ -349,12 +289,9 @@ export class LR1Parser extends ParserBase {
 			for (const X of this.AllSymbols) {
 				const g = this.go_to1(s, X);
 
-				/*
-                if (g.Count == 0)
-                {
-                    continue;
-                }
-                 */
+				// if (g.Count == 0) {
+				//     continue;
+				// }
 
 				let stateG = fsm.FindStateWithLabel(g);
 
@@ -386,7 +323,6 @@ export class LR1Parser extends ParserBase {
 
 	// Adapted from Fischer and LeBlanc, pages 158-159.
 
-	// private GetAction(S: FSMState, tokenAsSymbol: Symbol, out int reduceProductionNum): ShiftReduceAction {
 	private GetAction(
 		S: FSMState,
 		tokenAsSymbol: Symbol
@@ -429,7 +365,6 @@ export class LR1Parser extends ParserBase {
 		}
 
 		// 2) Search for Shift and Accept actions.
-		// let symbol: Symbol;
 		const shiftOrAcceptResultFound =
 			typeof S.ConfigurationSet.toArray().find(
 				(c: LR1Configuration) => c.FindSymbolAfterDot() === tokenAsSymbol
@@ -447,8 +382,6 @@ export class LR1Parser extends ParserBase {
 					? ShiftReduceAction.Accept
 					: ShiftReduceAction.Shift;
 		}
-
-		// return result;
 
 		return {
 			reduceProductionNum,
@@ -496,7 +429,8 @@ export class LR1Parser extends ParserBase {
 		}
 
 		let tokenNum = 0;
-		let tokenAsSymbol = this.grammar.tokenToSymbol(tokenList[tokenNum]);
+		let token = tokenList[tokenNum];
+		let tokenAsSymbol = this.grammar.tokenToSymbol(token);
 		const parseStack = new Stack<FSMState>(); // The parse stack, which contains machine states.
 		const semanticStack = new Stack<object>();
 
@@ -504,11 +438,7 @@ export class LR1Parser extends ParserBase {
 
 		while (parseStack.size > 0) {
 			const S = parseStack.peek();
-			// let reduceProductionNum: number;
-			// const action = this.GetAction(S, tokenAsSymbol, out reduceProductionNum);
 			const { reduceProductionNum, action } = this.GetAction(S, tokenAsSymbol);
-			// reduceProductionNum: number;
-			// action: ShiftReduceAction;
 			const semanticStackSize = semanticStack.size;
 			let SPrime: FSMState;
 			let unstrippedProduction: Production;
@@ -548,7 +478,7 @@ export class LR1Parser extends ParserBase {
 						this.grammar.pushTokenOntoSemanticStack(
 							semanticStack,
 							tokenAsSymbol,
-							tokenList[tokenNum]
+							token
 						);
 					}
 
@@ -559,7 +489,8 @@ export class LR1Parser extends ParserBase {
 						throw new SyntaxException('Unexpected end of token list');
 					}
 
-					tokenAsSymbol = this.grammar.tokenToSymbol(tokenList[tokenNum]);
+					token = tokenList[tokenNum];
+					tokenAsSymbol = this.grammar.tokenToSymbol(token);
 
 					break;
 
@@ -572,18 +503,15 @@ export class LR1Parser extends ParserBase {
 					}
 
 					unstrippedProduction = this.grammar.productions[reduceProductionNum];
-					/*
-                    Production p = unstrippedProduction.StripOutSemanticActions();
 
-                    for (int i = 0; i < p.rhs.Count; ++i)
-                    {
-
-                        if (!p.rhs[i].Equals(Symbol.Lambda))    // Test; hack.
-                        {
-                            parseStack.Pop();
-                        }
-                    }
-                     */
+					// Production p = unstrippedProduction.StripOutSemanticActions();
+					//
+					// for (int i = 0; i < p.rhs.Count; ++i) {
+					//
+					//     if (!p.rhs[i].Equals(Symbol.Lambda)) {    // Test; hack.
+					//         parseStack.Pop();
+					//     }
+					// }
 
 					// Pop the production's non-Lambda symbols off of the parse stack.
 					unstrippedProduction
@@ -612,9 +540,10 @@ export class LR1Parser extends ParserBase {
 				default:
 					// I.e. Error
 					throw new SyntaxException(
-						`LR1Parser.shift_reduce_driver() : Syntax error at symbol ${tokenAsSymbol}`
+						`LR1Parser.shift_reduce_driver() : Syntax error at symbol ${tokenAsSymbol}`,
+						token.line,
+						token.column
 					);
-				// tokenList[tokenNum].Line, tokenList[tokenNum].Column);
 			}
 		}
 

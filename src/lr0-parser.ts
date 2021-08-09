@@ -6,7 +6,12 @@ import { Token } from 'thaw-lexical-analyzer';
 
 import { GrammarException, IGrammar, Production, Symbol } from 'thaw-grammar';
 
-// import { ParserException } from './exceptions/parser-exception';
+import { InternalErrorException } from './exceptions/internal-error';
+import { ReduceReduceConflictException } from './exceptions/reduce-reduce-conflict';
+import { ShiftReduceConflictException } from './exceptions/shift-reduce-conflict';
+// import { ParserException } from './exceptions/parser';
+import { SyntaxException } from './exceptions/syntax';
+
 import { ParserBase } from './parser-base';
 
 export enum ShiftReduceAction {
@@ -83,16 +88,16 @@ export class LR0Configuration implements IEqualityComparable {
 		const dotIndex = this.FindDot();
 
 		if (dotIndex < 0) {
-			throw new Error('LR0Configuration.AdvanceDot() : No dot found.'); // InternalErrorException
+			throw new InternalErrorException('LR0Configuration.AdvanceDot() : No dot found.');
 		}
 
 		const newRHS = this.ProductionRHS.filter((symbol: Symbol) => symbol !== Symbol.Dot);
 		const newConf = new LR0Configuration(this.ProductionLHS, newRHS);
 
 		if (dotIndex >= this.ProductionRHS.length - 1) {
-			throw new Error(
+			throw new InternalErrorException(
 				'LR0Configuration.AdvanceDot() : The dot cannot be advanced any further.'
-			); // InternalErrorException
+			);
 		}
 
 		newConf.ProductionRHS.splice(dotIndex + 1, 0, Symbol.Dot);
@@ -299,12 +304,9 @@ export class LR0Parser extends ParserBase {
 			for (const X of this.AllSymbols) {
 				const g = this.go_to0(s, X);
 
-				/*
-				if (g.Count == 0)
-				{
-				continue;
-				}
-				*/
+				// if (g.Count == 0) {
+				// 	continue;
+				// }
 
 				let stateG = cfsm.FindStateWithLabel(g);
 
@@ -323,9 +325,9 @@ export class LR0Parser extends ParserBase {
 				}
 
 				if (stateS.Transitions.has(X)) {
-					throw new Error(
+					throw new InternalErrorException(
 						'LR0Parser.build_CFSM() : Finite state machine transition is being overwritten.'
-					); // InternalErrorException
+					);
 				}
 
 				stateS.Transitions.set(X, stateG);
@@ -368,9 +370,9 @@ export class LR0Parser extends ParserBase {
 					// console.log(`Yay! Prod ${matchedProduction} matches ${productionToCompare}`);
 
 					if (reduceOrAcceptResultFound && reduceProductionNum != i) {
-						throw new Error(
+						throw new ReduceReduceConflictException(
 							'GetAction() : Multiple actions found; grammar is not LR(0).'
-						); // ReduceReduceConflictException
+						);
 					}
 
 					result = matchedProduction.equals(this.startingProduction)
@@ -392,7 +394,9 @@ export class LR0Parser extends ParserBase {
 
 		if (shiftResultFound) {
 			if (reduceOrAcceptResultFound) {
-				throw new Error('GetAction() : Multiple actions found; grammar is not LR(0).'); // ShiftReduceConflictException
+				throw new ShiftReduceConflictException(
+					'GetAction() : Multiple actions found; grammar is not LR(0).'
+				);
 			}
 
 			result = ShiftReduceAction.Shift;
@@ -454,7 +458,7 @@ export class LR0Parser extends ParserBase {
 		const value = this.GoToTable.get(pair.toString());
 
 		if (typeof value === 'undefined') {
-			throw new Error(`go_to() failed on token ${tokenAsSymbol}`); // InternalErrorException
+			throw new InternalErrorException(`go_to() failed on token ${tokenAsSymbol}`);
 		}
 
 		return value;
@@ -464,7 +468,7 @@ export class LR0Parser extends ParserBase {
 
 	private shift_reduce_driver(tokenList: Token[], parse: boolean): unknown {
 		if (tokenList.length === 0) {
-			throw new Error('Token list is empty'); // SyntaxException
+			throw new SyntaxException('Token list is empty');
 		}
 
 		// console.log('shift_reduce_driver(): Tokens are:');
@@ -474,7 +478,8 @@ export class LR0Parser extends ParserBase {
 		// }
 
 		let tokenNum = 0;
-		let tokenAsSymbol = this.grammar.tokenToSymbol(tokenList[tokenNum]);
+		let token = tokenList[tokenNum];
+		let tokenAsSymbol = this.grammar.tokenToSymbol(token);
 		const parseStack = new Stack<CFSMState>(); // The parse stack, which contains CFSM states.
 		const semanticStack = new Stack<unknown>();
 
@@ -525,7 +530,7 @@ export class LR0Parser extends ParserBase {
 						this.grammar.pushTokenOntoSemanticStack(
 							semanticStack,
 							tokenAsSymbol,
-							tokenList[tokenNum]
+							token
 						);
 					}
 
@@ -537,7 +542,8 @@ export class LR0Parser extends ParserBase {
 						tokenNum = tokenList.length - 1; // Hack.  Even after the last token has been shifted, we still need to reduce.  So stick around.
 					}
 
-					tokenAsSymbol = this.grammar.tokenToSymbol(tokenList[tokenNum]);
+					token = tokenList[tokenNum];
+					tokenAsSymbol = this.grammar.tokenToSymbol(token);
 
 					break;
 
@@ -601,15 +607,15 @@ export class LR0Parser extends ParserBase {
 					// console.log(
 					// 	`default: tokenAsSymbol is ${tokenAsSymbol} ${Symbol[tokenAsSymbol]}`
 					// );
-					throw new Error(
-						`LR0Parser.shift_reduce_driver() : Syntax error at symbol ${Symbol[tokenAsSymbol]} value ${tokenList[tokenNum].tokenValue}, line ${tokenList[tokenNum].line}, column ${tokenList[tokenNum].column}.`
-					); // SyntaxException
+					throw new SyntaxException(
+						`LR0Parser.shift_reduce_driver() : Syntax error at symbol ${Symbol[tokenAsSymbol]} value ${token.tokenValue}, line ${token.line}, column ${token.column}.`
+					);
 			}
 		}
 
-		throw new Error(
+		throw new InternalErrorException(
 			'LR0Parser.shift_reduce_driver() : The parse stack is empty, but the Accept state has not been reached.'
-		); // InternalErrorException
+		);
 	}
 
 	public recognize(tokenList: Token[]): void {

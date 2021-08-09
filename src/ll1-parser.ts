@@ -103,7 +103,8 @@ export class LL1Parser extends ParserBase {
 		}
 
 		let tokenNum = 0;
-		let tokenAsSymbol = this.grammar.tokenToSymbol(tokenList[tokenNum]);
+		let token = tokenList[tokenNum];
+		let tokenAsSymbol = this.grammar.tokenToSymbol(token);
 		const parseStack = new Stack<unknown>(); // The parse stack
 		const semanticStack = new Stack<unknown>();
 
@@ -167,7 +168,7 @@ export class LL1Parser extends ParserBase {
 						this.grammar.pushTokenOntoSemanticStack(
 							semanticStack,
 							tokenAsSymbol,
-							tokenList[tokenNum]
+							token
 						);
 					}
 
@@ -182,7 +183,8 @@ export class LL1Parser extends ParserBase {
 							);
 						}
 
-						tokenAsSymbol = this.grammar.tokenToSymbol(tokenList[tokenNum]);
+						token = tokenList[tokenNum];
+						tokenAsSymbol = this.grammar.tokenToSymbol(token);
 					}
 				} else {
 					throw new SyntaxException(
@@ -191,8 +193,8 @@ export class LL1Parser extends ParserBase {
 						} (${tokenAsSymbol}) (token ${tokenList[tokenNum].tokenType}) value ${
 							tokenList[tokenNum].tokenValue
 						}`,
-						tokenList[tokenNum].line,
-						tokenList[tokenNum].column
+						token.line,
+						token.column
 					);
 				}
 			} else {
