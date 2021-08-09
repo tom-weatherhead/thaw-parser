@@ -467,6 +467,7 @@ export class LALR1Parser extends LR0Parser {
 
 				const lalr1StateDest = result.FindStateWithLabel(cognate3);
 
+				// BUG 2021-08-09 : It seems like no transitions are being set. (When unit testing with the Chapter1 grammar.)
 				lalr1State.Transitions.set(symbol, lalr1StateDest);
 			}
 		}
