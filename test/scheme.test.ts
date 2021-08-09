@@ -12,7 +12,7 @@ import {
 	SchemeGlobalInfo
 } from 'thaw-grammar';
 
-import { createParser, ParserException, ParserSelector } from '..';
+import { createParser, ParserSelector, SyntaxException } from '..';
 
 test('LL(1) Scheme parser instance creation test', () => {
 	// Arrange
@@ -43,7 +43,7 @@ test('LL(1) Scheme recognize test', () => {
 	f('(primop? +)');
 	f('(closure? (lambda (x) (+ x 1)))');
 
-	expect(() => f('(* 7 13')).toThrow(ParserException);
+	expect(() => f('(* 7 13')).toThrow(SyntaxException);
 });
 
 function schemeTest(data: Array<[input: string, expectedResult: string | string[]]>): void {

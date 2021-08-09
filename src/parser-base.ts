@@ -6,7 +6,7 @@ import { Token } from 'thaw-lexical-analyzer';
 
 import { IGrammar, Production, Symbol } from 'thaw-grammar';
 
-import { ParserException } from './exceptions/parser-exception';
+import { ParserException } from './exceptions/parser';
 import { IParser } from './iparser';
 
 /* eslint-disable @typescript-eslint/ban-types */

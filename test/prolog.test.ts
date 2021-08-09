@@ -6,7 +6,7 @@ import { createTokenizer, LexicalAnalyzerSelector } from 'thaw-lexical-analyzer'
 
 import { createGrammar, LanguageSelector, PrologGlobalInfo } from 'thaw-grammar';
 
-import { createParser, ParserException, ParserSelector } from '..';
+import { createParser, ParserSelector, SyntaxException } from '..';
 
 test('LL(1) Prolog parser instance creation test', () => {
 	// Arrange
@@ -54,7 +54,7 @@ test('LL(1) Prolog recognize test', () => {
 	// f('G(X) :- H(X), !, I(X).');
 	f('g(X) :- h(X), !, i(X).');
 
-	expect(() => f('pred1(A.')).toThrow(ParserException);
+	expect(() => f('pred1(A.')).toThrow(SyntaxException);
 });
 
 function success(substitutionAsString = ''): string {

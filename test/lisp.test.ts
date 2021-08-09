@@ -12,7 +12,7 @@ import {
 	LISPGlobalInfo
 } from 'thaw-grammar';
 
-import { createParser, ParserException, ParserSelector } from '..';
+import { createParser, ParserSelector, SyntaxException } from '..';
 
 test('LL(1) LISP parser instance creation test', () => {
 	// Arrange
@@ -41,7 +41,7 @@ test('LL(1) LISP recognize test', () => {
 
 	f('(* 7 13)');
 
-	expect(() => f('(* 7 13')).toThrow(ParserException);
+	expect(() => f('(* 7 13')).toThrow(SyntaxException);
 });
 
 function lispTest(data: Array<[input: string, expectedResult: string | string[]]>): void {

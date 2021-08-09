@@ -10,7 +10,9 @@ import { Token } from 'thaw-lexical-analyzer';
 
 import { ArgumentException, IGrammar, ParserSelector, Production, Symbol } from 'thaw-grammar';
 
-import { ParserException } from './exceptions/parser-exception';
+import { ParserException } from './exceptions/parser';
+import { SyntaxException } from './exceptions/syntax';
+
 import { ParserBase } from './parser-base';
 
 export class LL1Parser extends ParserBase {
@@ -183,7 +185,7 @@ export class LL1Parser extends ParserBase {
 						tokenAsSymbol = this.grammar.tokenToSymbol(tokenList[tokenNum]);
 					}
 				} else {
-					throw new ParserException(
+					throw new SyntaxException(
 						`Failed to match symbol ${X} ${Symbol[X]} (type ${typeof X}) to symbol ${
 							Symbol[tokenAsSymbol]
 						} (${tokenAsSymbol}) (token ${tokenList[tokenNum].tokenType}) value ${

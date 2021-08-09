@@ -5,7 +5,11 @@ export { ParserSelector } from 'thaw-grammar';
 export { createParser } from './parser-factory';
 export { IParser } from './iparser';
 
-export { ParserException } from './exceptions/parser-exception';
+export { InternalErrorException } from './exceptions/internal-error';
+export { ReduceReduceConflictException } from './exceptions/reduce-reduce-conflict';
+export { ShiftReduceConflictException } from './exceptions/shift-reduce-conflict';
+export { ParserException } from './exceptions/parser';
+export { SyntaxException } from './exceptions/syntax';
 
 // export interface IParserInfrastructure {
 // 	readonly languageSelector: LanguageSelector;

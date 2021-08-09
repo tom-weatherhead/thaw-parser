@@ -22,7 +22,11 @@ import { LR0Configuration, ShiftReduceAction } from './lr0-parser';
 
 import { ParserBase } from './parser-base';
 
-import { ParserException } from './exceptions/parser-exception';
+import { InternalErrorException } from './exceptions/internal-error';
+import { ReduceReduceConflictException } from './exceptions/reduce-reduce-conflict';
+import { ShiftReduceConflictException } from './exceptions/shift-reduce-conflict';
+// import { ParserException } from './exceptions/parser';
+import { SyntaxException } from './exceptions/syntax';
 
 // #region LR1Configuration
 
@@ -44,34 +48,13 @@ export class LR1Configuration extends LR0Configuration {
 		this.Lookahead = look;
 	}
 
-	// public LR1Configuration(LR0Configuration src, Symbol look)
-	//     : base(src)
-	// {
-	//     Lookahead = look;
-	// }
-	//
-	// public LR1Configuration(Production p, Symbol look)
-	//     : base(p)
-	// {
-	//     Lookahead = look;
-	// }
-
-	// public override bool Equals(object obj)
-	// {
-	//
-	//     if (object.ReferenceEquals(this, obj))
-	//     {
-	//         return true;
-	//     }
-	//
-	//     LR0Configuration thatBase = obj as LR0Configuration;
-	//     LR1Configuration that = obj as LR1Configuration;
-	//
-	//     return base.Equals(thatBase) && that != null && Lookahead == that.Lookahead;
-	// }
-
 	public override equals(other: unknown): boolean {
 		const otherConfig = other as LR1Configuration;
+
+		// TODO: Try this:
+		// if (otherConfig === this) {
+		// 	return true;
+		// }
 
 		if (
 			typeof otherConfig === 'undefined' ||
@@ -84,11 +67,6 @@ export class LR1Configuration extends LR0Configuration {
 
 		return true;
 	}
-
-	// public override int GetHashCode()
-	// {
-	//     return base.GetHashCode() * 101 + Lookahead.GetHashCode();  // ThAW 2013/05/08: The + was a second *
-	// }
 
 	public override toString(): string {
 		return `${super.toString()}; ${this.Lookahead}`;
@@ -394,8 +372,7 @@ export class LR1Parser extends ParserBase {
 				}
 
 				if (stateS.Transitions.has(X)) {
-					// InternalErrorException
-					throw new Error(
+					throw new InternalErrorException(
 						'LR1Parser.build_LR1() : Finite state machine transition is being overwritten.'
 					);
 				}
@@ -439,8 +416,7 @@ export class LR1Parser extends ParserBase {
 
 				if (matchedProduction.equals(productionToCompare)) {
 					if (reduceResultFound && reduceProductionNum != i) {
-						// ReduceReduceConflictException
-						throw new Error(
+						throw new ReduceReduceConflictException(
 							'GetAction() : Multiple actions found; grammar is not LR(1).'
 						);
 					}
@@ -461,8 +437,9 @@ export class LR1Parser extends ParserBase {
 
 		if (shiftOrAcceptResultFound) {
 			if (reduceResultFound) {
-				// ShiftReduceConflictException
-				throw new Error('GetAction() : Multiple actions found; grammar is not LR(1).');
+				throw new ShiftReduceConflictException(
+					'GetAction() : Multiple actions found; grammar is not LR(1).'
+				);
 			}
 
 			result =
@@ -499,8 +476,7 @@ export class LR1Parser extends ParserBase {
 		const pair = new StateSymbolPair(S, tokenAsSymbol).toString();
 
 		if (!this.GoToTable.has(pair)) {
-			// InternalErrorException
-			throw new Error(`go_to() failed on token ${tokenAsSymbol}`);
+			throw new InternalErrorException(`go_to() failed on token ${tokenAsSymbol}`);
 		}
 
 		const result = this.GoToTable.get(pair);
@@ -516,8 +492,7 @@ export class LR1Parser extends ParserBase {
 
 	private shift_reduce_driver(tokenList: Token[], parse: boolean): unknown {
 		if (tokenList.length === 0) {
-			// SyntaxException
-			throw new Error('Token list is empty');
+			throw new SyntaxException('Token list is empty');
 		}
 
 		let tokenNum = 0;
@@ -581,8 +556,7 @@ export class LR1Parser extends ParserBase {
 					++tokenNum;
 
 					if (tokenNum >= tokenList.length) {
-						// SyntaxException
-						throw new Error('Unexpected end of token list');
+						throw new SyntaxException('Unexpected end of token list');
 					}
 
 					tokenAsSymbol = this.grammar.tokenToSymbol(tokenList[tokenNum]);
@@ -594,8 +568,7 @@ export class LR1Parser extends ParserBase {
 						reduceProductionNum < 0 ||
 						reduceProductionNum >= this.grammar.productions.length
 					) {
-						// InternalErrorException
-						throw new Error('Reduce: Invalid production number');
+						throw new InternalErrorException('Reduce: Invalid production number');
 					}
 
 					unstrippedProduction = this.grammar.productions[reduceProductionNum];
@@ -638,16 +611,14 @@ export class LR1Parser extends ParserBase {
 
 				default:
 					// I.e. Error
-					// SyntaxException
-					throw new ParserException(
+					throw new SyntaxException(
 						`LR1Parser.shift_reduce_driver() : Syntax error at symbol ${tokenAsSymbol}`
 					);
 				// tokenList[tokenNum].Line, tokenList[tokenNum].Column);
 			}
 		}
 
-		// InternalErrorException
-		throw new Error(
+		throw new InternalErrorException(
 			'LR1Parser.shift_reduce_driver() : The parse stack is empty, but the Accept state has not been reached.'
 		);
 	}

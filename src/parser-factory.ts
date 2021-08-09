@@ -2,7 +2,7 @@
 
 import { IGrammar, ParserSelector } from 'thaw-grammar';
 
-import { ParserException } from './exceptions/parser-exception';
+import { ParserException } from './exceptions/parser';
 import { IParser } from './iparser';
 import { LL1Parser } from './ll1-parser';
 import { LR0Parser } from './lr0-parser';
