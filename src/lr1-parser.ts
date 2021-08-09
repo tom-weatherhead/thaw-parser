@@ -1,4 +1,4 @@
-// lr1-parser.ts
+// tom-weatherhead/thaw-parser/src/lr1-parser.ts
 
 import { Set, Stack } from 'thaw-common-utilities.ts';
 

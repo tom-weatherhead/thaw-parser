@@ -1,607 +1,684 @@
-// lalr1-parser.ts
+// tom-weatherhead/thaw-parser/src/lalr1-parser.ts
 
-// import { IEqualityComparable, Set, Stack } from 'thaw-common-utilities.ts';
-//
+import { Set, Stack } from 'thaw-common-utilities.ts';
+
 // import { Token } from 'thaw-lexical-analyzer';
-//
-// import { GrammarException, IGrammar, Production, Symbol } from 'thaw-grammar';
-//
-// import { LR0Configuration, ShiftReduceAction } from './lr0-parser';
+
+import { IGrammar, Symbol } from 'thaw-grammar';
+
+import { CFSMState, LR0Configuration, LR0Parser, ShiftReduceAction } from './lr0-parser';
+
+import { LR1Configuration, LR1Parser } from './lr1-parser';
+
+import { InternalErrorException } from './exceptions/internal-error';
+import { ReduceReduceConflictException } from './exceptions/reduce-reduce-conflict';
+import { ShiftReduceConflictException } from './exceptions/shift-reduce-conflict';
+// import { ParserException } from './exceptions/parser';
+// import { SyntaxException } from './exceptions/syntax';
 
 // #region LALR1Configuration
 
 /* eslint-disable @typescript-eslint/ban-types */
 
-// export class LALR1Configuration extends LR0Configuration {
-// 	public readonly HashSet<Symbol> Lookaheads = new HashSet<Symbol>();
-// 	public readonly HashSet<LALR1Configuration> PropagateLinks = new HashSet<LALR1Configuration>();
-//
-// 	public LALR1Configuration(Symbol lhs, Symbol look)
-// 		: base(lhs)
-// 	{
-// 		Lookaheads.Add(look);
-// 	}
-//
-// 	public LALR1Configuration(Symbol lhs, HashSet<Symbol> looks)
-// 		: base(lhs)
-// 	{
-// 		Lookaheads.UnionWith(looks);
-// 	}
-//
-// 	public LALR1Configuration(LR0Configuration src, HashSet<Symbol> looks)
-// 		: base(src)
-// 	{
-// 		Lookaheads.UnionWith(looks);
-// 	}
-//
-// 	public LALR1Configuration(Production p, Symbol look)
-// 		: base(p)
-// 	{
-// 		Lookaheads.Add(look);
-// 	}
-//
-// 	public static LALR1Configuration Create(LR1Configuration c)
-// 	{
-// 		var result = new LALR1Configuration(c.ProductionLHS, c.Lookahead);
-//
-// 		result.ProductionRHS.AddRange(c.ProductionRHS);
-// 		return result;
-// 	}
-//
-// 	public override bool Equals(object obj)
-// 	{
-//
-// 		if (object.ReferenceEquals(this, obj))
-// 		{
-// 			return true;
-// 		}
-//
-// 		var thatBase = obj as LR0Configuration;
-// 		var that = obj as LALR1Configuration;
-//
-// 		return base.Equals(thatBase) && that != null && Lookaheads.IsSubsetOf(that.Lookaheads) && that.Lookaheads.IsSubsetOf(Lookaheads);
-// 	}
-//
-// 	public override int GetHashCode()
-// 	{
-// 		/*
-// 		int hashCode = base.GetHashCode() * 103;
-//
-// 		foreach (Symbol symbol in Lookaheads)
-// 		{
-// 			hashCode += symbol.GetHashCode();   // The order of the lookahead symbols does not alter the hash code.
-// 		}
-//
-// 		return hashCode;
-// 		 */
-//
-// 		// The order of the lookahead symbols does not alter the hash code.
-// 		return Lookaheads
-// 			.Select(symbol => symbol.GetHashCode())
-// 			.Aggregate(base.GetHashCode() * 103, (accumulator, hashCode) => accumulator + hashCode);
-// 	}
-//
-// 	// The "new" keyword is used here because this function hides a function in the base class which differs only by return type.
-//
-// 	public new LALR1Configuration AdvanceDot()
-// 	{
-// 		return new LALR1Configuration(base.AdvanceDot(), Lookaheads);
-// 	}
-//
-// 	public LR0Configuration ToLR0Configuration()    // Unit tests show that this is necessary.
-// 	{
-// 		return new LR0Configuration(ProductionLHS, ProductionRHS);
-// 	}
-// }
-//
+export class LALR1Configuration extends LR0Configuration {
+	public static fromLR0(c: LR0Configuration, looks: Set<Symbol>): LALR1Configuration {
+		const result = new LALR1Configuration(c.ProductionLHS);
+
+		// result.ProductionRHS.push(...c.ProductionRHS);
+
+		// for (const lookahead of lookaheads) {
+		// 	result.Lookaheads.add(lookahead);
+		// }
+
+		result.Lookaheads.unionInPlace(looks);
+
+		return result;
+	}
+
+	public static fromLR1(c: LR1Configuration, ...lookaheads: Symbol[]): LALR1Configuration {
+		const result = new LALR1Configuration(c.ProductionLHS, c.Lookahead);
+
+		result.ProductionRHS.push(...c.ProductionRHS);
+
+		for (const lookahead of lookaheads) {
+			result.Lookaheads.add(lookahead);
+		}
+
+		return result;
+	}
+
+	public readonly Lookaheads = new Set<Symbol>();
+	public readonly PropagateLinks = new Set<LALR1Configuration>();
+
+	constructor(lhs: Symbol, ...looks: Symbol[]) {
+		super(lhs);
+
+		for (const look of looks) {
+			this.Lookaheads.add(look);
+		}
+	}
+
+	// public LALR1Configuration(Symbol lhs, HashSet<Symbol> looks)
+	// 	: base(lhs)
+	// {
+	// 	Lookaheads.UnionWith(looks);
+	// }
+	//
+	// public LALR1Configuration(LR0Configuration src, HashSet<Symbol> looks)
+	// 	: base(src)
+	// {
+	// 	Lookaheads.UnionWith(looks);
+	// }
+	//
+	// public LALR1Configuration(Production p, Symbol look)
+	// 	: base(p)
+	// {
+	// 	Lookaheads.Add(look);
+	// }
+
+	// public override bool Equals(object obj) {
+	//
+	// 	if (object.ReferenceEquals(this, obj)) {
+	// 		return true;
+	// 	}
+	//
+	// 	var thatBase = obj as LR0Configuration;
+	// 	var that = obj as LALR1Configuration;
+	//
+	// 	return base.Equals(thatBase) && that != null && Lookaheads.IsSubsetOf(that.Lookaheads) && that.Lookaheads.IsSubsetOf(Lookaheads);
+	// }
+
+	public override equals(other: unknown): boolean {
+		const otherConfig = other as LALR1Configuration;
+
+		// TODO: Try this:
+		// if (otherConfig === this) {
+		// 	return true;
+		// }
+
+		if (
+			typeof otherConfig === 'undefined' ||
+			!(other instanceof LALR1Configuration) ||
+			!super.equals(other) ||
+			!this.Lookaheads.isEqualTo(otherConfig.Lookaheads)
+		) {
+			return false;
+		}
+
+		return true;
+	}
+
+	// public override int GetHashCode() {
+	// 	/*
+	// 	int hashCode = base.GetHashCode() * 103;
+	//
+	// 	foreach (Symbol symbol in Lookaheads)
+	// 	{
+	// 		hashCode += symbol.GetHashCode();   // The order of the lookahead symbols does not alter the hash code.
+	// 	}
+	//
+	// 	return hashCode;
+	// 	 */
+	//
+	// 	// The order of the lookahead symbols does not alter the hash code.
+	// 	return Lookaheads
+	// 		.Select(symbol => symbol.GetHashCode())
+	// 		.Aggregate(base.GetHashCode() * 103, (accumulator, hashCode) => accumulator + hashCode);
+	// }
+
+	public override toString(): string {
+		// return `${super.toString()}; ${this.Lookahead}`;
+
+		return 'LALR1Configuration.toString()';
+	}
+
+	// public override AdvanceDot(): LR1Configuration {
+	// 	return LR1Configuration.fromLR0(super.AdvanceDot(), this.Lookahead);
+	// }
+
+	// The "new" keyword is used here because this function hides a function in the base class which differs only by return type.
+
+	public override AdvanceDot(): LALR1Configuration {
+		return LALR1Configuration.fromLR0(super.AdvanceDot(), this.Lookaheads);
+	}
+
+	public ToLR0Configuration(): LR0Configuration {
+		// Unit tests show that this is necessary.
+		return new LR0Configuration(this.ProductionLHS, this.ProductionRHS);
+	}
+}
+
 // #endregion
-//
+
 // #region LALR1CFSMState
-//
-// class LALR1CFSMState
-// {
-// 	public readonly HashSet<LALR1Configuration> ConfigurationSet;
-// 	public readonly Dictionary<Symbol, LALR1CFSMState> Transitions = new Dictionary<Symbol, LALR1CFSMState>();
-//
-// 	public LALR1CFSMState(HashSet<LALR1Configuration> cs)
-// 	{
-// 		ConfigurationSet = cs;
-// 	}
-//
-// 	public override bool Equals(object obj)
-// 	{
-// 		// TODO: Find a better implementation for this function.  Beware of cycles in the finite state machine (or ignore the transitions in this function).
-//
-// 		if (object.ReferenceEquals(this, obj))
-// 		{
-// 			return true;
-// 		}
-//
-// 		var that = obj as LALR1CFSMState;
-//
-// 		// TODO: Should we also consider Transitions.Keys?
-// 		return that != null && ConfigurationSet.IsSubsetOf(that.ConfigurationSet) && that.ConfigurationSet.IsSubsetOf(ConfigurationSet);
-// 	}
-//
-// 	public override int GetHashCode()
-// 	{
-// 		// TODO: Find a better implementation for this function.  Beware of cycles in the finite state machine (or ignore the transitions in this function).
-// 		/*
-// 		int hashCode = 0;
-//
-// 		foreach (LALR1Configuration conf in ConfigurationSet)
-// 		{
-// 			// The order of the configurations in the set doesn't affect the hash code.
-// 			hashCode += conf.GetHashCode();
-// 		}
-//
-// 		// TODO: Should we also consider Transitions.Keys?
-// 		return hashCode;
-// 		 */
-// 		return ConfigurationSet
-// 			.Select(conf => conf.GetHashCode())
-// 			.Aggregate(0, (accumulator, hashCode) => accumulator + hashCode);
-// 	}
-// }
-//
+
+export class LALR1CFSMState {
+	public readonly Transitions = new Map<Symbol, LALR1CFSMState>();
+
+	constructor(public readonly ConfigurationSet: Set<LALR1Configuration>) {}
+
+	// public override bool Equals(object obj) {
+	// 	// TODO: Find a better implementation for this function.  Beware of cycles in the finite state machine (or ignore the transitions in this function).
+	//
+	// 	// if (object.ReferenceEquals(this, obj)) {
+	// 	// 	return true;
+	// 	// }
+	//
+	// 	var that = obj as LALR1CFSMState;
+	//
+	// 	// TODO: Should we also consider Transitions.Keys?
+	// 	return that != null && ConfigurationSet.IsSubsetOf(that.ConfigurationSet) && that.ConfigurationSet.IsSubsetOf(ConfigurationSet);
+	// }
+
+	public equals(other: unknown): boolean {
+		const that = other as LALR1CFSMState;
+
+		return (
+			typeof that !== 'undefined' &&
+			this.ConfigurationSet.isASubsetOf(that.ConfigurationSet) &&
+			that.ConfigurationSet.isASubsetOf(this.ConfigurationSet)
+		);
+	}
+
+	// public override int GetHashCode() {
+	// 	// TODO: Find a better implementation for this function.  Beware of cycles in the finite state machine (or ignore the transitions in this function).
+	// 	/*
+	// 	int hashCode = 0;
+	//
+	// 	foreach (LALR1Configuration conf in ConfigurationSet)
+	// 	{
+	// 		// The order of the configurations in the set doesn't affect the hash code.
+	// 		hashCode += conf.GetHashCode();
+	// 	}
+	//
+	// 	// TODO: Should we also consider Transitions.Keys?
+	// 	return hashCode;
+	// 	 */
+	// 	return ConfigurationSet
+	// 		.Select(conf => conf.GetHashCode())
+	// 		.Aggregate(0, (accumulator, hashCode) => accumulator + hashCode);
+	// }
+}
+
 // #endregion
-//
+
 // #region LALR1CFSM
-//
-// class LALR1CFSM
-// {
-// 	public readonly List<LALR1CFSMState> StateList = new List<LALR1CFSMState>();
-// 	public readonly LALR1CFSMState StartState;
-//
-// 	public LALR1CFSM(LALR1CFSMState ss)
-// 	{
-// 		StartState = ss;
-// 		StateList.Add(ss);
-// 	}
-//
-// 	public LALR1CFSMState FindStateWithLabel(HashSet<LALR1Configuration> cs)
-// 	{
-//
-// 		foreach (var state in StateList)
-// 		{
-//
-// 			if (cs.IsSubsetOf(state.ConfigurationSet) &&
-// 				state.ConfigurationSet.IsSubsetOf(cs))
-// 			{
-// 				return state;
-// 			}
-// 		}
-//
-// 		throw new InternalErrorException(string.Format("LALR1CFSM.FindStateWithLabel() : No matching state found; label size == {0}.", cs.Count));
-// 	}
-// }
-//
+
+export class LALR1CFSM {
+	public readonly StateList: LALR1CFSMState[];
+	public readonly StartState: LALR1CFSMState;
+
+	constructor(ss: LALR1CFSMState) {
+		this.StartState = ss;
+		this.StateList = [ss];
+	}
+
+	public FindStateWithLabel(cs: Set<LALR1Configuration>): LALR1CFSMState {
+		for (const state of this.StateList) {
+			// if (cs.IsSubsetOf(state.ConfigurationSet) &&
+			// 	state.ConfigurationSet.IsSubsetOf(cs))
+			if (state.ConfigurationSet.isEqualTo(cs)) {
+				return state;
+			}
+		}
+
+		throw new InternalErrorException(
+			`LALR1CFSM.FindStateWithLabel() : No matching state found; label size == ${cs.size}.`
+		);
+	}
+}
+
 // #endregion
-//
+
 // #region LALR1StateSymbolPair
-//
-// class LALR1StateSymbolPair
-// {
-// 	public readonly LALR1CFSMState state;
-// 	public readonly Symbol symbol;
-//
-// 	public LALR1StateSymbolPair(LALR1CFSMState st, Symbol sy)
-// 	{
-// 		state = st;
-// 		symbol = sy;
-// 	}
-//
-// 	public override bool Equals(object obj)
-// 	{
-//
-// 		if (object.ReferenceEquals(this, obj))
-// 		{
-// 			return true;
-// 		}
-//
-// 		var that = obj as LALR1StateSymbolPair;
-//
-// 		return that != null && state.Equals(that.state) && symbol == that.symbol;
-// 	}
-//
-// 	public override int GetHashCode()
-// 	{
-// 		return state.GetHashCode() * 101 + symbol.GetHashCode();
-// 	}
-// }
-//
+
+export class LALR1StateSymbolPair {
+	// public readonly LALR1CFSMState state;
+	// public readonly Symbol symbol;
+
+	constructor(public readonly state: LALR1CFSMState, public readonly symbol: Symbol) {
+		// state = st;
+		// symbol = sy;
+	}
+
+	// public override bool Equals(object obj) {
+	//
+	// 	if (object.ReferenceEquals(this, obj)) {
+	// 		return true;
+	// 	}
+	//
+	// 	var that = obj as LALR1StateSymbolPair;
+	//
+	// 	return that != null && state.Equals(that.state) && symbol == that.symbol;
+	// }
+
+	public equals(other: unknown): boolean {
+		const that = other as LALR1StateSymbolPair;
+
+		return (
+			typeof that !== 'undefined' &&
+			this.state.equals(that.state) &&
+			this.symbol === that.symbol
+		);
+	}
+
+	// public override int GetHashCode() {
+	// 	return state.GetHashCode() * 101 + symbol.GetHashCode();
+	// }
+}
+
 // #endregion
-//
+
 // #region LookaheadPropagationRecord
-//
-// class LookaheadPropagationRecord
-// {
-// 	public readonly LALR1Configuration configuration;
-// 	public readonly Symbol lookahead;
-//
-// 	public LookaheadPropagationRecord(LALR1Configuration c, Symbol l)
-// 	{
-// 		configuration = c;
-// 		lookahead = l;
-// 	}
-// }
-//
+
+export class LookaheadPropagationRecord {
+	// public readonly LALR1Configuration configuration;
+	// public readonly Symbol lookahead;
+
+	constructor(
+		public readonly configuration: LALR1Configuration,
+		public readonly lookahead: Symbol
+	) {
+		// configuration = c;
+		// lookahead = l;
+	}
+}
+
 // #endregion
-//
+
 // #region LALR1Parser
-//
-// public class LALR1Parser : LR0Parser
-// {
-// 	private readonly Dictionary<CFSMState, HashSet<LALR1Configuration>> cognateDict = new Dictionary<CFSMState, HashSet<LALR1Configuration>>();
-//
-// 	public LALR1Parser(IGrammar g)
-// 		: base(g)
-// 	{
-// 		BuildLALR1CFSM();
-// 	}
-//
-// 	public LALR1Parser(GrammarSelector gs)
-// 		: this(GrammarFactory.Create(gs))
-// 	{
-// 	}
-//
-// 	// See Fischer and LeBlanc, page 167.
-//
-// 	private HashSet<LR0Configuration> Core(HashSet<LALR1Configuration> s)
-// 	{
-// 		var result = new HashSet<LR0Configuration>();
-//
-// 		foreach (var c in s)
-// 		{
-// 			result.Add(c.ToLR0Configuration());
-// 		}
-//
-// 		return result;
-// 	}
-//
-// 	private void CognateHelper(HashSet<LALR1Configuration> s, HashSet<LALR1Configuration> cognateResult,
-// 		Dictionary<LR0Configuration, LALR1Configuration> configDict)
-// 	{
-//
-// 		foreach (var c in s)
-// 		{
-// 			var lr0Config = c.ToLR0Configuration();
-//
-// 			if (configDict.ContainsKey(lr0Config))
-// 			{
-// 				var c2 = configDict[lr0Config];
-//
-// 				if (!c.Lookaheads.IsSubsetOf(c2.Lookaheads))
-// 				{
-// 					// Note: This probably changes the hash code of c2; cognateResult may need to be rehashed, if possible.
-// 					// A better solution: Remove c2 from cognateResult before modifying c2, and re-add it afterwards:
-// 					cognateResult.Remove(c2);
-// 					c2.Lookaheads.UnionWith(c.Lookaheads);
-// 					cognateResult.Add(c2);
-// 				}
-// 			}
-// 			else
-// 			{
-// 				cognateResult.Add(c);
-// 				configDict[lr0Config] = c;
-// 			}
-// 		}
-// 	}
-//
-// 	// See Fischer and LeBlanc, page 167.
-//
-// 	private HashSet<LALR1Configuration> Cognate(HashSet<LR0Configuration> s_bar, List<HashSet<LALR1Configuration>> stateList)
-// 	{
-// 		var result = new HashSet<LALR1Configuration>();
-// 		var configDict = new Dictionary<LR0Configuration, LALR1Configuration>();
-//
-// 		foreach (var s in stateList)
-// 		{
-// 			var s_core = Core(s);
-//
-// 			if (!s_bar.IsSubsetOf(s_core) || !s_core.IsSubsetOf(s_bar))
-// 			{
-// 				continue;
-// 			}
-//
-// 			// Solution 1:
-// 			//result.UnionWith(s);    // Question: Could this inadvertently cause result to contain multiple configurations that differ only by lookahead?
-//
-// 			// Solution 2:
-// 			CognateHelper(s, result, configDict);
-// 		}
-//
-// 		return result;
-// 	}
-//
-// 	private HashSet<LALR1Configuration> Cognate(CFSMState s_bar, LALR1CFSM lalr1machine)
-// 	{
-// 		var result = new HashSet<LALR1Configuration>();
-// 		var configDict = new Dictionary<LR0Configuration, LALR1Configuration>();
-//
-// 		foreach (var s in lalr1machine.StateList)
-// 		{
-// 			var s_core = Core(s.ConfigurationSet);
-//
-// 			if (!s_bar.ConfigurationSet.IsSubsetOf(s_core) || !s_core.IsSubsetOf(s_bar.ConfigurationSet))
-// 			{
-// 				continue;
-// 			}
-//
-// 			// Solution 1:
-// 			//result.UnionWith(s.ConfigurationSet);    // Question: Could this inadvertently cause result to contain multiple configurations that differ only by lookahead?
-//
-// 			// Solution 2:
-// 			CognateHelper(s.ConfigurationSet, result, configDict);
-// 		}
-//
-// 		return result;
-// 	}
-//
-// 	private void BuildLALR1CFSM()
-// 	{
-// 		// 1) Create the machine object with all of its states.
-// 		// See Fischer and LeBlanc, page 167.
-//
-// 		// 1a) Create the start state so that the machine object can be created.
-// 		var stateList = new List<HashSet<LALR1Configuration>>();
-// 		var lr1parser = new LR1Parser(grammar);
-//
-// 		foreach (var lr1State in lr1parser.machine.StateList)
-// 		{
-// 			var cs = new HashSet<LALR1Configuration>();
-//
-// 			foreach (var c in lr1State.ConfigurationSet)
-// 			{
-// 				cs.Add(LALR1Configuration.Create(c));
-// 			}
-//
-// 			stateList.Add(cs);
-// 		}
-//
-// 		foreach (var lr0state in machine.StateList)
-// 		{
-// 			cognateDict[lr0state] = Cognate(lr0state.ConfigurationSet, stateList);
-// 		}
-//
-// 		var startState = new LALR1CFSMState(cognateDict[machine.StartState]);
-// 		var result = new LALR1CFSM(startState);
-//
-// 		// 1b) Create the other states.
-//
-// 		foreach (var lr0state in machine.StateList)
-// 		{
-// 			var lalr1State = new LALR1CFSMState(cognateDict[lr0state]);
-//
-// 			if (!result.StateList.Contains(lalr1State))
-// 			{
-// 				result.StateList.Add(lalr1State);
-// 			}
-// 		}
-//
-// 		// 2) Add the transitions.
-//
-// 		foreach (var lr0state in machine.StateList)
-// 		{
-// 			var lalr1State = result.FindStateWithLabel(cognateDict[lr0state]);
-//
-// 			foreach (var symbol in lr0state.Transitions.Keys)
-// 			{
-// 				var lalr1StateDest = result.FindStateWithLabel(cognateDict[lr0state.Transitions[symbol]]);
-//
-// 				lalr1State.Transitions[symbol] = lalr1StateDest;
-// 			}
-// 		}
-//
-// 		// 3) Add the lookaheads.
-// 		// See Fischer and LeBlanc, pages 171-173.
-//
-// 		foreach (var s in result.StateList)
-// 		{
-//
-// 			foreach (var c in s.ConfigurationSet)
-// 			{
-// 				c.Lookaheads.Clear();   // Test; hack.  The real lookahead symbols will be added below.
-// 			}
-// 		}
-//
-// 		// 3a) Create the propagate links between configurations:
-// 		//   i) When one configuration is created from another in a previous state via a shift operation.
-//
-// 		foreach (var s in result.StateList)
-// 		{
-//
-// 			foreach (var c in s.ConfigurationSet)
-// 			{
-// 				Symbol symbol;
-//
-// 				if (!c.FindSymbolAfterDot(out symbol) || !s.Transitions.ContainsKey(symbol))
-// 				{
-// 					continue;
-// 				}
-//
-// 				var nextState = s.Transitions[symbol];
-// 				var configurationToMatch = c.AdvanceDot();
-//
-// 				foreach (var cNext in nextState.ConfigurationSet)
-// 				{
-//
-// 					if (cNext.Equals(configurationToMatch))
-// 					{
-// 						c.PropagateLinks.Add(cNext);
-// 						break;
-// 					}
-// 				}
-// 			}
-// 		}
-//
-// 		//   ii) When a configuration is created as a result of a closure or prediction operation on another configuration.
-// 		//     - A -> dot alpha, L2; B -> beta dot A gamma, L1
-// 		//       - ThAW note: It appears that these two configurations will always be in the same state if the first conf results from the closure of the second.
-// 		//         ? Is this also true in the case of prediction?
-// 		//     1) Spontaneous: L2 = First(gamma), which does not include lambda.
-// 		//     2) Propagate: When gamma can derive lambda.
-//
-// 		foreach (var s in result.StateList)
-// 		{
-//
-// 			foreach (var c in s.ConfigurationSet)
-// 			{
-// 				Symbol symbol;
-//
-// 				if (!c.FindSymbolAfterDot(out symbol))
-// 				{
-// 					continue;
-// 				}
-//
-// 				foreach (var cNext in s.ConfigurationSet)
-// 				{
-//
-// 					if (cNext.ProductionLHS != symbol || cNext.FindDot() != 0)
-// 					{
-// 						continue;
-// 					}
-//
-// 					// cNext is of the form "A -> dot alpha", where A == symbol.
-//
-// 					var gamma = c.FindSuffix(1);
-// 					var firstOfGamma = ComputeFirst(gamma);
-// 					var gammaCanDeriveLambda = firstOfGamma.Contains(Symbol.Lambda);
-//
-// 					if (gammaCanDeriveLambda)
-// 					{
-// 						// Propagate (adjective) lookaheads.
-// 						c.PropagateLinks.Add(cNext);
-//
-// 						// Should we also add the non-lambda members of firstOfGamma to cNext.Lookaheads?
-// 						firstOfGamma.Remove(Symbol.Lambda);
-// 					}
-//
-// 					cNext.Lookaheads.UnionWith(firstOfGamma);   // Add spontaneous lookaheads.
-// 				}
-// 			}
-// 		}
-//
-// 		// 3b) Add the spontaneous lookaheads: the non-lambda values of First(gamma). : Done above.
-// 		//  - Also initialize the lookahead set of the initial configuration to the empty set. : Done by default.
-//
-// 		// 3c) Propagate the lookaheads.
-// 		var lookaheadPropagationStack = new Stack<LookaheadPropagationRecord>();
-//
-// 		foreach (var s in result.StateList)
-// 		{
-//
-// 			foreach (var c in s.ConfigurationSet)
-// 			{
-//
-// 				foreach (var l in c.Lookaheads)
-// 				{
-// 					lookaheadPropagationStack.Push(new LookaheadPropagationRecord(c, l));
-// 				}
-// 			}
-// 		}
-//
-// 		while (lookaheadPropagationStack.Count > 0)
-// 		{
-// 			var lpr = lookaheadPropagationStack.Pop();
-//
-// 			foreach (var cLinked in lpr.configuration.PropagateLinks)
-// 			{
-//
-// 				if (!cLinked.Lookaheads.Contains(lpr.lookahead))
-// 				{
-// 					cLinked.Lookaheads.Add(lpr.lookahead);
-// 					lookaheadPropagationStack.Push(new LookaheadPropagationRecord(cLinked, lpr.lookahead));
-// 				}
-// 			}
-// 		}
-//
-// 		// Clear cognateDict and re-populate it with configurations from the newly created LALR(1) machine
-// 		// in order to ensure that the values of cognateDict contain all of the correct lookaheads?
-//
-// 		cognateDict.Clear();
-//
-// 		foreach (var lr0state in machine.StateList)
-// 		{
-// 			cognateDict[lr0state] = Cognate(lr0state, result);
-// 		}
-// 	}
-//
-// 	// Adapted from Fischer and LeBlanc, pages 167-168.
-//
-// 	private ShiftReduceAction GetAction(CFSMState S, Symbol tokenAsSymbol, out int reduceProductionNum)
-// 	{
-// 		var result = ShiftReduceAction.Error;
-// 		var reduceResultFound = false;   // In order for the grammar to be LALR(1), there must be at most one result per state-symbol pair.
-//
-// 		reduceProductionNum = -1;
-//
-// 		// 1) Search for Reduce actions.
-// 		var cognateS = cognateDict[S];
-//
-// 		foreach (var c in cognateS)
-// 		{
-//
-// 			if (!c.Lookaheads.Contains(tokenAsSymbol))
-// 			{
-// 				continue;
-// 			}
-//
-// 			var matchedProduction = c.ConvertToProductionIfAllMatched();
-//
-// 			if (matchedProduction == null)
-// 			{
-// 				continue;
-// 			}
-//
-// 			for (var i = 0; i < grammar.Productions.Count; ++i)
-// 			{
-// 				var productionToCompare = grammar.Productions[i].StripOutSemanticActions();
-//
-// 				if (matchedProduction.Equals(productionToCompare))
-// 				{
-//
-// 					if (reduceResultFound && reduceProductionNum != i)
-// 					{
-// 						throw new ReduceReduceConflictException(string.Format(
-// 							"GetAction() : Multiple actions found: productions {0} and {1}; grammar is not LALR(1).",
-// 							grammar.Productions[reduceProductionNum], grammar.Productions[i]));
-// 					}
-//
-// 					result = ShiftReduceAction.Reduce;
-// 					reduceProductionNum = i;
-// 					reduceResultFound = true;
-// 				}
-// 			}
-// 		}
-//
-// 		// 2) Search for Shift and Accept actions.
-// 		Symbol symbol;
-// 		bool shiftOrAcceptResultFound = S.ConfigurationSet.Any(c => c.FindSymbolAfterDot(out symbol) && symbol == tokenAsSymbol);
-//
-// 		if (shiftOrAcceptResultFound)
-// 		{
-//
-// 			if (reduceResultFound)
-// 			{
-// 				var configurationToShift = S.ConfigurationSet.First(c => c.FindSymbolAfterDot(out symbol) && symbol == tokenAsSymbol);
-//
-// 				throw new ShiftReduceConflictException(string.Format(
-// 					"GetAction() : Multiple actions found: shift: {0}; reduce: {1}; grammar is not LALR(1).",
-// 					configurationToShift, grammar.Productions[reduceProductionNum]));
-// 			}
-//
-// 			result = (tokenAsSymbol == Symbol.T_EOF) ? ShiftReduceAction.Accept : ShiftReduceAction.Shift;
-// 		}
-//
-// 		return result;
-// 	}
-//
-// 	protected override ShiftReduceAction GetActionCaller(CFSMState S, Symbol tokenAsSymbol, out int reduceProductionNum)
-// 	{
-// 		return GetAction(S, tokenAsSymbol, out reduceProductionNum);
-// 	}
-// }
+
+export class LALR1Parser extends LR0Parser {
+	// private readonly cognateDict = new Dictionary<CFSMState, HashSet<LALR1Configuration>>();
+	private readonly cognateDict = new Map<string, Set<LALR1Configuration>>();
+
+	constructor(g: IGrammar) {
+		super(g);
+
+		this.BuildLALR1CFSM();
+	}
+
+	// public LALR1Parser(GrammarSelector gs)
+	// 	: this(GrammarFactory.Create(gs))
+	// {
+	// }
+
+	// See Fischer and LeBlanc, page 167.
+
+	private Core(s: Set<LALR1Configuration>): Set<LR0Configuration> {
+		const result = new Set<LR0Configuration>();
+
+		for (const c of s.toArray()) {
+			result.add(c.ToLR0Configuration());
+		}
+
+		return result;
+	}
+
+	private CognateHelper(
+		s: Set<LALR1Configuration>,
+		cognateResult: Set<LALR1Configuration>,
+		configDict: Map<LR0Configuration, LALR1Configuration>
+	): void {
+		for (const c of s.toArray()) {
+			const lr0Config = c.ToLR0Configuration();
+			const c2 = configDict.get(lr0Config);
+
+			if (typeof c2 !== 'undefined') {
+				if (!c.Lookaheads.isASubsetOf(c2.Lookaheads)) {
+					// Note: This probably changes the hash code of c2; cognateResult may need to be rehashed, if possible.
+					// A better solution: Remove c2 from cognateResult before modifying c2, and re-add it afterwards:
+					cognateResult.remove(c2);
+					c2.Lookaheads.unionInPlace(c.Lookaheads);
+					cognateResult.add(c2);
+				}
+			} else {
+				cognateResult.add(c);
+				configDict.set(lr0Config, c);
+			}
+		}
+	}
+
+	// See Fischer and LeBlanc, page 167.
+
+	private Cognate1(
+		s_bar: Set<LR0Configuration>,
+		stateList: Set<LALR1Configuration>[]
+	): Set<LALR1Configuration> {
+		const result = new Set<LALR1Configuration>();
+		const configDict = new Map<LR0Configuration, LALR1Configuration>();
+
+		for (const s of stateList) {
+			const s_core = this.Core(s);
+
+			// if (!s_bar.IsSubsetOf(s_core) || !s_core.IsSubsetOf(s_bar))
+			if (!s_bar.isEqualTo(s_core)) {
+				continue;
+			}
+
+			// Solution 1:
+			//result.UnionWith(s);    // Question: Could this inadvertently cause result to contain multiple configurations that differ only by lookahead?
+
+			// Solution 2:
+			this.CognateHelper(s, result, configDict);
+		}
+
+		return result;
+	}
+
+	private Cognate2(s_bar: CFSMState, lalr1machine: LALR1CFSM): Set<LALR1Configuration> {
+		const result = new Set<LALR1Configuration>();
+		const configDict = new Map<LR0Configuration, LALR1Configuration>();
+
+		for (const s of lalr1machine.StateList) {
+			const s_core = this.Core(s.ConfigurationSet);
+
+			if (!s_bar.ConfigurationSet.isEqualTo(s_core)) {
+				continue;
+			}
+
+			// Solution 1:
+			//result.UnionWith(s.ConfigurationSet);    // Question: Could this inadvertently cause result to contain multiple configurations that differ only by lookahead?
+
+			// Solution 2:
+			this.CognateHelper(s.ConfigurationSet, result, configDict);
+		}
+
+		return result;
+	}
+
+	private BuildLALR1CFSM(): void {
+		// 1) Create the machine object with all of its states.
+		// See Fischer and LeBlanc, page 167.
+
+		// 1a) Create the start state so that the machine object can be created.
+		const stateList: Set<LALR1Configuration>[] = [];
+		const lr1parser = new LR1Parser(this.grammar);
+
+		for (const lr1State of lr1parser.machine.StateList) {
+			const cs = new Set<LALR1Configuration>();
+
+			for (const c of lr1State.ConfigurationSet) {
+				cs.add(LALR1Configuration.fromLR1(c));
+			}
+
+			stateList.push(cs);
+		}
+
+		for (const lr0state of this.machine.StateList) {
+			this.cognateDict.set(
+				lr0state.toString(),
+				this.Cognate1(lr0state.ConfigurationSet, stateList)
+			);
+		}
+
+		const ss = this.cognateDict.get(this.machine.StartState.toString());
+
+		if (typeof ss === 'undefined') {
+			throw new Error('ss is undefined');
+		}
+
+		const startState = new LALR1CFSMState(ss);
+		const result = new LALR1CFSM(startState);
+
+		// 1b) Create the other states.
+
+		for (const lr0state of this.machine.StateList) {
+			const cognate = this.cognateDict.get(lr0state.toString());
+
+			if (typeof cognate === 'undefined') {
+				throw new Error('cognate is undefined');
+			}
+
+			const lalr1State = new LALR1CFSMState(cognate);
+
+			// if (!result.StateList.Contains(lalr1State))
+			if (
+				typeof result.StateList.find((s: LALR1CFSMState) => lalr1State.equals(s)) ===
+				'undefined'
+			) {
+				result.StateList.push(lalr1State);
+			}
+		}
+
+		// 2) Add the transitions.
+
+		for (const lr0state of this.machine.StateList) {
+			const cognate2 = this.cognateDict.get(lr0state.toString());
+
+			if (typeof cognate2 === 'undefined') {
+				throw new Error('cognate2 is undefined');
+			}
+
+			const lalr1State = result.FindStateWithLabel(cognate2);
+
+			for (const symbol of Array.from(lr0state.Transitions.keys())) {
+				const transition = lr0state.Transitions.get(symbol);
+
+				if (typeof transition === 'undefined') {
+					throw new Error('transition is undefined');
+				}
+
+				const cognate3 = this.cognateDict.get(transition.toString());
+
+				if (typeof cognate3 === 'undefined') {
+					throw new Error('cognate3 is undefined');
+				}
+
+				const lalr1StateDest = result.FindStateWithLabel(cognate3);
+
+				lalr1State.Transitions.set(symbol, lalr1StateDest);
+			}
+		}
+
+		// 3) Add the lookaheads.
+		// See Fischer and LeBlanc, pages 171-173.
+
+		for (const s of result.StateList) {
+			for (const c of s.ConfigurationSet.toArray()) {
+				c.Lookaheads.clear(); // Test; hack.  The real lookahead symbols will be added below.
+			}
+		}
+
+		// 3a) Create the propagate links between configurations:
+		//   i) When one configuration is created from another in a previous state via a shift operation.
+
+		for (const s of result.StateList) {
+			for (const c of s.ConfigurationSet.toArray()) {
+				const symbol = c.FindSymbolAfterDot();
+
+				if (typeof symbol === 'undefined') {
+					// || !s.Transitions.ContainsKey(symbol)) {
+					continue;
+				}
+
+				const nextState = s.Transitions.get(symbol);
+
+				if (typeof nextState === 'undefined') {
+					continue;
+				}
+
+				const configurationToMatch = c.AdvanceDot();
+
+				for (const cNext of nextState.ConfigurationSet.toArray()) {
+					if (cNext.equals(configurationToMatch)) {
+						c.PropagateLinks.add(cNext);
+						break;
+					}
+				}
+			}
+		}
+
+		//   ii) When a configuration is created as a result of a closure or prediction operation on another configuration.
+		//     - A -> dot alpha, L2; B -> beta dot A gamma, L1
+		//       - ThAW note: It appears that these two configurations will always be in the same state if the first conf results from the closure of the second.
+		//         ? Is this also true in the case of prediction?
+		//     1) Spontaneous: L2 = First(gamma), which does not include lambda.
+		//     2) Propagate: When gamma can derive lambda.
+
+		for (const s of result.StateList) {
+			for (const c of s.ConfigurationSet.toArray()) {
+				const symbol = c.FindSymbolAfterDot();
+
+				if (typeof symbol === 'undefined') {
+					continue;
+				}
+
+				for (const cNext of s.ConfigurationSet.toArray()) {
+					if (cNext.ProductionLHS !== symbol || cNext.FindDot() !== 0) {
+						continue;
+					}
+
+					// cNext is of the form "A -> dot alpha", where A == symbol.
+
+					const gamma = c.FindSuffix(1);
+
+					if (typeof gamma === 'undefined') {
+						continue;
+					}
+
+					const firstOfGamma = this.computeFirst(gamma);
+					const gammaCanDeriveLambda = firstOfGamma.contains(Symbol.Lambda);
+
+					if (gammaCanDeriveLambda) {
+						// Propagate (adjective) lookaheads.
+						c.PropagateLinks.add(cNext);
+
+						// Should we also add the non-lambda members of firstOfGamma to cNext.Lookaheads?
+						firstOfGamma.remove(Symbol.Lambda);
+					}
+
+					cNext.Lookaheads.unionInPlace(firstOfGamma); // Add spontaneous lookaheads.
+				}
+			}
+		}
+
+		// 3b) Add the spontaneous lookaheads: the non-lambda values of First(gamma). : Done above.
+		//  - Also initialize the lookahead set of the initial configuration to the empty set. : Done by default.
+
+		// 3c) Propagate the lookaheads.
+		const lookaheadPropagationStack = new Stack<LookaheadPropagationRecord>();
+
+		for (const s of result.StateList) {
+			for (const c of s.ConfigurationSet.toArray()) {
+				for (const l of c.Lookaheads.toArray()) {
+					lookaheadPropagationStack.push(new LookaheadPropagationRecord(c, l));
+				}
+			}
+		}
+
+		// while (lookaheadPropagationStack.size > 0) {
+		while (!lookaheadPropagationStack.isEmpty) {
+			const lpr = lookaheadPropagationStack.pop();
+
+			for (const cLinked of lpr.configuration.PropagateLinks.toArray()) {
+				if (!cLinked.Lookaheads.contains(lpr.lookahead)) {
+					cLinked.Lookaheads.add(lpr.lookahead);
+					lookaheadPropagationStack.push(
+						new LookaheadPropagationRecord(cLinked, lpr.lookahead)
+					);
+				}
+			}
+		}
+
+		// Clear cognateDict and re-populate it with configurations from the newly created LALR(1) machine
+		// in order to ensure that the values of cognateDict contain all of the correct lookaheads?
+
+		this.cognateDict.clear();
+
+		for (const lr0state of this.machine.StateList) {
+			this.cognateDict.set(lr0state.toString(), this.Cognate2(lr0state, result));
+		}
+	}
+
+	// Adapted from Fischer and LeBlanc, pages 167-168.
+
+	private GetActionLALR(
+		S: CFSMState,
+		tokenAsSymbol: Symbol
+	): { reduceProductionNum: number; action: ShiftReduceAction } {
+		let result = ShiftReduceAction.Error;
+		let reduceResultFound = false; // In order for the grammar to be LALR(1), there must be at most one result per state-symbol pair.
+
+		let reduceProductionNum = -1;
+
+		// 1) Search for Reduce actions.
+		const cognateS = this.cognateDict.get(S.toString());
+
+		if (typeof cognateS === 'undefined') {
+			throw new Error('GetActionLALR() : cognateS is undefined');
+		}
+
+		for (const c of cognateS.toArray()) {
+			if (!c.Lookaheads.contains(tokenAsSymbol)) {
+				continue;
+			}
+
+			const matchedProduction = c.ConvertToProductionIfAllMatched();
+
+			if (typeof matchedProduction === 'undefined') {
+				continue;
+			}
+
+			for (let i = 0; i < this.grammar.productions.length; ++i) {
+				const productionToCompare = this.grammar.productions[i].StripOutSemanticActions();
+
+				if (matchedProduction.equals(productionToCompare)) {
+					if (reduceResultFound && reduceProductionNum !== i) {
+						throw new ReduceReduceConflictException(
+							`GetAction() : Multiple actions found: productions ${this.grammar.productions[reduceProductionNum]} and ${this.grammar.productions[i]}; grammar is not LALR(1).`
+						);
+					}
+
+					result = ShiftReduceAction.Reduce;
+					reduceProductionNum = i;
+					reduceResultFound = true;
+				}
+			}
+		}
+
+		// 2) Search for Shift and Accept actions.
+		// let symbol: Symbol;
+		const shiftOrAcceptResultFound = S.ConfigurationSet.toArray().some(
+			(c: LR0Configuration) => c.FindSymbolAfterDot() === tokenAsSymbol
+		);
+
+		if (shiftOrAcceptResultFound) {
+			if (reduceResultFound) {
+				const configurationToShift = S.ConfigurationSet.toArray().find(
+					(c: LR0Configuration) => c.FindSymbolAfterDot() === tokenAsSymbol
+				);
+
+				throw new ShiftReduceConflictException(
+					`GetAction() : Multiple actions found: shift: ${configurationToShift}; reduce: ${this.grammar.productions[reduceProductionNum]}; grammar is not LALR(1).`
+				);
+			}
+
+			result =
+				tokenAsSymbol == Symbol.terminalEOF
+					? ShiftReduceAction.Accept
+					: ShiftReduceAction.Shift;
+		}
+
+		return {
+			reduceProductionNum,
+			action: result
+		};
+	}
+
+	// protected override ShiftReduceAction GetActionCaller(CFSMState S, Symbol tokenAsSymbol, out int reduceProductionNum)
+	// {
+	// 	return GetAction(S, tokenAsSymbol, out reduceProductionNum);
+	// }
+
+	protected override GetActionCaller(
+		S: CFSMState,
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		tokenAsSymbol: Symbol
+	): { reduceProductionNum: number; action: ShiftReduceAction } {
+		return this.GetActionLALR(S, tokenAsSymbol);
+	}
+}
 
 // #endregion
 

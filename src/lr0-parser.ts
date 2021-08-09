@@ -1,4 +1,4 @@
-// lr0-parser.ts
+// tom-weatherhead/thaw-parser/src/lr0-parser.ts
 
 import { IEqualityComparable, Set, Stack } from 'thaw-common-utilities.ts';
 
