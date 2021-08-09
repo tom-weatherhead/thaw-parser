@@ -388,6 +388,10 @@ export class LALR1Parser extends LR0Parser {
 	}
 
 	private BuildLALR1CFSM(): void {
+		if (this.machine.StateList.length === 0) {
+			throw new Error('machine.StateList is empty');
+		}
+
 		// 1) Create the machine object with all of its states.
 		// See Fischer and LeBlanc, page 167.
 
@@ -443,6 +447,10 @@ export class LALR1Parser extends LR0Parser {
 
 		// 2) Add the transitions.
 
+		if (result.StateList.length === 0) {
+			throw new Error('result.StateList is empty');
+		}
+
 		for (const lr0state of this.machine.StateList) {
 			const cognate2 = this.cognateDict.get(lr0state.toString());
 
@@ -452,7 +460,18 @@ export class LALR1Parser extends LR0Parser {
 
 			const lalr1State = result.FindStateWithLabel(cognate2);
 
-			for (const symbol of Array.from(lr0state.Transitions.keys())) {
+			if (typeof lalr1State === 'undefined') {
+				throw new Error('lalr1State is undefined');
+			}
+
+			const transitionsKeys = Array.from(lr0state.Transitions.keys());
+
+			if (transitionsKeys.length === 0) {
+				// BUG 2021-08-09 : It blows up here.
+				throw new Error('List of transitionsKeys is empty');
+			}
+
+			for (const symbol of transitionsKeys) {
 				const transition = lr0state.Transitions.get(symbol);
 
 				if (typeof transition === 'undefined') {
@@ -469,6 +488,10 @@ export class LALR1Parser extends LR0Parser {
 
 				// BUG 2021-08-09 : It seems like no transitions are being set. (When unit testing with the Chapter1 grammar.)
 				lalr1State.Transitions.set(symbol, lalr1StateDest);
+			}
+
+			if (lalr1State.Transitions.size === 0) {
+				throw new Error('lalr1State.Transitions is empty');
 			}
 		}
 
@@ -569,7 +592,7 @@ export class LALR1Parser extends LR0Parser {
 		}
 
 		// while (lookaheadPropagationStack.size > 0) {
-		while (!lookaheadPropagationStack.isEmpty) {
+		while (!lookaheadPropagationStack.isEmpty()) {
 			const lpr = lookaheadPropagationStack.pop();
 
 			for (const cLinked of lpr.configuration.PropagateLinks.toArray()) {
