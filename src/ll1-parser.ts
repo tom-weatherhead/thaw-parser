@@ -2,7 +2,8 @@
 
 import {
 	arrayIncludes, // Handy for arrays of basic types, e.g. number[]
-	Set,
+	IImmutableSet,
+	// Set,
 	Stack
 } from 'thaw-common-utilities.ts';
 
@@ -15,9 +16,11 @@ import { SyntaxException } from './exceptions/syntax';
 
 import { ParserBase } from './parser-base';
 
+/* eslint-disable @typescript-eslint/ban-types */
+
 export class LL1Parser extends ParserBase {
-	private readonly predict = new Map<Production, Set<number>>(); // TODO: Convert the key type to string?
-	private readonly parseTable = new Map<string, Production>();
+	private readonly predict = new Map<Production, IImmutableSet<Symbol>>(); // TODO: Convert the key type to string?
+	private readonly parseTable: ReadonlyMap<string, Production>;
 
 	constructor(g: IGrammar) {
 		super(g);
@@ -31,7 +34,7 @@ export class LL1Parser extends ParserBase {
 		}
 
 		this.fillPredict();
-		this.fillParseTable();
+		this.parseTable = this.fillParseTable();
 	}
 
 	private fillPredict(): void {
@@ -40,14 +43,23 @@ export class LL1Parser extends ParserBase {
 
 			if (s.contains(Symbol.Lambda)) {
 				s = this.withoutLambda(s);
-				s.unionInPlace(this.followSet.get(p.lhs) as Set<number>);
+
+				const followSet = this.followSet.get(p.lhs);
+
+				if (typeof followSet === 'undefined') {
+					throw new ParserException('fillPredict() : followSet is undefined');
+				}
+
+				s.unionInPlace(followSet);
 			}
 
 			this.predict.set(p, s);
 		}
 	}
 
-	private fillParseTable(): void {
+	private fillParseTable(): ReadonlyMap<string, Production> {
+		const parseTable = new Map<string, Production>();
+
 		for (const p of this.grammar.productions) {
 			const pValue = this.predict.get(p);
 
@@ -58,21 +70,21 @@ export class LL1Parser extends ParserBase {
 			for (const t of pValue) {
 				// const sp = new SymbolPair(p.lhs, t);
 				const sp = `(${p.lhs}, ${t})`;
-				const pParseTableSPRaw = this.parseTable.get(sp) as Production;
+				const pParseTableSPRaw = parseTable.get(sp);
 
 				if (typeof pParseTableSPRaw !== 'undefined') {
 					throw new ParserException(
 						`Error in FillParseTable() : Table entry not unique; p.lhs = ${p.lhs} ${
 							Symbol[p.lhs]
-						}; t = ${t} ${
-							Symbol[t]
-						}; p1 = ${pParseTableSPRaw.toString()}; p2 = ${p.toString()}`
+						}; t = ${t} ${Symbol[t]}; p1 = ${pParseTableSPRaw}; p2 = ${p}`
 					);
 				}
 
-				this.parseTable.set(sp, p);
+				parseTable.set(sp, p);
 			}
 		}
+
+		return parseTable;
 	}
 
 	// Adapted from Fischer and LeBlanc, page 121 (function lldriver())
@@ -102,7 +114,7 @@ export class LL1Parser extends ParserBase {
 
 				parseStack.pop();
 			} else if (typeof X === 'number') {
-				const symbolX = X as number;
+				const symbolX = X as Symbol;
 				// const sp = new SymbolPair(symbolX, tokenAsSymbol);
 				const sp = `(${symbolX}, ${tokenAsSymbol})`;
 				const parseTableGetSP = this.parseTable.get(sp) as Production;
@@ -117,7 +129,7 @@ export class LL1Parser extends ParserBase {
 					parseStack.pop();
 
 					for (let i = p.rhs.length - 1; i >= 0; --i) {
-						if ((p.rhs[i] as number) !== Symbol.Lambda) {
+						if ((p.rhs[i] as Symbol) !== Symbol.Lambda) {
 							// Push semantic actions, and any symbols except Lambda.
 							parseStack.push(p.rhs[i]);
 						}
@@ -195,3 +207,5 @@ export class LL1Parser extends ParserBase {
 		return this.llDriver(tokenList, true);
 	}
 }
+
+/* eslint-enable @typescript-eslint/ban-types */

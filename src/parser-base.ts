@@ -278,7 +278,6 @@ export abstract class ParserBase implements IParser {
 		do {
 			changes = false;
 
-			// this.grammar.productions.for Each((p: Production) => {
 			for (const p of this.grammar.productions) {
 				if (!this.derivesLambda.contains(p.lhs)) {
 					const rhsDerivesLambda = p
@@ -290,7 +289,7 @@ export abstract class ParserBase implements IParser {
 						changes = true;
 					}
 				}
-			} // );
+			}
 		} while (changes);
 	}
 }
