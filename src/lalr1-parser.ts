@@ -273,7 +273,7 @@ export class LALR1Parser extends LR0Parser {
 
 	// See Fischer and LeBlanc, page 167.
 
-	private Core(s: Set<LALR1Configuration>): Set<LR0Configuration> {
+	private Core(s: IImmutableSet<LALR1Configuration>): Set<LR0Configuration> {
 		const result = new Set<LR0Configuration>();
 
 		for (const c of s.toArray()) {
@@ -284,7 +284,7 @@ export class LALR1Parser extends LR0Parser {
 	}
 
 	private CognateHelper(
-		s: Set<LALR1Configuration>,
+		s: IImmutableSet<LALR1Configuration>,
 		cognateResult: Set<LALR1Configuration>,
 		configDict: Map<LR0Configuration, LALR1Configuration>
 	): void {
@@ -311,7 +311,7 @@ export class LALR1Parser extends LR0Parser {
 
 	private Cognate1(
 		s_bar: IImmutableSet<LR0Configuration>,
-		stateList: Set<LALR1Configuration>[]
+		stateList: IImmutableSet<LALR1Configuration>[]
 	): Set<LALR1Configuration> {
 		const result = new Set<LALR1Configuration>();
 		const configDict = new Map<LR0Configuration, LALR1Configuration>();
