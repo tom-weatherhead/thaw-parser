@@ -19,7 +19,7 @@ import { ParserBase } from './parser-base';
 /* eslint-disable @typescript-eslint/ban-types */
 
 export class LL1Parser extends ParserBase {
-	private readonly predict = new Map<Production, IImmutableSet<Symbol>>(); // TODO: Convert the key type to string?
+	private readonly predict: ReadonlyMap<Production, IImmutableSet<Symbol>>; // TODO: Convert the key type to string?
 	private readonly parseTable: ReadonlyMap<string, Production>;
 
 	constructor(g: IGrammar) {
@@ -33,11 +33,13 @@ export class LL1Parser extends ParserBase {
 			);
 		}
 
-		this.fillPredict();
+		this.predict = this.fillPredict();
 		this.parseTable = this.fillParseTable();
 	}
 
-	private fillPredict(): void {
+	private fillPredict(): ReadonlyMap<Production, IImmutableSet<Symbol>> {
+		const predict = new Map<Production, IImmutableSet<Symbol>>();
+
 		for (const p of this.grammar.productions) {
 			let s = this.computeFirst(p.RHSWithNoSemanticActions());
 
@@ -53,8 +55,10 @@ export class LL1Parser extends ParserBase {
 				s.unionInPlace(followSet);
 			}
 
-			this.predict.set(p, s);
+			predict.set(p, s);
 		}
+
+		return predict;
 	}
 
 	private fillParseTable(): ReadonlyMap<string, Production> {
