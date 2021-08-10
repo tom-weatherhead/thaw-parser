@@ -36,7 +36,9 @@ export class LR0Configuration implements IEqualityComparable {
 	}
 
 	public toString(): string {
-		return `${this.ProductionLHS} -> ${this.ProductionRHS.join(' ')}`;
+		const fn = (ss: Symbol | string) => (typeof ss === 'string' ? ss : Symbol[ss]);
+
+		return `${fn(this.ProductionLHS)} -> ${this.ProductionRHS.map(fn).join(' ')}`;
 	}
 
 	public equals(other: unknown): boolean {
@@ -597,10 +599,34 @@ export class LR0Parser extends ParserBase {
 					break;
 
 				case ShiftReduceAction.Error:
+					// if (tokenAsSymbol === Symbol.terminalEOF) {
+					// 	console.log('ShiftReduceAction.Error: tokenAsSymbol is EOF');
+					//
+					// 	if (!parse) {
+					// 		console.log(
+					// 			'ShiftReduceAction.Error: Pretending that recognize() worked...'
+					// 		);
+					//
+					// 		return undefined;
+					// 	} else if (semanticStack.size === 1) {
+					// 		console.log(
+					// 			'ShiftReduceAction.Error: Pretending that parse() worked...'
+					// 		);
+					//
+					// 		return semanticStack.pop();
+					// 	}
+					//
+					// 	// throw new GrammarException(
+					// 	// 	`There were ${semanticStack.size} objects on the semantic stack; expected exactly one`
+					// 	// );
+					// }
+
 					console.error(`Error: S from parseStack.peek() is ${typeof S} ${S}`, S);
 					console.error(
 						`Error: tokenAsSymbol is ${tokenAsSymbol} ${Symbol[tokenAsSymbol]}`
 					);
+					console.error('semanticStack.size is', semanticStack.size);
+
 					throw new Error('LR0Parser.shift_reduce_driver() : action === Error');
 
 				default:

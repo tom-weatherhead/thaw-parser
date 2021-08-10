@@ -2,8 +2,6 @@
 
 import { Set, Stack } from 'thaw-common-utilities.ts';
 
-// import { Token } from 'thaw-lexical-analyzer';
-
 import { IGrammar, Symbol } from 'thaw-grammar';
 
 import { CFSMState, LR0Configuration, LR0Parser, ShiftReduceAction } from './lr0-parser';
@@ -16,21 +14,14 @@ import { ShiftReduceConflictException } from './exceptions/shift-reduce-conflict
 // import { ParserException } from './exceptions/parser';
 // import { SyntaxException } from './exceptions/syntax';
 
-// #region LALR1Configuration
-
 /* eslint-disable @typescript-eslint/ban-types */
 
 export class LALR1Configuration extends LR0Configuration {
-	public static fromLR0(c: LR0Configuration, looks: Set<Symbol>): LALR1Configuration {
+	public static fromLR0(c: LR0Configuration, lookaheads: Set<Symbol>): LALR1Configuration {
 		const result = new LALR1Configuration(c.ProductionLHS);
 
-		// result.ProductionRHS.push(...c.ProductionRHS);
-
-		// for (const lookahead of lookaheads) {
-		// 	result.Lookaheads.add(lookahead);
-		// }
-
-		result.Lookaheads.unionInPlace(looks);
+		result.ProductionRHS.push(...c.ProductionRHS);
+		result.Lookaheads.unionInPlace(lookaheads);
 
 		return result;
 	}
@@ -214,43 +205,28 @@ export class LALR1CFSM {
 	}
 
 	public FindStateWithLabel(cs: Set<LALR1Configuration>): LALR1CFSMState {
-		for (const state of this.StateList) {
-			// if (cs.IsSubsetOf(state.ConfigurationSet) &&
-			// 	state.ConfigurationSet.IsSubsetOf(cs))
-			if (state.ConfigurationSet.isEqualTo(cs)) {
-				return state;
-			}
+		// for (const state of this.StateList) {
+		// 	if (state.ConfigurationSet.isEqualTo(cs)) {
+		// 		return state;
+		// 	}
+		// }
+
+		const result = this.StateList.find((state: LALR1CFSMState) =>
+			state.ConfigurationSet.isEqualTo(cs)
+		);
+
+		if (typeof result === 'undefined') {
+			throw new InternalErrorException(
+				`LALR1CFSM.FindStateWithLabel() : No matching state found; label size == ${cs.size}.`
+			);
 		}
 
-		throw new InternalErrorException(
-			`LALR1CFSM.FindStateWithLabel() : No matching state found; label size == ${cs.size}.`
-		);
+		return result;
 	}
 }
 
-// #endregion
-
-// #region LALR1StateSymbolPair
-
 export class LALR1StateSymbolPair {
-	// public readonly LALR1CFSMState state;
-	// public readonly Symbol symbol;
-
-	constructor(public readonly state: LALR1CFSMState, public readonly symbol: Symbol) {
-		// state = st;
-		// symbol = sy;
-	}
-
-	// public override bool Equals(object obj) {
-	//
-	// 	if (object.ReferenceEquals(this, obj)) {
-	// 		return true;
-	// 	}
-	//
-	// 	var that = obj as LALR1StateSymbolPair;
-	//
-	// 	return that != null && state.Equals(that.state) && symbol == that.symbol;
-	// }
+	constructor(public readonly state: LALR1CFSMState, public readonly symbol: Symbol) {}
 
 	public equals(other: unknown): boolean {
 		const that = other as LALR1StateSymbolPair;
@@ -261,39 +237,31 @@ export class LALR1StateSymbolPair {
 			this.symbol === that.symbol
 		);
 	}
-
-	// public override int GetHashCode() {
-	// 	return state.GetHashCode() * 101 + symbol.GetHashCode();
-	// }
 }
 
-// #endregion
-
-// #region LookaheadPropagationRecord
-
 export class LookaheadPropagationRecord {
-	// public readonly LALR1Configuration configuration;
-	// public readonly Symbol lookahead;
-
 	constructor(
 		public readonly configuration: LALR1Configuration,
 		public readonly lookahead: Symbol
-	) {
-		// configuration = c;
-		// lookahead = l;
-	}
+	) {}
 }
 
-// #endregion
-
-// #region LALR1Parser
-
 export class LALR1Parser extends LR0Parser {
-	// private readonly cognateDict = new Dictionary<CFSMState, HashSet<LALR1Configuration>>();
 	private readonly cognateDict = new Map<string, Set<LALR1Configuration>>();
 
 	constructor(g: IGrammar) {
 		super(g);
+
+		console.log('this.machine is:', this.machine);
+		console.log('this.machine.StateList.length is:', this.machine.StateList.length);
+
+		if (this.machine.StateList.every((state: CFSMState) => state.Transitions.size === 0)) {
+			throw new Error('All machine states have zero transitions.');
+		}
+
+		for (const state of this.machine.StateList) {
+			console.log('Number of transitions for this state:', state.Transitions.size);
+		}
 
 		this.BuildLALR1CFSM();
 	}
@@ -466,10 +434,13 @@ export class LALR1Parser extends LR0Parser {
 
 			const transitionsKeys = Array.from(lr0state.Transitions.keys());
 
-			if (transitionsKeys.length === 0) {
-				// BUG 2021-08-09 : It blows up here.
-				throw new Error('List of transitionsKeys is empty');
-			}
+			// if (transitionsKeys.length === 0) {
+			// 	// BUG 2021-08-09 : It blows up here.
+			// 	console.error('List of transitionsKeys is empty');
+			// 	console.error('lr0state is:', lr0state);
+			// 	console.error('lr0state.Transitions is:', lr0state.Transitions);
+			// 	throw new Error('List of transitionsKeys is empty');
+			// }
 
 			for (const symbol of transitionsKeys) {
 				const transition = lr0state.Transitions.get(symbol);
@@ -490,9 +461,9 @@ export class LALR1Parser extends LR0Parser {
 				lalr1State.Transitions.set(symbol, lalr1StateDest);
 			}
 
-			if (lalr1State.Transitions.size === 0) {
-				throw new Error('lalr1State.Transitions is empty');
-			}
+			// if (lalr1State.Transitions.size === 0) {
+			// 	throw new Error('lalr1State.Transitions is empty');
+			// }
 		}
 
 		// 3) Add the lookaheads.
@@ -512,7 +483,6 @@ export class LALR1Parser extends LR0Parser {
 				const symbol = c.FindSymbolAfterDot();
 
 				if (typeof symbol === 'undefined') {
-					// || !s.Transitions.ContainsKey(symbol)) {
 					continue;
 				}
 
@@ -591,7 +561,6 @@ export class LALR1Parser extends LR0Parser {
 			}
 		}
 
-		// while (lookaheadPropagationStack.size > 0) {
 		while (!lookaheadPropagationStack.isEmpty()) {
 			const lpr = lookaheadPropagationStack.pop();
 
@@ -623,8 +592,12 @@ export class LALR1Parser extends LR0Parser {
 	): { reduceProductionNum: number; action: ShiftReduceAction } {
 		let result = ShiftReduceAction.Error;
 		let reduceResultFound = false; // In order for the grammar to be LALR(1), there must be at most one result per state-symbol pair.
-
 		let reduceProductionNum = -1;
+
+		console.log('GetActionLALR() : S is', S);
+		console.log('GetActionLALR() : S.toString() is', S.toString());
+
+		console.log('GetActionLALR() : cognateDict size is', this.cognateDict.size);
 
 		// 1) Search for Reduce actions.
 		const cognateS = this.cognateDict.get(S.toString());
@@ -633,12 +606,24 @@ export class LALR1Parser extends LR0Parser {
 			throw new Error('GetActionLALR() : cognateS is undefined');
 		}
 
+		console.log('GetActionLALR() : cognateS is', typeof cognateS, cognateS);
+		console.log('GetActionLALR() : cognateS.toArray().length is', cognateS.toArray().length);
+
 		for (const c of cognateS.toArray()) {
+			console.log('GetActionLALR() : tokenAsSymbol is', tokenAsSymbol, Symbol[tokenAsSymbol]);
+			console.log('GetActionLALR() : c.Lookaheads is', c.Lookaheads);
+
+			for (const l of c.Lookaheads) {
+				console.log('GetActionLALR() : lookahead in c.Lookaheads is', l, Symbol[l]);
+			}
+
 			if (!c.Lookaheads.contains(tokenAsSymbol)) {
 				continue;
 			}
 
 			const matchedProduction = c.ConvertToProductionIfAllMatched();
+
+			console.log(`GetActionLALR() : matchedProduction is ${matchedProduction}`);
 
 			if (typeof matchedProduction === 'undefined') {
 				continue;
@@ -650,7 +635,7 @@ export class LALR1Parser extends LR0Parser {
 				if (matchedProduction.equals(productionToCompare)) {
 					if (reduceResultFound && reduceProductionNum !== i) {
 						throw new ReduceReduceConflictException(
-							`GetAction() : Multiple actions found: productions ${this.grammar.productions[reduceProductionNum]} and ${this.grammar.productions[i]}; grammar is not LALR(1).`
+							`GetActionLALR() : Multiple actions found: productions ${this.grammar.productions[reduceProductionNum]} and ${this.grammar.productions[i]}; grammar is not LALR(1).`
 						);
 					}
 
@@ -662,7 +647,6 @@ export class LALR1Parser extends LR0Parser {
 		}
 
 		// 2) Search for Shift and Accept actions.
-		// let symbol: Symbol;
 		const shiftOrAcceptResultFound = S.ConfigurationSet.toArray().some(
 			(c: LR0Configuration) => c.FindSymbolAfterDot() === tokenAsSymbol
 		);
@@ -674,7 +658,7 @@ export class LALR1Parser extends LR0Parser {
 				);
 
 				throw new ShiftReduceConflictException(
-					`GetAction() : Multiple actions found: shift: ${configurationToShift}; reduce: ${this.grammar.productions[reduceProductionNum]}; grammar is not LALR(1).`
+					`GetActionLALR() : Multiple actions found: shift: ${configurationToShift}; reduce: ${this.grammar.productions[reduceProductionNum]}; grammar is not LALR(1).`
 				);
 			}
 
@@ -690,20 +674,12 @@ export class LALR1Parser extends LR0Parser {
 		};
 	}
 
-	// protected override ShiftReduceAction GetActionCaller(CFSMState S, Symbol tokenAsSymbol, out int reduceProductionNum)
-	// {
-	// 	return GetAction(S, tokenAsSymbol, out reduceProductionNum);
-	// }
-
 	protected override GetActionCaller(
 		S: CFSMState,
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		tokenAsSymbol: Symbol
 	): { reduceProductionNum: number; action: ShiftReduceAction } {
 		return this.GetActionLALR(S, tokenAsSymbol);
 	}
 }
-
-// #endregion
 
 /* eslint-enable @typescript-eslint/ban-types */

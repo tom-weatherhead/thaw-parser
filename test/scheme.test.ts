@@ -121,8 +121,8 @@ test('LL(1) Scheme PrimOpTest2', () => {
 });
 
 test('LL(1) Scheme closure test 1', () => {
-    const input = '(lambda (x) (+ x 1))';
-    const sexpr = evaluateToISExpression(input);
+	const input = '(lambda (x) (+ x 1))';
+	const sexpr = evaluateToISExpression(input);
 
 	expect(sexpr.isClosure()).toBe(true);
 });
