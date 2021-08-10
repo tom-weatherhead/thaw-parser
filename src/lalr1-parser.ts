@@ -215,7 +215,7 @@ export class LALR1Parser extends LR0Parser {
 		// console.log('this.machine.StateList.length is:', this.machine.StateList.length);
 
 		if (this.machine.StateList.every((state: CFSMState) => state.Transitions.size === 0)) {
-			throw new Error('All machine states have zero transitions.');
+			throw new InternalErrorException('All machine states have zero transitions.');
 		}
 
 		// for (const state of this.machine.StateList) {
@@ -232,7 +232,7 @@ export class LALR1Parser extends LR0Parser {
 
 	// See Fischer and LeBlanc, page 167.
 
-	private Core(s: IImmutableSet<LALR1Configuration>): Set<LR0Configuration> {
+	private Core(s: IImmutableSet<LALR1Configuration>): IImmutableSet<LR0Configuration> {
 		const result = new Set<LR0Configuration>();
 
 		for (const c of s.toArray()) {
@@ -271,7 +271,7 @@ export class LALR1Parser extends LR0Parser {
 	private Cognate1(
 		s_bar: IImmutableSet<LR0Configuration>,
 		stateList: IImmutableSet<LALR1Configuration>[]
-	): Set<LALR1Configuration> {
+	): IImmutableSet<LALR1Configuration> {
 		const result = new Set<LALR1Configuration>();
 		const configDict = new Map<LR0Configuration, LALR1Configuration>();
 
@@ -293,7 +293,7 @@ export class LALR1Parser extends LR0Parser {
 		return result;
 	}
 
-	private Cognate2(s_bar: CFSMState, lalr1machine: LALR1CFSM): Set<LALR1Configuration> {
+	private Cognate2(s_bar: CFSMState, lalr1machine: LALR1CFSM): IImmutableSet<LALR1Configuration> {
 		const result = new Set<LALR1Configuration>();
 		const configDict = new Map<LR0Configuration, LALR1Configuration>();
 
@@ -316,14 +316,14 @@ export class LALR1Parser extends LR0Parser {
 
 	private BuildLALR1CFSM(): void {
 		if (this.machine.StateList.length === 0) {
-			throw new Error('machine.StateList is empty');
+			throw new InternalErrorException('machine.StateList is empty');
 		}
 
 		// 1) Create the machine object with all of its states.
 		// See Fischer and LeBlanc, page 167.
 
 		// 1a) Create the start state so that the machine object can be created.
-		const stateList: Set<LALR1Configuration>[] = [];
+		const stateList: IImmutableSet<LALR1Configuration>[] = [];
 		const lr1parser = new LR1Parser(this.grammar);
 
 		for (const lr1State of lr1parser.machine.StateList) {
@@ -346,7 +346,7 @@ export class LALR1Parser extends LR0Parser {
 		const ss = this.cognateDict.get(this.machine.StartState.toString());
 
 		if (typeof ss === 'undefined') {
-			throw new Error('ss is undefined');
+			throw new InternalErrorException('ss is undefined');
 		}
 
 		const startState = new LALR1CFSMState(ss);
@@ -358,7 +358,7 @@ export class LALR1Parser extends LR0Parser {
 			const cognate = this.cognateDict.get(lr0state.toString());
 
 			if (typeof cognate === 'undefined') {
-				throw new Error('cognate is undefined');
+				throw new InternalErrorException('cognate is undefined');
 			}
 
 			const lalr1State = new LALR1CFSMState(cognate);
@@ -375,20 +375,20 @@ export class LALR1Parser extends LR0Parser {
 		// 2) Add the transitions.
 
 		if (result.StateList.length === 0) {
-			throw new Error('result.StateList is empty');
+			throw new InternalErrorException('result.StateList is empty');
 		}
 
 		for (const lr0state of this.machine.StateList) {
 			const cognate2 = this.cognateDict.get(lr0state.toString());
 
 			if (typeof cognate2 === 'undefined') {
-				throw new Error('cognate2 is undefined');
+				throw new InternalErrorException('cognate2 is undefined');
 			}
 
 			const lalr1State = result.FindStateWithLabel(cognate2);
 
 			if (typeof lalr1State === 'undefined') {
-				throw new Error('lalr1State is undefined');
+				throw new InternalErrorException('lalr1State is undefined');
 			}
 
 			const transitionsKeys = Array.from(lr0state.Transitions.keys());
@@ -398,20 +398,20 @@ export class LALR1Parser extends LR0Parser {
 			// 	console.error('List of transitionsKeys is empty');
 			// 	console.error('lr0state is:', lr0state);
 			// 	console.error('lr0state.Transitions is:', lr0state.Transitions);
-			// 	throw new Error('List of transitionsKeys is empty');
+			// 	throw new InternalErrorException('List of transitionsKeys is empty');
 			// }
 
 			for (const symbol of transitionsKeys) {
 				const transition = lr0state.Transitions.get(symbol);
 
 				if (typeof transition === 'undefined') {
-					throw new Error('transition is undefined');
+					throw new InternalErrorException('transition is undefined');
 				}
 
 				const cognate3 = this.cognateDict.get(transition.toString());
 
 				if (typeof cognate3 === 'undefined') {
-					throw new Error('cognate3 is undefined');
+					throw new InternalErrorException('cognate3 is undefined');
 				}
 
 				const lalr1StateDest = result.FindStateWithLabel(cognate3);
@@ -421,7 +421,7 @@ export class LALR1Parser extends LR0Parser {
 			}
 
 			// if (lalr1State.Transitions.size === 0) {
-			// 	throw new Error('lalr1State.Transitions is empty');
+			// 	throw new InternalErrorException('lalr1State.Transitions is empty');
 			// }
 		}
 
@@ -562,7 +562,7 @@ export class LALR1Parser extends LR0Parser {
 		const cognateS = this.cognateDict.get(S.toString());
 
 		if (typeof cognateS === 'undefined') {
-			throw new Error('GetActionLALR() : cognateS is undefined');
+			throw new InternalErrorException('GetActionLALR() : cognateS is undefined');
 		}
 
 		// console.log('GetActionLALR() : cognateS is', typeof cognateS, cognateS);
