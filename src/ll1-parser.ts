@@ -3,7 +3,6 @@
 import {
 	arrayIncludes, // Handy for arrays of basic types, e.g. number[]
 	IImmutableSet,
-	// Set,
 	Stack
 } from 'thaw-common-utilities.ts';
 
@@ -101,7 +100,8 @@ export class LL1Parser extends ParserBase {
 		let tokenNum = 0;
 		let token = tokenList[tokenNum];
 		let tokenAsSymbol = this.grammar.tokenToSymbol(token);
-		const parseStack = new Stack<unknown>();
+		const parseStack = new Stack<Symbol | string>();
+		// The semanticStack contains items of type e.g. IExpression<ISExpression>
 		const semanticStack = new Stack<unknown>();
 
 		parseStack.push(this.grammar.startSymbol);

@@ -558,7 +558,7 @@ export class LR0Parser extends ParserBase {
 						reduceProductionNum < 0 ||
 						reduceProductionNum >= this.grammar.productions.length
 					) {
-						throw new Error('Reduce: Invalid production number'); // InternalErrorException
+						throw new InternalErrorException('Reduce: Invalid production number');
 					}
 
 					unstrippedProduction = this.grammar.productions[reduceProductionNum];
@@ -599,28 +599,6 @@ export class LR0Parser extends ParserBase {
 					break;
 
 				case ShiftReduceAction.Error:
-					// if (tokenAsSymbol === Symbol.terminalEOF) {
-					// 	console.log('ShiftReduceAction.Error: tokenAsSymbol is EOF');
-					//
-					// 	if (!parse) {
-					// 		console.log(
-					// 			'ShiftReduceAction.Error: Pretending that recognize() worked...'
-					// 		);
-					//
-					// 		return undefined;
-					// 	} else if (semanticStack.size === 1) {
-					// 		console.log(
-					// 			'ShiftReduceAction.Error: Pretending that parse() worked...'
-					// 		);
-					//
-					// 		return semanticStack.pop();
-					// 	}
-					//
-					// 	// throw new GrammarException(
-					// 	// 	`There were ${semanticStack.size} objects on the semantic stack; expected exactly one`
-					// 	// );
-					// }
-
 					console.error(`Error: S from parseStack.peek() is ${typeof S} ${S}`, S);
 					console.error(
 						`Error: tokenAsSymbol is ${tokenAsSymbol} ${Symbol[tokenAsSymbol]}`
