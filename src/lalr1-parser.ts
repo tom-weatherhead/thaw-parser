@@ -1,6 +1,6 @@
 // tom-weatherhead/thaw-parser/src/lalr1-parser.ts
 
-import { Set, Stack } from 'thaw-common-utilities.ts';
+import { IImmutableSet, Set, Stack } from 'thaw-common-utilities.ts';
 
 import { IGrammar, Symbol } from 'thaw-grammar';
 
@@ -310,7 +310,7 @@ export class LALR1Parser extends LR0Parser {
 	// See Fischer and LeBlanc, page 167.
 
 	private Cognate1(
-		s_bar: Set<LR0Configuration>,
+		s_bar: IImmutableSet<LR0Configuration>,
 		stateList: Set<LALR1Configuration>[]
 	): Set<LALR1Configuration> {
 		const result = new Set<LALR1Configuration>();
@@ -320,7 +320,7 @@ export class LALR1Parser extends LR0Parser {
 			const s_core = this.Core(s);
 
 			// if (!s_bar.IsSubsetOf(s_core) || !s_core.IsSubsetOf(s_bar))
-			if (!s_bar.isEqualTo(s_core)) {
+			if (!s_bar.equals(s_core)) {
 				continue;
 			}
 
@@ -341,7 +341,7 @@ export class LALR1Parser extends LR0Parser {
 		for (const s of lalr1machine.StateList) {
 			const s_core = this.Core(s.ConfigurationSet);
 
-			if (!s_bar.ConfigurationSet.isEqualTo(s_core)) {
+			if (!s_bar.ConfigurationSet.equals(s_core)) {
 				continue;
 			}
 

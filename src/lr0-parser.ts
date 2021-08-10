@@ -1,6 +1,6 @@
 // tom-weatherhead/thaw-parser/src/lr0-parser.ts
 
-import { IEqualityComparable, Set, Stack } from 'thaw-common-utilities.ts';
+import { IEqualityComparable, IImmutableSet, Set, Stack } from 'thaw-common-utilities.ts';
 
 import { Token } from 'thaw-lexical-analyzer';
 
@@ -131,12 +131,12 @@ export class LR0Configuration implements IEqualityComparable {
 }
 
 export class CFSMState {
-	public readonly ConfigurationSet: Set<LR0Configuration>;
+	// public readonly ConfigurationSet: Set<LR0Configuration>;
 	// The Transitions graph could contain cycles.
 	public readonly Transitions = new Map<Symbol, CFSMState>();
 
-	constructor(cs: Set<LR0Configuration>) {
-		this.ConfigurationSet = cs;
+	constructor(public readonly ConfigurationSet: IImmutableSet<LR0Configuration>) {
+		// this.ConfigurationSet = cs;
 	}
 
 	public toString(): string {
