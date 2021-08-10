@@ -23,8 +23,6 @@ export class LL1Parser extends ParserBase {
 		super(g);
 
 		// error TS2339: Property 'includes' does not exist on type 'number[]'.
-		// if(!g.selectorsOfCompatibleParsers.includes(ParserSelector.LL1)) {
-		// if (g.selectorsOfCompatibleParsers.indexOf(ParserSelector.LL1) < 0) {
 		if (!arrayIncludes(g.selectorsOfCompatibleParsers, ParserSelector.LL1)) {
 			throw new ArgumentException(
 				`LL1Parser constructor: Error: The provided grammar for ${g.languageName} cannot be parsed by an LL(1) parser`,
@@ -36,17 +34,7 @@ export class LL1Parser extends ParserBase {
 		this.fillParseTable();
 	}
 
-	public recognize(tokenList: Token[]): void {
-		// Throws an exception if an error is encountered.
-		this.llDriver(tokenList, false);
-	}
-
-	public parse(tokenList: Token[]): unknown {
-		return this.llDriver(tokenList, true);
-	}
-
 	private fillPredict(): void {
-		// this.grammar.productions.for Each((p: Production) => {
 		for (const p of this.grammar.productions) {
 			let s = this.computeFirst(p.RHSWithNoSemanticActions());
 
@@ -56,29 +44,23 @@ export class LL1Parser extends ParserBase {
 			}
 
 			this.predict.set(p, s);
-		} // );
+		}
 	}
 
 	private fillParseTable(): void {
-		// this.grammar.productions.for Each((p: Production) => {
 		for (const p of this.grammar.productions) {
-			// const predictIterator = (
-			// 	this.predict.get(p) as Set<number>
-			// ).getIterator();
 			const pValue = this.predict.get(p);
 
 			if (typeof pValue === 'undefined') {
 				throw new Error('LL1Parser.fillParseTable() : pValue is undefined');
 			}
 
-			// while (!predictIterator.isDone()) {
-			// 	const t = predictIterator.next() as number;
 			for (const t of pValue) {
 				// const sp = new SymbolPair(p.lhs, t);
 				const sp = `(${p.lhs}, ${t})`;
 				const pParseTableSPRaw = this.parseTable.get(sp) as Production;
 
-				if (pParseTableSPRaw !== undefined) {
+				if (typeof pParseTableSPRaw !== 'undefined') {
 					throw new ParserException(
 						`Error in FillParseTable() : Table entry not unique; p.lhs = ${p.lhs} ${
 							Symbol[p.lhs]
@@ -111,9 +93,9 @@ export class LL1Parser extends ParserBase {
 		parseStack.push(this.grammar.startSymbol);
 
 		while (!parseStack.isEmpty()) {
-			// const X = parseStack.peek();
-			const X = parseStack.pop();
-			parseStack.push(X);
+			const X = parseStack.peek();
+			// const X = parseStack.pop();
+			// parseStack.push(X);
 
 			if (typeof X === 'string') {
 				if (parse) {
@@ -129,27 +111,10 @@ export class LL1Parser extends ParserBase {
 				const sp = `(${symbolX}, ${tokenAsSymbol})`;
 				const parseTableGetSP = this.parseTable.get(sp) as Production;
 
-				// console.log(`tokenAsSymbol is ${tokenAsSymbol}`);
-				// console.log(`symbolX is ${symbolX}`);
-				// console.log(`indexOf symbolX in nonTerminals: ${this.grammar.nonTerminals.indexOf(symbolX)}`);
-				// console.log(`this.parseTable.get(sp) is ${parseTableGetSP}`);
-
-				// if (!parseTableGetSP) {
-				// 	const firstSetForX = this.firstSet.get(symbolX);
-
-				// 	console.log(`this.firstSet.get(symbolX) is ${firstSetForX} (type ${typeof firstSetForX})`);
-
-				// 	if (firstSetForX instanceof Set) {
-				// 		console.log(`firstSetForX contains tokenAsSymbol ${tokenAsSymbol} ? ${firstSetForX.contains(tokenAsSymbol) ? 'Yes' : 'No'}`);
-				// 	}
-				// }
-
-				// if (this.grammar.nonTerminals.contains(symbolX) && this.parseTable.ContainsKey(sp)) {
 				if (
 					this.grammar.nonTerminals.indexOf(symbolX) >= 0 &&
-					parseTableGetSP !== undefined
+					typeof parseTableGetSP !== 'undefined'
 				) {
-					// const p = this.parseTable[sp];
 					const p = parseTableGetSP;
 
 					// console.log(`Using production ${p.lhs} => ${p.rhs}`);
@@ -198,7 +163,6 @@ export class LL1Parser extends ParserBase {
 					);
 				}
 			} else {
-				// throw new ParserException("Unrecognized parse stack entry of type " + ((X != null) ? X.GetType().FullName : "null"));
 				throw new ParserException(
 					`Unrecognized parse stack entry '${X}' of type ${typeof X}`
 				);
@@ -206,7 +170,7 @@ export class LL1Parser extends ParserBase {
 		}
 
 		if (!parse) {
-			return null;
+			return undefined;
 		}
 
 		if (semanticStack.isEmpty()) {
@@ -216,34 +180,22 @@ export class LL1Parser extends ParserBase {
 		}
 
 		const result = semanticStack.pop();
-		// const semanticStackSize = semanticStack.getSize();
 
-		// if (semanticStackSize !== 1) {
 		if (!semanticStack.isEmpty()) {
-			/*
-			Console.WriteLine("Beginning of semantic stack dump:");
-
-			while (semanticStack.Count > 0)
-			{
-				object o = semanticStack.Pop();
-
-				if (o == null)
-				{
-					Console.WriteLine("  null");
-				}
-				else
-				{
-					Console.WriteLine("  {0}: {1}", o.GetType().FullName, o.ToString());
-				}
-			}
-
-			Console.WriteLine("End of semantic stack dump.");
-			 */
 			throw new ParserException(
 				'There was more than one object on the semantic stack; expected exactly one'
 			);
 		}
 
 		return result;
+	}
+
+	public recognize(tokenList: Token[]): void {
+		// Throws an exception if an error is encountered.
+		this.llDriver(tokenList, false);
+	}
+
+	public parse(tokenList: Token[]): unknown {
+		return this.llDriver(tokenList, true);
 	}
 }
