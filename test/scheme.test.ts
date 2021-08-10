@@ -15,9 +15,10 @@ import {
 
 import { createParser, ParserSelector, SyntaxException } from '..';
 
+const ls = LanguageSelector.Scheme;
+
 test('LL(1) Scheme parser instance creation test', () => {
 	// Arrange
-	const ls = LanguageSelector.Scheme;
 	const grammar = createGrammar(ls);
 
 	// Act
@@ -29,7 +30,7 @@ test('LL(1) Scheme parser instance creation test', () => {
 
 test('LL(1) Scheme recognize test', () => {
 	// 	// Arrange
-	const ls = LanguageSelector.Scheme;
+	// const ls = LanguageSelector.Scheme;
 	// const prologGlobalInfo = new PrologGlobalInfo();
 	const grammar = createGrammar(ls);
 	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
@@ -48,7 +49,7 @@ test('LL(1) Scheme recognize test', () => {
 });
 
 function evaluateToISExpression(input: string): ISExpression {
-	const ls = LanguageSelector.Scheme;
+	// const ls = LanguageSelector.Scheme;
 	const globalInfo = new SchemeGlobalInfo();
 	const grammar = createGrammar(ls);
 	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
@@ -62,7 +63,7 @@ function evaluateToISExpression(input: string): ISExpression {
 
 function schemeTest(data: Array<[input: string, expectedResult: string | string[]]>): void {
 	// Arrange
-	const ls = LanguageSelector.Scheme;
+	// const ls = LanguageSelector.Scheme;
 	const schemeGlobalInfo = new SchemeGlobalInfo();
 	const grammar = createGrammar(ls);
 	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
@@ -89,25 +90,6 @@ function schemeTest(data: Array<[input: string, expectedResult: string | string[
 	}
 }
 
-// [Test]
-// public void PrimOpTest1()
-// {
-//     var input = "+";
-//     var parseResult = GetParseResult(input);
-//
-//     Assert.IsNotNull(parseResult);
-//     Assert.AreEqual("PrimOp", parseResult.GetType().Name);
-//
-//     var sexpr = EvaluateToISExpression(input);
-//
-//     Assert.IsTrue(sexpr.IsPrimOp());
-//     Assert.IsTrue(sexpr is PrimOp);
-//
-//     var primOp = sexpr as PrimOp;
-//
-//     Assert.AreEqual(input, primOp.OperatorName.Value);
-// }
-
 test('LL(1) Scheme PrimOp test 1', () => {
 	const input = '+';
 	// var parseResult = GetParseResult(input);
@@ -117,13 +99,11 @@ test('LL(1) Scheme PrimOp test 1', () => {
 
 	const sexpr = evaluateToISExpression(input);
 
-	// Assert.IsTrue(sexpr.isPrimOp());
 	expect(sexpr.isPrimOp()).toBe(true);
 	// Assert.IsTrue(sexpr is PrimOp);
 
 	const primOp = sexpr as PrimOp;
 
-	// Assert.AreEqual(input, primOp.OperatorName.Value);
 	expect(primOp.name.value).toBe(input);
 
 	evaluateToISExpression;
@@ -140,17 +120,14 @@ test('LL(1) Scheme PrimOpTest2', () => {
 	]);
 });
 
-// [Test]
-// public void ClosureTest1()
-// {
-//     var input = "(lambda (x) (+ x 1))";
-//     var sexpr = EvaluateToISExpression(input);
-//
-//     Assert.IsTrue(sexpr.IsClosure());
-//     Assert.IsTrue(sexpr is Closure);
-// }
+test('LL(1) Scheme closure test 1', () => {
+    const input = '(lambda (x) (+ x 1))';
+    const sexpr = evaluateToISExpression(input);
 
-test('LL(1) Scheme ClosureTest2', () => {
+	expect(sexpr.isClosure()).toBe(true);
+});
+
+test('LL(1) Scheme closure test 2', () => {
 	schemeTest([
 		['(set increment (lambda (x) (+ x 1)))', '<closure>'],
 		['(increment 13)', '14']
