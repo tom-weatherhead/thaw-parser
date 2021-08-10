@@ -17,7 +17,10 @@ import { ShiftReduceConflictException } from './exceptions/shift-reduce-conflict
 /* eslint-disable @typescript-eslint/ban-types */
 
 export class LALR1Configuration extends LR0Configuration {
-	public static fromLR0(c: LR0Configuration, lookaheads: Set<Symbol>): LALR1Configuration {
+	public static fromLR0(
+		c: LR0Configuration,
+		lookaheads: IImmutableSet<Symbol>
+	): LALR1Configuration {
 		const result = new LALR1Configuration(c.ProductionLHS);
 
 		result.ProductionRHS.push(...c.ProductionRHS);
@@ -48,36 +51,6 @@ export class LALR1Configuration extends LR0Configuration {
 			this.Lookaheads.add(look);
 		}
 	}
-
-	// public LALR1Configuration(Symbol lhs, HashSet<Symbol> looks)
-	// 	: base(lhs)
-	// {
-	// 	Lookaheads.UnionWith(looks);
-	// }
-	//
-	// public LALR1Configuration(LR0Configuration src, HashSet<Symbol> looks)
-	// 	: base(src)
-	// {
-	// 	Lookaheads.UnionWith(looks);
-	// }
-	//
-	// public LALR1Configuration(Production p, Symbol look)
-	// 	: base(p)
-	// {
-	// 	Lookaheads.Add(look);
-	// }
-
-	// public override bool Equals(object obj) {
-	//
-	// 	if (object.ReferenceEquals(this, obj)) {
-	// 		return true;
-	// 	}
-	//
-	// 	var thatBase = obj as LR0Configuration;
-	// 	var that = obj as LALR1Configuration;
-	//
-	// 	return base.Equals(thatBase) && that != null && Lookaheads.IsSubsetOf(that.Lookaheads) && that.Lookaheads.IsSubsetOf(Lookaheads);
-	// }
 
 	public override equals(other: unknown): boolean {
 		const otherConfig = other as LALR1Configuration;
@@ -146,7 +119,7 @@ export class LALR1Configuration extends LR0Configuration {
 export class LALR1CFSMState {
 	public readonly Transitions = new Map<Symbol, LALR1CFSMState>();
 
-	constructor(public readonly ConfigurationSet: Set<LALR1Configuration>) {}
+	constructor(public readonly ConfigurationSet: IImmutableSet<LALR1Configuration>) {}
 
 	// public override bool Equals(object obj) {
 	// 	// TODO: Find a better implementation for this function.  Beware of cycles in the finite state machine (or ignore the transitions in this function).
@@ -164,11 +137,7 @@ export class LALR1CFSMState {
 	public equals(other: unknown): boolean {
 		const that = other as LALR1CFSMState;
 
-		return (
-			typeof that !== 'undefined' &&
-			this.ConfigurationSet.isASubsetOf(that.ConfigurationSet) &&
-			that.ConfigurationSet.isASubsetOf(this.ConfigurationSet)
-		);
+		return typeof that !== 'undefined' && this.ConfigurationSet.equals(that.ConfigurationSet);
 	}
 
 	// public override int GetHashCode() {
@@ -191,10 +160,6 @@ export class LALR1CFSMState {
 	// }
 }
 
-// #endregion
-
-// #region LALR1CFSM
-
 export class LALR1CFSM {
 	public readonly StateList: LALR1CFSMState[];
 	public readonly StartState: LALR1CFSMState;
@@ -204,15 +169,9 @@ export class LALR1CFSM {
 		this.StateList = [ss];
 	}
 
-	public FindStateWithLabel(cs: Set<LALR1Configuration>): LALR1CFSMState {
-		// for (const state of this.StateList) {
-		// 	if (state.ConfigurationSet.isEqualTo(cs)) {
-		// 		return state;
-		// 	}
-		// }
-
+	public FindStateWithLabel(cs: IImmutableSet<LALR1Configuration>): LALR1CFSMState {
 		const result = this.StateList.find((state: LALR1CFSMState) =>
-			state.ConfigurationSet.isEqualTo(cs)
+			state.ConfigurationSet.equals(cs)
 		);
 
 		if (typeof result === 'undefined') {
@@ -247,7 +206,7 @@ export class LookaheadPropagationRecord {
 }
 
 export class LALR1Parser extends LR0Parser {
-	private readonly cognateDict = new Map<string, Set<LALR1Configuration>>();
+	private readonly cognateDict = new Map<string, IImmutableSet<LALR1Configuration>>();
 
 	constructor(g: IGrammar) {
 		super(g);
