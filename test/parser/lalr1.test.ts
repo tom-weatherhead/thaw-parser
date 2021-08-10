@@ -14,7 +14,7 @@ import {
 	createGrammar,
 	// GrammarBase,
 	// GrammarException,
-	IExpression,
+	// IExpression,
 	LanguageSelector // ,
 	// Production,
 	// Symbol
@@ -48,10 +48,11 @@ test('LALR(1) recognize test', () => {
 
 	const f = (str: string): void => parser.recognize(tokenizer.tokenize(str));
 
-	// f('7');
+	f('7');
 	f('(* 7 13)');
+	f('(* (- 8 5) (+ 2 1))');
 
-	// expect(() => f('(* 7 13')).toThrow(SyntaxException);
+	expect(() => f('(* 7 13')).toThrow(SyntaxException);
 });
 
 // function lalr1ParserTest(data: Array<[input: string, expectedResult: string | string[]]>): void {

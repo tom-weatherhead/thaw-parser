@@ -627,7 +627,7 @@ export class LR0Parser extends ParserBase {
 					);
 					console.error('semanticStack.size is', semanticStack.size);
 
-					throw new Error('LR0Parser.shift_reduce_driver() : action === Error');
+					throw new SyntaxException('LR0Parser.shift_reduce_driver() : action === Error');
 
 				default:
 					// console.log(

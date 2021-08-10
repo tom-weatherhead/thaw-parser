@@ -252,16 +252,16 @@ export class LALR1Parser extends LR0Parser {
 	constructor(g: IGrammar) {
 		super(g);
 
-		console.log('this.machine is:', this.machine);
-		console.log('this.machine.StateList.length is:', this.machine.StateList.length);
+		// console.log('this.machine is:', this.machine);
+		// console.log('this.machine.StateList.length is:', this.machine.StateList.length);
 
 		if (this.machine.StateList.every((state: CFSMState) => state.Transitions.size === 0)) {
 			throw new Error('All machine states have zero transitions.');
 		}
 
-		for (const state of this.machine.StateList) {
-			console.log('Number of transitions for this state:', state.Transitions.size);
-		}
+		// for (const state of this.machine.StateList) {
+		// 	console.log('Number of transitions for this state:', state.Transitions.size);
+		// }
 
 		this.BuildLALR1CFSM();
 	}
@@ -594,10 +594,10 @@ export class LALR1Parser extends LR0Parser {
 		let reduceResultFound = false; // In order for the grammar to be LALR(1), there must be at most one result per state-symbol pair.
 		let reduceProductionNum = -1;
 
-		console.log('GetActionLALR() : S is', S);
-		console.log('GetActionLALR() : S.toString() is', S.toString());
+		// console.log('GetActionLALR() : S is', S);
+		// console.log('GetActionLALR() : S.toString() is', S.toString());
 
-		console.log('GetActionLALR() : cognateDict size is', this.cognateDict.size);
+		// console.log('GetActionLALR() : cognateDict size is', this.cognateDict.size);
 
 		// 1) Search for Reduce actions.
 		const cognateS = this.cognateDict.get(S.toString());
@@ -606,16 +606,16 @@ export class LALR1Parser extends LR0Parser {
 			throw new Error('GetActionLALR() : cognateS is undefined');
 		}
 
-		console.log('GetActionLALR() : cognateS is', typeof cognateS, cognateS);
-		console.log('GetActionLALR() : cognateS.toArray().length is', cognateS.toArray().length);
+		// console.log('GetActionLALR() : cognateS is', typeof cognateS, cognateS);
+		// console.log('GetActionLALR() : cognateS.toArray().length is', cognateS.toArray().length);
 
 		for (const c of cognateS.toArray()) {
-			console.log('GetActionLALR() : tokenAsSymbol is', tokenAsSymbol, Symbol[tokenAsSymbol]);
-			console.log('GetActionLALR() : c.Lookaheads is', c.Lookaheads);
+			// console.log('GetActionLALR() : tokenAsSymbol is', tokenAsSymbol, Symbol[tokenAsSymbol]);
+			// console.log('GetActionLALR() : c.Lookaheads is', c.Lookaheads);
 
-			for (const l of c.Lookaheads) {
-				console.log('GetActionLALR() : lookahead in c.Lookaheads is', l, Symbol[l]);
-			}
+			// for (const l of c.Lookaheads) {
+			// 	console.log('GetActionLALR() : lookahead in c.Lookaheads is', l, Symbol[l]);
+			// }
 
 			if (!c.Lookaheads.contains(tokenAsSymbol)) {
 				continue;
@@ -623,7 +623,7 @@ export class LALR1Parser extends LR0Parser {
 
 			const matchedProduction = c.ConvertToProductionIfAllMatched();
 
-			console.log(`GetActionLALR() : matchedProduction is ${matchedProduction}`);
+			// console.log(`GetActionLALR() : matchedProduction is ${matchedProduction}`);
 
 			if (typeof matchedProduction === 'undefined') {
 				continue;
