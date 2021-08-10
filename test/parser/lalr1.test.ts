@@ -10,11 +10,11 @@ import {
 } from 'thaw-lexical-analyzer';
 
 import {
-	// Chapter1GlobalInfo,
+	Chapter1GlobalInfo,
 	createGrammar,
 	// GrammarBase,
 	// GrammarException,
-	// IExpression,
+	IExpression,
 	LanguageSelector // ,
 	// Production,
 	// Symbol
@@ -55,34 +55,34 @@ test('LALR(1) recognize test', () => {
 	expect(() => f('(* 7 13')).toThrow(SyntaxException);
 });
 
-// function lalr1ParserTest(data: Array<[input: string, expectedResult: string | string[]]>): void {
-// 	// Arrange
-// 	const ls = LanguageSelector.Chapter1;
-// 	const globalInfo = new Chapter1GlobalInfo();
-// 	const grammar = createGrammar(ls);
-// 	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
-// 	const parser = createParser(ParserSelector.LALR1, grammar);
-//
-// 	for (const [input, expectedResult] of data) {
-// 		// Act
-// 		const parseResult = parser.parse(tokenizer.tokenize(input));
-// 		const expr = parseResult as IExpression<number>;
-// 		const actualResult = expr.evaluate(globalInfo.globalEnvironment, globalInfo).toString();
-//
-// 		// console.log(`input: ${input}\nactualResult:\n${actualResult}\n\n`);
-//
-// 		// Assert
-// 		if (typeof expectedResult === 'string') {
-// 			expect(actualResult).toBe(expectedResult);
-// 		} else {
-// 			for (const str of expectedResult) {
-// 				expect(actualResult.includes(str)).toBe(true);
-// 			}
-// 		}
-// 	}
-// }
+function lalr1ParserTest(data: Array<[input: string, expectedResult: string | string[]]>): void {
+	// Arrange
+	const ls = LanguageSelector.Chapter1;
+	const globalInfo = new Chapter1GlobalInfo();
+	const grammar = createGrammar(ls);
+	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
+	const parser = createParser(ParserSelector.LALR1, grammar);
 
-// test('LALR(1) Chapter1 addition test', () => {
-// 	// Arrange
-// 	lalr1ParserTest([['(+ 2 3)', '5']]);
-// });
+	for (const [input, expectedResult] of data) {
+		// Act
+		const parseResult = parser.parse(tokenizer.tokenize(input));
+		const expr = parseResult as IExpression<number>;
+		const actualResult = expr.evaluate(globalInfo.globalEnvironment, globalInfo).toString();
+
+		// console.log(`input: ${input}\nactualResult:\n${actualResult}\n\n`);
+
+		// Assert
+		if (typeof expectedResult === 'string') {
+			expect(actualResult).toBe(expectedResult);
+		} else {
+			for (const str of expectedResult) {
+				expect(actualResult.includes(str)).toBe(true);
+			}
+		}
+	}
+}
+
+test('LALR(1) Chapter1 addition test', () => {
+	// Arrange
+	lalr1ParserTest([['(+ 2 3)', '5']]);
+});

@@ -52,7 +52,7 @@ export class LL1Parser extends ParserBase {
 			const pValue = this.predict.get(p);
 
 			if (typeof pValue === 'undefined') {
-				throw new Error('LL1Parser.fillParseTable() : pValue is undefined');
+				throw new ParserException('LL1Parser.fillParseTable() : pValue is undefined');
 			}
 
 			for (const t of pValue) {
@@ -70,11 +70,9 @@ export class LL1Parser extends ParserBase {
 					);
 				}
 
-				// console.log(`Adding to parseTable: Key: (${p.lhs}, ${t}); value: ${p.lhs} => ${p.rhs}`);
-				// console.log(`Adding to parseTable: Key: ${sp}; value: ${p.lhs} => ${p.rhs}`);
 				this.parseTable.set(sp, p);
 			}
-		} // );
+		}
 	}
 
 	// Adapted from Fischer and LeBlanc, page 121 (function lldriver())
@@ -87,15 +85,13 @@ export class LL1Parser extends ParserBase {
 		let tokenNum = 0;
 		let token = tokenList[tokenNum];
 		let tokenAsSymbol = this.grammar.tokenToSymbol(token);
-		const parseStack = new Stack<unknown>(); // The parse stack
+		const parseStack = new Stack<unknown>();
 		const semanticStack = new Stack<unknown>();
 
 		parseStack.push(this.grammar.startSymbol);
 
 		while (!parseStack.isEmpty()) {
 			const X = parseStack.peek();
-			// const X = parseStack.pop();
-			// parseStack.push(X);
 
 			if (typeof X === 'string') {
 				if (parse) {
