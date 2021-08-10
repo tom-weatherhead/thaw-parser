@@ -9,6 +9,7 @@ import {
 	IExpression,
 	ISExpression,
 	LanguageSelector,
+	PrimOp,
 	SchemeGlobalInfo
 } from 'thaw-grammar';
 
@@ -45,6 +46,19 @@ test('LL(1) Scheme recognize test', () => {
 
 	expect(() => f('(* 7 13')).toThrow(SyntaxException);
 });
+
+function evaluateToISExpression(input: string): ISExpression {
+	const ls = LanguageSelector.Scheme;
+	const globalInfo = new SchemeGlobalInfo();
+	const grammar = createGrammar(ls);
+	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
+	const parser = createParser(ParserSelector.LL1, grammar);
+
+	const parseResult = parser.parse(tokenizer.tokenize(input));
+	const expr = parseResult as IExpression<ISExpression>;
+
+	return expr.evaluate(globalInfo.globalEnvironment, globalInfo);
+}
 
 function schemeTest(data: Array<[input: string, expectedResult: string | string[]]>): void {
 	// Arrange
@@ -93,6 +107,27 @@ function schemeTest(data: Array<[input: string, expectedResult: string | string[
 //
 //     Assert.AreEqual(input, primOp.OperatorName.Value);
 // }
+
+test('LL(1) Scheme PrimOp test 1', () => {
+	const input = '+';
+	// var parseResult = GetParseResult(input);
+
+	// Assert.IsNotNull(parseResult);
+	// Assert.AreEqual("PrimOp", parseResult.GetType().Name);
+
+	const sexpr = evaluateToISExpression(input);
+
+	// Assert.IsTrue(sexpr.isPrimOp());
+	expect(sexpr.isPrimOp()).toBe(true);
+	// Assert.IsTrue(sexpr is PrimOp);
+
+	const primOp = sexpr as PrimOp;
+
+	// Assert.AreEqual(input, primOp.OperatorName.Value);
+	expect(primOp.name.value).toBe(input);
+
+	evaluateToISExpression;
+});
 
 test('LL(1) Scheme addition test 1', () => {
 	schemeTest([['(+ 2 3)', '5']]);
