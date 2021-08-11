@@ -1,6 +1,6 @@
 // tom-weatherhead/thaw-parser/src/lr1-parser.ts
 
-import { Set, Stack } from 'thaw-common-utilities.ts';
+import { IImmutableSet, Set, Stack } from 'thaw-common-utilities.ts';
 
 import { Token } from 'thaw-lexical-analyzer';
 
@@ -15,8 +15,6 @@ import { ReduceReduceConflictException } from './exceptions/reduce-reduce-confli
 import { ShiftReduceConflictException } from './exceptions/shift-reduce-conflict';
 // import { ParserException } from './exceptions/parser';
 import { SyntaxException } from './exceptions/syntax';
-
-// #region LR1Configuration
 
 /* eslint-disable @typescript-eslint/ban-types */
 export class LR1Configuration extends LR0Configuration {
@@ -68,14 +66,14 @@ export class LR1Configuration extends LR0Configuration {
 }
 
 export class FSMState {
-	public readonly ConfigurationSet = new Set<LR1Configuration>();
+	// public readonly ConfigurationSet = new Set<LR1Configuration>();
 	public readonly Transitions = new Map<Symbol, FSMState>();
 	private readonly asString: string;
 
-	constructor(cs: Set<LR1Configuration>) {
-		this.ConfigurationSet = cs;
+	constructor(public readonly ConfigurationSet: IImmutableSet<LR1Configuration>) {
+		// this.ConfigurationSet = cs;
 
-		const s = cs.toArray().map((c: LR1Configuration) => `${c}`);
+		const s = this.ConfigurationSet.toArray().map((c: LR1Configuration) => `${c}`);
 
 		s.sort();
 
@@ -94,11 +92,7 @@ export class FSMState {
 		const that = other as FSMState;
 
 		// TODO: Should we also consider Transitions.Keys?
-		return (
-			typeof that !== 'undefined' &&
-			this.ConfigurationSet.isASubsetOf(that.ConfigurationSet) &&
-			that.ConfigurationSet.isASubsetOf(this.ConfigurationSet)
-		);
+		return typeof that !== 'undefined' && this.ConfigurationSet.equals(that.ConfigurationSet);
 	}
 
 	// public override int GetHashCode()
@@ -138,12 +132,9 @@ export class FiniteStateMachine {
 		this.StateList = [ss];
 	}
 
-	public FindStateWithLabel(cs: Set<LR1Configuration>): FSMState | undefined {
+	public FindStateWithLabel(cs: IImmutableSet<LR1Configuration>): FSMState | undefined {
 		// Returns undefined if no state has the given configuration set.
-		return this.StateList.find(
-			(state) =>
-				cs.isASubsetOf(state.ConfigurationSet) && state.ConfigurationSet.isASubsetOf(cs)
-		);
+		return this.StateList.find((state) => cs.equals(state.ConfigurationSet));
 	}
 }
 
@@ -166,7 +157,7 @@ export class StateSymbolPair {
 }
 
 export class LR1Parser extends ParserBase {
-	private readonly AllSymbols: Set<Symbol>;
+	private readonly AllSymbols: IImmutableSet<Symbol>;
 	public readonly machine: FiniteStateMachine;
 	// private readonly GoToTable = new Map<StateSymbolPair, FSMState>();
 	private readonly GoToTable = new Map<string, FSMState>();
@@ -190,7 +181,7 @@ export class LR1Parser extends ParserBase {
 
 	// Adapted from Fischer and LeBlanc, page 156.
 
-	private closure1(s: Set<LR1Configuration>): Set<LR1Configuration> {
+	private closure1(s: IImmutableSet<LR1Configuration>): IImmutableSet<LR1Configuration> {
 		const sPrime = new Set<LR1Configuration>(s);
 		const additions = new Set<LR1Configuration>();
 
@@ -245,7 +236,7 @@ export class LR1Parser extends ParserBase {
 
 	// Adapted from Fischer and LeBlanc, page 157.
 
-	private go_to1(s: Set<LR1Configuration>, X: Symbol): Set<LR1Configuration> {
+	private go_to1(s: IImmutableSet<LR1Configuration>, X: Symbol): IImmutableSet<LR1Configuration> {
 		const sb = new Set<LR1Configuration>();
 
 		for (const c of s) {
@@ -263,7 +254,7 @@ export class LR1Parser extends ParserBase {
 
 	// See Fischer and LeBlanc, page 157.
 
-	private compute_s0(): Set<LR1Configuration> {
+	private compute_s0(): IImmutableSet<LR1Configuration> {
 		const p = this.grammar.findStartingProduction();
 
 		return this.closure1(
@@ -277,7 +268,7 @@ export class LR1Parser extends ParserBase {
 		const s0 = this.compute_s0();
 		const startState = new FSMState(s0);
 		const fsm = new FiniteStateMachine(startState);
-		const S = new Stack<Set<LR1Configuration>>();
+		const S = new Stack<IImmutableSet<LR1Configuration>>();
 
 		S.push(s0);
 
