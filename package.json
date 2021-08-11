@@ -1,11 +1,13 @@
 {
 	"name": "thaw-parser",
 	"version": "0.0.3",
-	"description": "Programming language parsers, including LL(1), LR(0), and SLR(1).",
+	"description": "Programming language parsers, including LL(1), SLR(1), and LALR(1).",
 	"keywords": [
 		"LL(1)",
 		"LR(0)",
+		"LR(1)",
 		"SLR(1)",
+		"LALR(1)",
 		"parser",
 		"programming languages",
 		"TypeScript"
@@ -65,25 +67,25 @@
 	},
 	"publishConfig": {},
 	"dependencies": {
-		"thaw-common-utilities.ts": "file:thaw-common-utilities.ts.tgz",
-		"thaw-grammar": "file:thaw-grammar.tgz",
-		"thaw-lexical-analyzer": "file:thaw-lexical-analyzer.tgz"
+		"thaw-common-utilities.ts": "^0.0.9",
+		"thaw-grammar": "^0.0.3",
+		"thaw-lexical-analyzer": "^0.0.3"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.14.6",
-		"@babel/preset-env": "^7.14.7",
-		"@babel/preset-typescript": "^7.14.5",
-		"@rollup/plugin-node-resolve": "^13.0.0",
+		"@babel/core": "^7.15.0",
+		"@babel/preset-env": "^7.15.0",
+		"@babel/preset-typescript": "^7.15.0",
+		"@rollup/plugin-node-resolve": "^13.0.4",
 		"@types/eslint": "^7.28.0",
-		"@types/jest": "^26.0.24",
+		"@types/jest": "^27.0.0",
 		"@types/node": "^16",
-		"@typescript-eslint/eslint-plugin": "^4.28.3",
-		"@typescript-eslint/parser": "^4.28.3",
-		"@typescript-eslint/typescript-estree": "^4.28.3",
-		"eslint": "^7.30.0",
+		"@typescript-eslint/eslint-plugin": "^4.29.1",
+		"@typescript-eslint/parser": "^4.29.1",
+		"@typescript-eslint/typescript-estree": "^4.29.1",
+		"eslint": "^7.32.0",
 		"jest": "^27.0.6",
 		"prettier": "^2.3.2",
-		"rollup": "^2.53.1",
+		"rollup": "^2.56.2",
 		"rollup-plugin-terser": "^7.0.2",
 		"typescript": "^4.3.5",
 		"typescript-eslint-language-service": "^4.1.4"

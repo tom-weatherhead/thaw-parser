@@ -1,5 +1,5 @@
 # thaw-parser
-Programming language parsers, including LL(1), LR(0), and SLR(1).
+Programming language parsers, including LL(1), SLR(1), and LALR(1).
 
 Obligatory BadgeFest:
 
