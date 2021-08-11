@@ -17,6 +17,7 @@ import { ShiftReduceConflictException } from './exceptions/shift-reduce-conflict
 import { SyntaxException } from './exceptions/syntax';
 
 /* eslint-disable @typescript-eslint/ban-types */
+
 export class LR1Configuration extends LR0Configuration {
 	public static fromLR0(src: LR0Configuration, look: Symbol): LR1Configuration {
 		return new LR1Configuration(src.ProductionLHS, look, src.ProductionRHS);
@@ -160,14 +161,14 @@ export class LR1Parser extends ParserBase {
 	private readonly AllSymbols: IImmutableSet<Symbol>;
 	public readonly machine: FiniteStateMachine;
 	// private readonly GoToTable = new Map<StateSymbolPair, FSMState>();
-	private readonly GoToTable = new Map<string, FSMState>();
+	private readonly GoToTable: ReadonlyMap<string, FSMState>;
 
 	constructor(g: IGrammar) {
 		super(g);
 
 		this.AllSymbols = new Set<Symbol>(g.terminals.concat(g.nonTerminals));
 		this.machine = this.build_LR1();
-		this.build_go_to_table();
+		this.GoToTable = this.build_go_to_table();
 	}
 
 	// public LR1Parser(GrammarSelector gs)
@@ -382,18 +383,26 @@ export class LR1Parser extends ParserBase {
 
 	// Adapted from Fischer and LeBlanc, page 150.
 
-	private build_go_to_table(): void {
-		this.GoToTable.clear();
+	private build_go_to_table(): ReadonlyMap<string, FSMState> {
+		// this.GoToTable.clear();
+		const goToTable = new Map<string, FSMState>();
 
 		for (const S of this.machine.StateList) {
-			for (const X of S.Transitions.keys()) {
-				const value = S.Transitions.get(X);
+			// for (const X of S.Transitions.keys()) {
+			// 	// TODO: Try S.Transitions.entries()
+			// 	const value = S.Transitions.get(X);
+			//
+			// 	if (typeof value !== 'undefined') {
+			// 		goToTable.set(new StateSymbolPair(S, X).toString(), value);
+			// 	}
+			// }
 
-				if (typeof value !== 'undefined') {
-					this.GoToTable.set(new StateSymbolPair(S, X).toString(), value);
-				}
+			for (const [X, value] of S.Transitions.entries()) {
+				goToTable.set(new StateSymbolPair(S, X).toString(), value);
 			}
 		}
+
+		return goToTable;
 	}
 
 	private go_to(S: FSMState, tokenAsSymbol: Symbol): FSMState {
