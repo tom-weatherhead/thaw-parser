@@ -1,14 +1,16 @@
-// slr1-parser.ts
+// tom-weatherhead/thaw-parser/src/slr1-parser.ts
 
-import { Set } from 'thaw-common-utilities.ts';
+import { IImmutableSet } from 'thaw-common-utilities.ts';
 
 import { IGrammar, Symbol } from 'thaw-grammar';
 
 import { CFSMState, LR0Configuration, LR0Parser, ShiftReduceAction } from './lr0-parser';
 
-// namespace Inference.Parser
-// {
+import { ReduceReduceConflictException } from './exceptions/reduce-reduce-conflict';
+import { ShiftReduceConflictException } from './exceptions/shift-reduce-conflict';
+
 /* eslint-disable @typescript-eslint/ban-types */
+
 export class SLR1Parser extends LR0Parser {
 	constructor(g: IGrammar) {
 		super(g);
@@ -38,22 +40,15 @@ export class SLR1Parser extends LR0Parser {
 		for (const c of S.ConfigurationSet) {
 			const matchedProduction = c.ConvertToProductionIfAllMatched();
 
-			// console.log(`matchedProduction is ${matchedProduction}`);
-
 			if (typeof matchedProduction === 'undefined') {
 				continue;
 			}
 
-			let currentFollowSet: Set<Symbol> | undefined;
+			let currentFollowSet: IImmutableSet<Symbol> | undefined;
 
 			for (let i = 0; i < this.grammar.productions.length; ++i) {
 				const productionToCompare = this.grammar.productions[i].StripOutSemanticActions();
 
-				// console.log(
-				// 	`Comparing ${matchedProduction} to ${productionToCompare}...`
-				// );
-
-				// if (this.productionEquals(matchedProduction, productionToCompare)) {
 				if (matchedProduction.equals(productionToCompare)) {
 					// Is tokenAsSymbol in Follow(productionToCompare.lhs) ?
 
@@ -72,8 +67,6 @@ export class SLR1Parser extends LR0Parser {
 						currentFollowSet.contains(tokenAsSymbol)
 					) {
 						if (reduceResultFound && reduceProductionNum !== i) {
-							//throw new ReduceReduceConflictException("GetActionSLR1() : Multiple actions found; grammar is not SLR(1).");
-
 							// 2013/10/22 : To find out why my CLU grammar is not SLR(1):
 
 							// throw new ReduceReduceConflictException(string.Format(
@@ -81,7 +74,7 @@ export class SLR1Parser extends LR0Parser {
 							// //tokenAsSymbol, reduceProductionNum, i));
 							// tokenAsSymbol, grammar.Productions[reduceProductionNum].ToString(), grammar.Productions[i].ToString())); // The .ToString() here may be unnecessary.
 
-							throw new Error(
+							throw new ReduceReduceConflictException(
 								`GetActionSLR1() : Multiple actions found; grammar is not SLR(1). Symbol ${tokenAsSymbol}, productions ${this.grammar.productions[reduceProductionNum]} and ${this.grammar.productions[i]}.`
 							);
 						}
@@ -95,19 +88,6 @@ export class SLR1Parser extends LR0Parser {
 		}
 
 		// 2) Search for Shift and Accept actions.
-		/*
-		bool shiftOrAcceptResultFound = false;
-
-		for each (LR0Configuration c in S.ConfigurationSet) {
-			Symbol symbol;
-
-			if (c.FindSymbolAfterDot(out symbol) && symbol == tokenAsSymbol) {
-				shiftOrAcceptResultFound = true;
-			}
-		}
-		 */
-
-		// Symbol symbol;
 		const shiftOrAcceptResultFound = S.ConfigurationSet.toArray().some(
 			(c: LR0Configuration) => {
 				const symbol = c.FindSymbolAfterDot();
@@ -122,7 +102,7 @@ export class SLR1Parser extends LR0Parser {
 				// "GetActionSLR1() : Multiple actions found; grammar is not SLR(1).  Symbol {0}, production {1}.",
 				// tokenAsSymbol, grammar.Productions[reduceProductionNum].ToString())); // The .ToString() here may be unnecessary.
 
-				throw new Error(
+				throw new ShiftReduceConflictException(
 					`GetActionSLR1() : Multiple actions found; grammar is not SLR(1).  Symbol ${tokenAsSymbol}, production ${this.grammar.productions[reduceProductionNum]}.`
 				);
 			}
@@ -166,5 +146,5 @@ export class SLR1Parser extends LR0Parser {
 		return this.GetActionSLR1(S, tokenAsSymbol);
 	}
 }
+
 /* eslint-enable @typescript-eslint/ban-types */
-// }
