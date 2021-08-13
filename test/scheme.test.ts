@@ -264,27 +264,35 @@ test('LL(1) Scheme PrimOp and Closure Pred test', () => {
 	]);
 });
 
-// [Test]
-// public void StreamsTest()   // See Kamin pages 176-178 : "SASL vs. Scheme"
-// {
-//     // This Scheme code uses zero-argument closures to mimic SASL thunks.
-//     // If s is a stream, (car s) is a number, and ((cadr s)) is a stream.
-//     Evaluate(@"
-// (set add-streams (lambda (s1 s2)
-// (list (+ (car s1) (car s2)) (lambda () (add-streams ((cadr s1)) ((cadr s2)))))
-// ))");
-//     Evaluate(@"
-// (set stream-first-n (lambda (n s)
-// (if (= n 0) '()
-// (cons (car s) (stream-first-n (- n 1) ((cadr s)))))
-// ))");
-//     Evaluate("(set powers-of-2 (list 1 (lambda () (add-streams powers-of-2 powers-of-2))))");
-//     Evaluate("(set fibonacci (list 0 (lambda () (list 1 (lambda () (add-streams fibonacci ((cadr fibonacci))))))))");
-//
-//     Assert.AreEqual("(1 2 4 8 16)", Evaluate("(stream-first-n 5 powers-of-2)"));
-//     Assert.AreEqual("(0 1 1 2 3 5 8 13)", Evaluate("(stream-first-n 8 fibonacci)"));
-// }
-//
+test('LL(1) Scheme Streams test', () => {
+	// See Kamin pages 176-178 : "SASL vs. Scheme"
+	// This Scheme code uses zero-argument closures to mimic SASL thunks.
+	// If s is a stream, (car s) is a number, and ((cadr s)) is a stream.
+	const line0 = '(set cadr (lambda (x) (car (cdr x))))';
+	const line1 =
+		'(set add-streams (lambda (s1 s2)' +
+		'(list (+ (car s1) (car s2)) (lambda () (add-streams ((cadr s1)) ((cadr s2)))))' +
+		'))';
+	const line2 =
+		'(set stream-first-n (lambda (n s)' +
+		"(if (= n 0) '()" +
+		'(cons (car s) (stream-first-n (- n 1) ((cadr s)))))' +
+		'))';
+	const line3 = '(set powers-of-2 (list 1 (lambda () (add-streams powers-of-2 powers-of-2))))';
+	const line4 =
+		'(set fibonacci (list 0 (lambda () (list 1 (lambda () (add-streams fibonacci ((cadr fibonacci))))))))';
+
+	schemeTest([
+		[line0, '<closure>'],
+		[line1, '<closure>'],
+		[line2, '<closure>'],
+		[line3, '(1 <closure>)'],
+		[line4, '(0 <closure>)'],
+		['(stream-first-n 5 powers-of-2)', '(1 2 4 8 16)'],
+		['(stream-first-n 8 fibonacci)', '(0 1 1 2 3 5 8 13)']
+	]);
+});
+
 // [Test]
 // public void RplacaRplacdTest()  // See page 55
 // {
