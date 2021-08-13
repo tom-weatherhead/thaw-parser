@@ -1,6 +1,6 @@
 // tom-weatherhead/thaw-parser/src/lalr1-parser.ts
 
-import { IImmutableSet, Set, Stack } from 'thaw-common-utilities.ts';
+import { createSet, IImmutableSet, ISet, Stack } from 'thaw-common-utilities.ts';
 
 import { IGrammar, Symbol } from 'thaw-grammar';
 
@@ -41,8 +41,8 @@ export class LALR1Configuration extends LR0Configuration {
 		return result;
 	}
 
-	public readonly Lookaheads = new Set<Symbol>();
-	public readonly PropagateLinks = new Set<LALR1Configuration>();
+	public readonly Lookaheads = createSet<Symbol>();
+	public readonly PropagateLinks = createSet<LALR1Configuration>();
 
 	constructor(lhs: Symbol, ...looks: Symbol[]) {
 		super(lhs);
@@ -64,7 +64,7 @@ export class LALR1Configuration extends LR0Configuration {
 			typeof otherConfig === 'undefined' ||
 			!(other instanceof LALR1Configuration) ||
 			!super.equals(other) ||
-			!this.Lookaheads.isEqualTo(otherConfig.Lookaheads)
+			!this.Lookaheads.equals(otherConfig.Lookaheads)
 		) {
 			return false;
 		}
@@ -233,7 +233,7 @@ export class LALR1Parser extends LR0Parser {
 	// See Fischer and LeBlanc, page 167.
 
 	private Core(s: IImmutableSet<LALR1Configuration>): IImmutableSet<LR0Configuration> {
-		const result = new Set<LR0Configuration>();
+		const result = createSet<LR0Configuration>();
 
 		for (const c of s.toArray()) {
 			result.add(c.ToLR0Configuration());
@@ -244,7 +244,7 @@ export class LALR1Parser extends LR0Parser {
 
 	private CognateHelper(
 		s: IImmutableSet<LALR1Configuration>,
-		cognateResult: Set<LALR1Configuration>,
+		cognateResult: ISet<LALR1Configuration>,
 		configDict: Map<LR0Configuration, LALR1Configuration>
 	): void {
 		for (const c of s.toArray()) {
@@ -272,7 +272,7 @@ export class LALR1Parser extends LR0Parser {
 		s_bar: IImmutableSet<LR0Configuration>,
 		stateList: IImmutableSet<LALR1Configuration>[]
 	): IImmutableSet<LALR1Configuration> {
-		const result = new Set<LALR1Configuration>();
+		const result = createSet<LALR1Configuration>();
 		const configDict = new Map<LR0Configuration, LALR1Configuration>();
 
 		for (const s of stateList) {
@@ -294,7 +294,7 @@ export class LALR1Parser extends LR0Parser {
 	}
 
 	private Cognate2(s_bar: CFSMState, lalr1machine: LALR1CFSM): IImmutableSet<LALR1Configuration> {
-		const result = new Set<LALR1Configuration>();
+		const result = createSet<LALR1Configuration>();
 		const configDict = new Map<LR0Configuration, LALR1Configuration>();
 
 		for (const s of lalr1machine.StateList) {
@@ -327,7 +327,7 @@ export class LALR1Parser extends LR0Parser {
 		const lr1parser = new LR1Parser(this.grammar);
 
 		for (const lr1State of lr1parser.machine.StateList) {
-			const cs = new Set<LALR1Configuration>();
+			const cs = createSet<LALR1Configuration>();
 
 			for (const c of lr1State.ConfigurationSet) {
 				cs.add(LALR1Configuration.fromLR1(c));

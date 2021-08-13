@@ -1,6 +1,6 @@
 // tom-weatherhead/thaw-parser/src/lr1-parser.ts
 
-import { IImmutableSet, Set, Stack } from 'thaw-common-utilities.ts';
+import { createSet, IImmutableSet, Stack } from 'thaw-common-utilities.ts';
 
 import { Token } from 'thaw-lexical-analyzer';
 
@@ -166,7 +166,7 @@ export class LR1Parser extends ParserBase {
 	constructor(g: IGrammar) {
 		super(g);
 
-		this.AllSymbols = new Set<Symbol>(g.terminals.concat(g.nonTerminals));
+		this.AllSymbols = createSet<Symbol>(g.terminals.concat(g.nonTerminals));
 		this.machine = this.build_LR1();
 		this.GoToTable = this.build_go_to_table();
 	}
@@ -183,8 +183,8 @@ export class LR1Parser extends ParserBase {
 	// Adapted from Fischer and LeBlanc, page 156.
 
 	private closure1(s: IImmutableSet<LR1Configuration>): IImmutableSet<LR1Configuration> {
-		const sPrime = new Set<LR1Configuration>(s);
-		const additions = new Set<LR1Configuration>();
+		const sPrime = createSet<LR1Configuration>(s);
+		const additions = createSet<LR1Configuration>();
 
 		do {
 			additions.clear();
@@ -238,7 +238,7 @@ export class LR1Parser extends ParserBase {
 	// Adapted from Fischer and LeBlanc, page 157.
 
 	private go_to1(s: IImmutableSet<LR1Configuration>, X: Symbol): IImmutableSet<LR1Configuration> {
-		const sb = new Set<LR1Configuration>();
+		const sb = createSet<LR1Configuration>();
 
 		for (const c of s) {
 			const symbol = c.FindSymbolAfterDot();
@@ -259,7 +259,7 @@ export class LR1Parser extends ParserBase {
 		const p = this.grammar.findStartingProduction();
 
 		return this.closure1(
-			new Set<LR1Configuration>([LR1Configuration.fromProduction1(p, Symbol.Lambda)])
+			createSet<LR1Configuration>([LR1Configuration.fromProduction1(p, Symbol.Lambda)])
 		);
 	}
 

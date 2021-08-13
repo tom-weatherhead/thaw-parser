@@ -1,6 +1,6 @@
 // tom-weatherhead/thaw-parser/src/parser-base.ts
 
-import { Set } from 'thaw-common-utilities.ts';
+import { createSet, ISet } from 'thaw-common-utilities.ts';
 
 import { Token } from 'thaw-lexical-analyzer';
 
@@ -12,9 +12,9 @@ import { IParser } from './iparser';
 /* eslint-disable @typescript-eslint/ban-types */
 export abstract class ParserBase implements IParser {
 	protected readonly grammar: IGrammar;
-	protected readonly derivesLambda = new Set<Symbol>();
-	protected readonly firstSet = new Map<Symbol, Set<Symbol>>();
-	protected readonly followSet = new Map<Symbol, Set<Symbol>>();
+	protected readonly derivesLambda = createSet<Symbol>();
+	protected readonly firstSet = new Map<Symbol, ISet<Symbol>>();
+	protected readonly followSet = new Map<Symbol, ISet<Symbol>>();
 
 	protected constructor(g: IGrammar) {
 		this.grammar = g;
@@ -28,12 +28,10 @@ export abstract class ParserBase implements IParser {
 
 	public abstract parse(tokenList: Token[]): unknown;
 
-	protected withoutLambda(ie: Iterable<Symbol>): Set<Symbol> {
+	protected withoutLambda(ie: Iterable<Symbol>): ISet<Symbol> {
 		const pred = (n: Symbol) => n !== Symbol.Lambda;
-		const result = new Set<Symbol>();
+		const result = createSet<Symbol>();
 
-		// while (!ie.isDone()) {
-		// 	const element = ie.next() as number;
 		for (const element of ie) {
 			if (pred(element)) {
 				result.add(element);
@@ -45,9 +43,9 @@ export abstract class ParserBase implements IParser {
 
 	// Adapted from Fischer and LeBlanc, page 104
 
-	protected computeFirst(alpha: Symbol[]): Set<Symbol> {
+	protected computeFirst(alpha: Symbol[]): ISet<Symbol> {
 		const k = alpha.length;
-		const result = new Set<Symbol>();
+		const result = createSet<Symbol>();
 
 		if (k === 0 || (k === 1 && alpha[0] === Symbol.Lambda)) {
 			// ThAW: Originally, this line was just: if (k == 0)
@@ -105,36 +103,25 @@ export abstract class ParserBase implements IParser {
 		return result;
 	}
 
-	// protected List<Symbol> ExtractSymbols(List<object> list) {
-	// 	var result = new List<Symbol>();
-
-	// 	list.Where(o => o is Symbol).ToList().For Each(o => result.Add((Symbol)o));
-
-	// 	return result;
-	// }
-
 	// Adapted from Fischer and LeBlanc, page 105
 
 	protected fillFirstSet(): void {
-		// this.grammar.nonTerminals.for Each((A: Symbol) => {
 		for (const A of this.grammar.nonTerminals) {
-			const s = new Set<Symbol>();
+			const s = createSet<Symbol>();
 
 			if (this.derivesLambda.contains(A)) {
 				s.add(Symbol.Lambda);
 			}
 
 			this.firstSet.set(A, s);
-		} // );
+		}
 
-		// this.grammar.terminals.for Each((a: Symbol) => {
 		for (const a of this.grammar.terminals) {
-			const s = new Set<Symbol>();
+			const s = createSet<Symbol>();
 
 			s.add(a);
 			this.firstSet.set(a, s);
 
-			// this.grammar.nonTerminals.for Each((A: Symbol) => {
 			for (const A of this.grammar.nonTerminals) {
 				// If there exists a production A -> a beta
 				const value = this.firstSet.get(A);
@@ -143,8 +130,8 @@ export abstract class ParserBase implements IParser {
 					value.unionInPlace(s);
 					this.firstSet.set(A, value);
 				}
-			} // );
-		} // );
+			}
+		}
 
 		let changes = true;
 
@@ -184,7 +171,7 @@ export abstract class ParserBase implements IParser {
 	protected fillFollowSet(): void {
 		// this.grammar.nonTerminals.for Each((A: Symbol) => {
 		for (const A of this.grammar.nonTerminals) {
-			this.followSet.set(A, new Set<Symbol>());
+			this.followSet.set(A, createSet<Symbol>());
 		}
 		// });
 
@@ -201,37 +188,20 @@ export abstract class ParserBase implements IParser {
 
 			// For each production and each occurrence of a nonterminal in its right-hand side.
 
-			// this.grammar.productions.for Each((p: Production) => {
 			for (const p of this.grammar.productions) {
 				const rhs = p.RHSWithNoSemanticActions();
 
-				// for (int i = 0; i < p.rhs.Count; ++i)
 				for (let i = 0; i < rhs.length; ++i) {
-					/*
-					object o = p.rhs[i];
-
-					if (!(o is Symbol))
-					{
-						continue;
-					}
-
-					Symbol B = (Symbol)o;
-					 */
 					const B = rhs[i];
 
-					// if (!this.grammar.nonTerminals.contains(B)) {
 					if (this.grammar.nonTerminals.indexOf(B) < 0) {
 						continue;
 					}
 
-					// List<object> beta = Sublist(p.rhs, i + 1);
-					// const beta: Symbol[] = rhs.Skip(i + 1).ToList();
 					const beta: Symbol[] = rhs.slice(i + 1);
-
-					// HashSet<Symbol> s = ComputeFirst(ExtractSymbols(beta));
 					const s = this.computeFirst(beta);
 					const sWithoutLambda = this.withoutLambda(s);
-					const followSetOfB = this.followSet.get(B); // as Set<Symbol>;
+					const followSetOfB = this.followSet.get(B);
 					const followSetOfPLhs = this.followSet.get(p.lhs);
 
 					if (typeof followSetOfB === 'undefined') {
@@ -256,7 +226,7 @@ export abstract class ParserBase implements IParser {
 						this.followSet.set(B, followSetOfB);
 					}
 				}
-			} // );
+			}
 		}
 	}
 

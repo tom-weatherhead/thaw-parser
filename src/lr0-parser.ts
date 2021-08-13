@@ -1,6 +1,12 @@
 // tom-weatherhead/thaw-parser/src/lr0-parser.ts
 
-import { IEqualityComparable, IImmutableSet, Set, Stack } from 'thaw-common-utilities.ts';
+import {
+	createSet,
+	IEqualityComparable,
+	IImmutableSet,
+	ISet,
+	Stack
+} from 'thaw-common-utilities.ts';
 
 import { Token } from 'thaw-lexical-analyzer';
 
@@ -156,8 +162,7 @@ export class CFSMState {
 		return (
 			that !== undefined &&
 			obj instanceof CFSMState &&
-			this.ConfigurationSet.isASubsetOf(that.ConfigurationSet) &&
-			that.ConfigurationSet.isASubsetOf(this.ConfigurationSet)
+			this.ConfigurationSet.equals(that.ConfigurationSet)
 		);
 	}
 }
@@ -169,17 +174,14 @@ export class CharacteristicFiniteStateMachine {
 
 	constructor(ss: CFSMState) {
 		this.StartState = ss;
-		this.ErrorState = new CFSMState(new Set<LR0Configuration>());
+		this.ErrorState = new CFSMState(createSet<LR0Configuration>());
 		this.StateList.push(this.StartState);
 		this.StateList.push(this.ErrorState);
 	}
 
-	public FindStateWithLabel(cs: Set<LR0Configuration>): CFSMState | undefined {
+	public FindStateWithLabel(cs: IImmutableSet<LR0Configuration>): CFSMState | undefined {
 		// Returns undefined if no state has the given configuration set.
-		return this.StateList.find(
-			(state: CFSMState) =>
-				cs.isASubsetOf(state.ConfigurationSet) && state.ConfigurationSet.isASubsetOf(cs)
-		);
+		return this.StateList.find((state: CFSMState) => cs.equals(state.ConfigurationSet));
 	}
 }
 
@@ -209,7 +211,7 @@ class CFSMStateSymbolPair {
 }
 
 export class LR0Parser extends ParserBase {
-	private readonly AllSymbols: Set<Symbol>;
+	private readonly AllSymbols: IImmutableSet<Symbol>;
 	protected readonly machine: CharacteristicFiniteStateMachine;
 	private readonly GoToTable = new Map<string, CFSMState>();
 	private readonly startingProduction: Production;
@@ -217,7 +219,7 @@ export class LR0Parser extends ParserBase {
 	constructor(g: IGrammar) {
 		super(g);
 
-		this.AllSymbols = new Set<Symbol>(g.terminals.concat(g.nonTerminals));
+		this.AllSymbols = createSet<Symbol>(g.terminals.concat(g.nonTerminals));
 		this.machine = this.build_CFSM();
 		this.build_go_to_table();
 		this.startingProduction = g.findStartingProduction(); // No need to .StripOutSemanticActions(); they have already been removed.
@@ -229,9 +231,9 @@ export class LR0Parser extends ParserBase {
 
 	// Adapted from Fischer and LeBlanc, page 146.
 
-	private closure0(s: Set<LR0Configuration>): Set<LR0Configuration> {
-		const sPrime = new Set<LR0Configuration>(s);
-		const additions = new Set<LR0Configuration>();
+	private closure0(s: IImmutableSet<LR0Configuration>): ISet<LR0Configuration> {
+		const sPrime = createSet<LR0Configuration>(s);
+		const additions = createSet<LR0Configuration>();
 
 		do {
 			additions.clear();
@@ -264,8 +266,8 @@ export class LR0Parser extends ParserBase {
 
 	// Adapted from Fischer and LeBlanc, page 147.
 
-	private go_to0(s: Set<LR0Configuration>, X: Symbol): Set<LR0Configuration> {
-		const sb = new Set<LR0Configuration>();
+	private go_to0(s: IImmutableSet<LR0Configuration>, X: Symbol): ISet<LR0Configuration> {
+		const sb = createSet<LR0Configuration>();
 
 		for (const c of s) {
 			const symbol = c.FindSymbolAfterDot();
@@ -282,10 +284,10 @@ export class LR0Parser extends ParserBase {
 
 	// See Fischer and LeBlanc, page 147.
 
-	private compute_s0(): Set<LR0Configuration> {
+	private compute_s0(): ISet<LR0Configuration> {
 		const p = this.grammar.findStartingProduction();
 
-		return this.closure0(new Set<LR0Configuration>([LR0Configuration.fromProduction(p)]));
+		return this.closure0(createSet<LR0Configuration>([LR0Configuration.fromProduction(p)]));
 	}
 
 	// Adapted from Fischer and LeBlanc, page 148.
@@ -294,7 +296,7 @@ export class LR0Parser extends ParserBase {
 		const s0 = this.compute_s0();
 		const startState = new CFSMState(s0);
 		const cfsm = new CharacteristicFiniteStateMachine(startState);
-		const S = new Stack<Set<LR0Configuration>>();
+		const S = new Stack<ISet<LR0Configuration>>();
 
 		S.push(s0);
 
