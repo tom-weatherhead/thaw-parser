@@ -44,45 +44,45 @@
 
 import { createTokenizer, LexicalAnalyzerSelector } from 'thaw-lexical-analyzer';
 
-import { createGrammar, ILCExpression, LanguageSelector } from 'thaw-grammar';
+import { areIsomorphic, createGrammar, ILCExpression, LanguageSelector } from 'thaw-grammar';
 
 import { createParser, ParserSelector, SyntaxException } from '..';
 
 const ls = LanguageSelector.LambdaCalculus;
 
-// test('LambdaCalculus parser instance creation test', () => {
-// 	// Arrange
-// 	const grammar = createGrammar(ls);
-//
-// 	// Act
-// 	const parser = createParser(ParserSelector.LL1, grammar);
-//
-// 	// Assert
-// 	expect(parser).toBeTruthy();
-// });
-//
-// test('LambdaCalculus recognize test', () => {
-// 	// Arrange
-// 	const grammar = createGrammar(ls);
-// 	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
-// 	const parser = createParser(ParserSelector.LL1, grammar);
-//
-// 	const f = (str: string): void => parser.recognize(tokenizer.tokenize(str));
-//
-// 	// For a list of combinators, see https://github.com/loophp/combinator ,
-// 	// all (?) of which can be implemented in terms of just S and K.
-//
-// 	f('x');
-// 	f('λx.x'); // Combinator I (identity) === ((S K) K)
-// 	f('λx.λy.x'); // Combinator K
-// 	f('(x y)');
-// 	f('(λx.x y)');
-// 	// 'a => b => c => a(c)(b(c))'
-// 	f('λa.λb.λc.((a c) (b c))'); // Combinator S
-// 	f('λa.(λb.(a (b b)) λb.(a (b b)))'); // Combinator Y (fixed-point; used to implement recursion)
-//
-// 	expect(() => f('(x y')).toThrow(SyntaxException);
-// });
+test('LambdaCalculus parser instance creation test', () => {
+	// Arrange
+	const grammar = createGrammar(ls);
+
+	// Act
+	const parser = createParser(ParserSelector.LL1, grammar);
+
+	// Assert
+	expect(parser).toBeTruthy();
+});
+
+test('LambdaCalculus recognize test', () => {
+	// Arrange
+	const grammar = createGrammar(ls);
+	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
+	const parser = createParser(ParserSelector.LL1, grammar);
+
+	const f = (str: string): void => parser.recognize(tokenizer.tokenize(str));
+
+	// For a list of combinators, see https://github.com/loophp/combinator ,
+	// all (?) of which can be implemented in terms of just S and K.
+
+	f('x');
+	f('λx.x'); // Combinator I (identity) === ((S K) K)
+	f('λx.λy.x'); // Combinator K
+	f('(x y)');
+	f('(λx.x y)');
+	// 'a => b => c => a(c)(b(c))'
+	f('λa.λb.λc.((a c) (b c))'); // Combinator S
+	f('λa.(λb.(a (b b)) λb.(a (b b)))'); // Combinator Y (fixed-point; used to implement recursion)
+
+	expect(() => f('(x y')).toThrow(SyntaxException);
+});
 
 function getParseFunction(): (str: string) => ILCExpression {
 	const grammar = createGrammar(ls);
@@ -92,15 +92,15 @@ function getParseFunction(): (str: string) => ILCExpression {
 	return (str: string) => parser.parse(tokenizer.tokenize(str)) as ILCExpression;
 }
 
-// test('LambdaCalculus parse test', () => {
-// 	// Arrange
-// 	const f = getParseFunction();
-//
-// 	expect(f('x')).toBeTruthy();
-// 	expect(f('(x y)')).toBeTruthy();
-// 	expect(f('λx.x')).toBeTruthy();
-// 	expect(f('(λx.x y)')).toBeTruthy();
-// });
+test('LambdaCalculus parse test', () => {
+	// Arrange
+	const f = getParseFunction();
+
+	expect(f('x')).toBeTruthy();
+	expect(f('(x y)')).toBeTruthy();
+	expect(f('λx.x')).toBeTruthy();
+	expect(f('(λx.x y)')).toBeTruthy();
+});
 
 function createVariableNameGenerator(): () => string {
 	let n = 0;
@@ -108,82 +108,99 @@ function createVariableNameGenerator(): () => string {
 	return () => `v${++n}`;
 }
 
-// test('LambdaCalculus Variable Name Generator test', () => {
-// 	const generateNewVariableName = createVariableNameGenerator();
-//
-// 	expect(generateNewVariableName()).toBe('v1');
-// 	expect(generateNewVariableName()).toBe('v2');
-// 	expect(generateNewVariableName()).toBe('v3');
-// });
-//
-// test('LambdaCalculus beta-reduction test 1', () => {
-// 	// Arrange
-// 	const generateNewVariableName = createVariableNameGenerator();
-// 	const f = getParseFunction();
-//
-// 	const expr = f('(λx.x y)');
-// 	const reducedExpr = expr.betaReduce(generateNewVariableName);
-//
-// 	expect(expr).toBeTruthy();
-// 	expect(reducedExpr).toBeTruthy();
-//
-// 	const variableName = (reducedExpr as any).name;
-//
-// 	expect(variableName).toBeDefined();
-// 	expect(variableName).toBe('y');
-// });
-//
-// test('LambdaCalculus beta-reduction test 2', () => {
-// 	// Arrange
-// 	const generateNewVariableName = createVariableNameGenerator();
-// 	const f = getParseFunction();
-//
-// 	const expr = f('(λf.λx.x g)');
-//
-// 	expect(expr).toBeTruthy();
-//
-// 	const reducedExpr = expr.betaReduce(generateNewVariableName);
-//
-// 	expect(reducedExpr).toBeTruthy();
-// 	expect(reducedExpr.toString()).toBe('λx.x');
-// });
-//
-// test('LambdaCalculus beta-reduction test 3', () => {
-// 	// Arrange
-// 	const generateNewVariableName = createVariableNameGenerator();
-// 	const f = getParseFunction();
-//
-// 	const expr = f('((λf.λx.x g) h)');
-//
-// 	expect(expr).toBeTruthy();
-//
-// 	const reducedExpr = expr.betaReduce(generateNewVariableName);
-//
-// 	expect(reducedExpr).toBeTruthy();
-// 	expect(reducedExpr.toString()).toBe('h');
-// });
+test('LambdaCalculus Variable Name Generator test', () => {
+	const generateNewVariableName = createVariableNameGenerator();
+
+	expect(generateNewVariableName()).toBe('v1');
+	expect(generateNewVariableName()).toBe('v2');
+	expect(generateNewVariableName()).toBe('v3');
+});
+
+test('LambdaCalculus beta-reduction test 1', () => {
+	// Arrange
+	const generateNewVariableName = createVariableNameGenerator();
+	const f = getParseFunction();
+
+	const expr = f('(λx.x y)');
+	const reducedExpr = expr.betaReduce(generateNewVariableName);
+
+	expect(expr).toBeTruthy();
+	expect(reducedExpr).toBeTruthy();
+
+	const variableName = (reducedExpr as any).name;
+
+	expect(variableName).toBeDefined();
+	expect(variableName).toBe('y');
+});
+
+test('LambdaCalculus beta-reduction test 2', () => {
+	// Arrange
+	const generateNewVariableName = createVariableNameGenerator();
+	const f = getParseFunction();
+
+	const expr = f('(λf.λx.x g)');
+
+	expect(expr).toBeTruthy();
+
+	const reducedExpr = expr.betaReduce(generateNewVariableName);
+
+	expect(reducedExpr).toBeTruthy();
+	expect(reducedExpr.toString()).toBe('λx.x');
+});
+
+test('LambdaCalculus beta-reduction test 3', () => {
+	// Arrange
+	const generateNewVariableName = createVariableNameGenerator();
+	const f = getParseFunction();
+
+	const expr = f('((λf.λx.x g) h)');
+
+	expect(expr).toBeTruthy();
+
+	const reducedExpr = expr.betaReduce(generateNewVariableName);
+
+	expect(reducedExpr).toBeTruthy();
+	expect(reducedExpr.toString()).toBe('h');
+});
+
+test('LambdaCalculus expression unification test 1', () => {
+	// Arrange
+	const f = getParseFunction();
+
+	// Act
+	const expr1 = f('x');
+	const expr2 = f('y');
+	const unifyingSubstitution = expr1.unify(expr2);
+
+	console.log(`unifyingSubstitution is: ${unifyingSubstitution}`);
+
+	// Assert
+	expect(unifyingSubstitution).toBeDefined();
+	expect(unifyingSubstitution.toString()).toBe('[x -> y]');
+	expect(areIsomorphic(expr1, expr2)).toBe(true);
+});
 
 test('LambdaCalculus Church Numerals test 1', () => {
 	// Arrange
 
 	// To encode the non-negative integers, Church used the following encoding:
-	//
+
 	// ZERO = λf.λ x.x
 	const strZero = 'λf.λx.x';
-	//
+
 	// A successor function SUCC = λn.λf.λx.(f((nf)x))
 	const strSucc = 'λn.λf.λx.(f ((n f) x))';
-	//
+
 	// ONE = (SUCC ZERO) = λf.λ x.(fx)
 	const strOneExpected1 = 'λf.λx.(f x)';
 	const strOneExpected = 'λv1.λv2.(v1 v2)';
 	const strOneSrc = `(${strSucc} ${strZero})`;
-	//
+
 	// TWO = (SUCC ONE) = λf.λ x.(f(fx))
 	const strTwoExpected1 = 'λf.λx.(f (f x))';
 	const strTwoExpected = 'λv3.λv4.(v3 (v3 v4))';
 	const strTwoSrc = `(${strSucc} ${strOneExpected1})`;
-	//
+
 	// THREE = (SUCC TWO) = λf.λ x.(f(f(fx)))
 	// const strThreeExpected1 = 'λf.λx.(f (f (f x)))';
 	const strThreeExpected = 'λv5.λv6.(v5 (v5 (v5 v6)))';
