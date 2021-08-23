@@ -44,7 +44,7 @@
 
 import { createTokenizer, LexicalAnalyzerSelector } from 'thaw-lexical-analyzer';
 
-import { areIsomorphic, createGrammar, ILCExpression, LanguageSelector } from 'thaw-grammar';
+import { areIsomorphic, createGrammar, ILCExpression, ILCVariable, LanguageSelector } from 'thaw-grammar';
 
 import { createParser, ParserSelector, SyntaxException } from '..';
 
@@ -127,7 +127,7 @@ test('LambdaCalculus beta-reduction test 1', () => {
 	expect(expr).toBeTruthy();
 	expect(reducedExpr).toBeTruthy();
 
-	const variableName = (reducedExpr as any).name;
+	const variableName = (reducedExpr as ILCVariable).name;
 
 	expect(variableName).toBeDefined();
 	expect(variableName).toBe('y');
