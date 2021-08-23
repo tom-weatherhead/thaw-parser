@@ -217,12 +217,19 @@ test('LambdaCalculus Church Numerals test 1', () => {
 	const two = f(strTwoSrc);
 	const three = f(strThreeSrc);
 
-	const strOneActual = one.betaReduce(generateNewVariableName).toString();
-	const strTwoActual = two.betaReduce(generateNewVariableName).toString();
-	const strThreeActual = three.betaReduce(generateNewVariableName).toString();
+	const oneActual = one.betaReduce(generateNewVariableName);
+	const strOneActual = oneActual.toString();
+	const twoActual = two.betaReduce(generateNewVariableName);
+	const strTwoActual = twoActual.toString();
+	const threeActual = three.betaReduce(generateNewVariableName);
+	const strThreeActual = threeActual.toString();
 
 	// Assert
 	expect(strOneActual).toBe(strOneExpected);
 	expect(strTwoActual).toBe(strTwoExpected);
 	expect(strThreeActual).toBe(strThreeExpected);
+
+	expect(areIsomorphic(oneActual, f(strOneExpected))).toBe(true);
+	expect(areIsomorphic(twoActual, f(strTwoExpected))).toBe(true);
+	expect(areIsomorphic(threeActual, f(strThreeExpected))).toBe(true);
 });
