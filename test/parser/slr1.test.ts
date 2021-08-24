@@ -20,27 +20,13 @@
 
 import { LanguageSelector, LexicalAnalyzerSelector, ParserSelector } from 'thaw-interpreter-types';
 
-import {
-	createTokenizer // ,
-	// LexicalAnalyzerSelector // ,
-	// LexicalState,
-	// Token
-} from 'thaw-lexical-analyzer';
+import { createTokenizer } from 'thaw-lexical-analyzer';
 
-import {
-	createGrammar // ,
-	// GrammarBase,
-	// GrammarException,
-	// LanguageSelector // ,
-	// Production,
-	// Symbol
-} from 'thaw-grammar';
+import { createGrammar } from 'thaw-grammar';
 
 import { createParser } from '../..';
 
 import { Grammar3 } from '../test-grammars/grammar3';
-
-/* eslint-disable @typescript-eslint/ban-types */
 
 function makeGrammar3Recognizer(): (input: string) => void {
 	const ls = LanguageSelector.Scheme;
