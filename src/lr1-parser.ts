@@ -2,9 +2,11 @@
 
 import { createSet, IImmutableSet, Stack } from 'thaw-common-utilities.ts';
 
-import { Token } from 'thaw-lexical-analyzer';
+import { GrammarSymbol, IGrammar, IProduction, IToken } from 'thaw-interpreter-types';
 
-import { GrammarException, IGrammar, Production, Symbol } from 'thaw-grammar';
+// import { Token } from 'thaw-lexical-analyzer';
+
+import { GrammarException } from 'thaw-grammar';
 
 import { LR0Configuration, ShiftReduceAction } from './lr0-parser';
 
@@ -16,20 +18,21 @@ import { ShiftReduceConflictException } from './exceptions/shift-reduce-conflict
 // import { ParserException } from './exceptions/parser';
 import { SyntaxException } from './exceptions/syntax';
 
-/* eslint-disable @typescript-eslint/ban-types */
-
 export class LR1Configuration extends LR0Configuration {
-	public static fromLR0(src: LR0Configuration, look: Symbol): LR1Configuration {
+	public static fromLR0(src: LR0Configuration, look: GrammarSymbol): LR1Configuration {
 		return new LR1Configuration(src.ProductionLHS, look, src.ProductionRHS);
 	}
 
-	public static fromProduction1(p: Production, look: Symbol): LR1Configuration {
-		return new LR1Configuration(p.lhs, look, [Symbol.Dot, ...p.RHSWithNoSemanticActions()]);
+	public static fromProduction1(p: IProduction, look: GrammarSymbol): LR1Configuration {
+		return new LR1Configuration(p.lhs, look, [
+			GrammarSymbol.Dot,
+			...p.getRHSWithNoSemanticActions()
+		]);
 	}
 
-	public readonly Lookahead: Symbol;
+	public readonly Lookahead: GrammarSymbol;
 
-	constructor(lhs: Symbol, look: Symbol, rhs: Symbol[] = []) {
+	constructor(lhs: GrammarSymbol, look: GrammarSymbol, rhs: GrammarSymbol[] = []) {
 		super(lhs, rhs);
 
 		this.Lookahead = look;
@@ -68,7 +71,7 @@ export class LR1Configuration extends LR0Configuration {
 
 export class FSMState {
 	// public readonly ConfigurationSet = new Set<LR1Configuration>();
-	public readonly Transitions = new Map<Symbol, FSMState>();
+	public readonly Transitions = new Map<GrammarSymbol, FSMState>();
 	private readonly asString: string;
 
 	constructor(public readonly ConfigurationSet: IImmutableSet<LR1Configuration>) {
@@ -140,7 +143,7 @@ export class FiniteStateMachine {
 }
 
 export class StateSymbolPair {
-	constructor(public readonly state: FSMState, public readonly symbol: Symbol) {}
+	constructor(public readonly state: FSMState, public readonly symbol: GrammarSymbol) {}
 
 	public equals(other: unknown): boolean {
 		const that = other as StateSymbolPair;
@@ -158,7 +161,7 @@ export class StateSymbolPair {
 }
 
 export class LR1Parser extends ParserBase {
-	private readonly AllSymbols: IImmutableSet<Symbol>;
+	private readonly AllSymbols: IImmutableSet<GrammarSymbol>;
 	public readonly machine: FiniteStateMachine;
 	// private readonly GoToTable = new Map<StateSymbolPair, FSMState>();
 	private readonly GoToTable: ReadonlyMap<string, FSMState>;
@@ -166,7 +169,7 @@ export class LR1Parser extends ParserBase {
 	constructor(g: IGrammar) {
 		super(g);
 
-		this.AllSymbols = createSet<Symbol>(g.terminals.concat(g.nonTerminals));
+		this.AllSymbols = createSet<GrammarSymbol>(g.terminals.concat(g.nonTerminals));
 		this.machine = this.build_LR1();
 		this.GoToTable = this.build_go_to_table();
 	}
@@ -204,7 +207,7 @@ export class LR1Parser extends ParserBase {
 
 				const l = conf1.Lookahead;
 
-				if (l !== Symbol.Lambda || rho.length === 0) {
+				if (l !== GrammarSymbol.Lambda || rho.length === 0) {
 					// Test
 					rho.push(l); // Now rho is actually rho l.
 				}
@@ -218,7 +221,7 @@ export class LR1Parser extends ParserBase {
 
 					for (const u of firstSet) {
 						const addition = LR1Configuration.fromProduction1(
-							p.StripOutSemanticActions(),
+							p.stripOutSemanticActions(),
 							u
 						);
 
@@ -237,7 +240,10 @@ export class LR1Parser extends ParserBase {
 
 	// Adapted from Fischer and LeBlanc, page 157.
 
-	private go_to1(s: IImmutableSet<LR1Configuration>, X: Symbol): IImmutableSet<LR1Configuration> {
+	private go_to1(
+		s: IImmutableSet<LR1Configuration>,
+		X: GrammarSymbol
+	): IImmutableSet<LR1Configuration> {
 		const sb = createSet<LR1Configuration>();
 
 		for (const c of s) {
@@ -259,7 +265,7 @@ export class LR1Parser extends ParserBase {
 		const p = this.grammar.findStartingProduction();
 
 		return this.closure1(
-			createSet<LR1Configuration>([LR1Configuration.fromProduction1(p, Symbol.Lambda)])
+			createSet<LR1Configuration>([LR1Configuration.fromProduction1(p, GrammarSymbol.Lambda)])
 		);
 	}
 
@@ -317,7 +323,7 @@ export class LR1Parser extends ParserBase {
 
 	private GetAction(
 		S: FSMState,
-		tokenAsSymbol: Symbol
+		tokenAsSymbol: GrammarSymbol
 	): {
 		reduceProductionNum: number;
 		action: ShiftReduceAction;
@@ -340,7 +346,7 @@ export class LR1Parser extends ParserBase {
 			}
 
 			for (let i = 0; i < this.grammar.productions.length; ++i) {
-				const productionToCompare = this.grammar.productions[i].StripOutSemanticActions();
+				const productionToCompare = this.grammar.productions[i].stripOutSemanticActions();
 
 				if (matchedProduction.equals(productionToCompare)) {
 					if (reduceResultFound && reduceProductionNum != i) {
@@ -370,7 +376,7 @@ export class LR1Parser extends ParserBase {
 			}
 
 			result =
-				tokenAsSymbol === Symbol.terminalEOF
+				tokenAsSymbol === GrammarSymbol.terminalEOF
 					? ShiftReduceAction.Accept
 					: ShiftReduceAction.Shift;
 		}
@@ -405,7 +411,7 @@ export class LR1Parser extends ParserBase {
 		return goToTable;
 	}
 
-	private go_to(S: FSMState, tokenAsSymbol: Symbol): FSMState {
+	private go_to(S: FSMState, tokenAsSymbol: GrammarSymbol): FSMState {
 		const pair = new StateSymbolPair(S, tokenAsSymbol).toString();
 
 		if (!this.GoToTable.has(pair)) {
@@ -423,7 +429,7 @@ export class LR1Parser extends ParserBase {
 
 	// Adapted from Fischer and LeBlanc, page 142.
 
-	private shift_reduce_driver(tokenList: Token[], parse: boolean): unknown {
+	private shift_reduce_driver(tokenList: IToken[], parse: boolean): unknown {
 		if (tokenList.length === 0) {
 			throw new SyntaxException('Token list is empty');
 		}
@@ -432,7 +438,7 @@ export class LR1Parser extends ParserBase {
 		let token = tokenList[tokenNum];
 		let tokenAsSymbol = this.grammar.tokenToSymbol(token);
 		const parseStack = new Stack<FSMState>(); // The parse stack, which contains machine states.
-		const semanticStack = new Stack<object>();
+		const semanticStack = new Stack<unknown>();
 
 		parseStack.push(this.machine.StartState);
 
@@ -441,7 +447,7 @@ export class LR1Parser extends ParserBase {
 			const { reduceProductionNum, action } = this.GetAction(S, tokenAsSymbol);
 			const semanticStackSize = semanticStack.size;
 			let SPrime: FSMState;
-			let unstrippedProduction: Production;
+			let unstrippedProduction: IProduction;
 
 			switch (action) {
 				case ShiftReduceAction.Accept:
@@ -515,8 +521,8 @@ export class LR1Parser extends ParserBase {
 
 					// Pop the production's non-Lambda symbols off of the parse stack.
 					unstrippedProduction
-						.RHSWithNoSemanticActions()
-						.filter((symbol: Symbol) => symbol !== Symbol.Lambda)
+						.getRHSWithNoSemanticActions()
+						.filter((symbol: GrammarSymbol) => symbol !== GrammarSymbol.Lambda)
 						.forEach(() => parseStack.pop());
 
 					SPrime = parseStack.peek();
@@ -552,14 +558,12 @@ export class LR1Parser extends ParserBase {
 		);
 	}
 
-	public override recognize(tokenList: Token[]): void {
+	public override recognize(tokenList: IToken[]): void {
 		// Throws an exception if an error is encountered.
 		this.shift_reduce_driver(tokenList, false);
 	}
 
-	public override parse(tokenList: Token[]): unknown {
+	public override parse(tokenList: IToken[]): unknown {
 		return this.shift_reduce_driver(tokenList, true);
 	}
 }
-
-/* eslint-enable @typescript-eslint/ban-types */

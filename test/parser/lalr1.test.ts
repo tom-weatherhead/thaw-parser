@@ -2,9 +2,11 @@
 
 'use strict';
 
+import { LanguageSelector, LexicalAnalyzerSelector, ParserSelector } from 'thaw-interpreter-types';
+
 import {
-	createTokenizer,
-	LexicalAnalyzerSelector
+	createTokenizer // ,
+	// LexicalAnalyzerSelector
 	// LexicalState,
 	// Token
 } from 'thaw-lexical-analyzer';
@@ -14,13 +16,13 @@ import {
 	createGrammar,
 	// GrammarBase,
 	// GrammarException,
-	IExpression,
-	LanguageSelector // ,
+	IExpression // ,
+	// LanguageSelector // ,
 	// Production,
 	// Symbol
 } from 'thaw-grammar';
 
-import { createParser, ParserSelector, SyntaxException } from '../..';
+import { createParser, SyntaxException } from '../..';
 
 test('LALR(1) bogus test', () => {
 	expect(true).toBeTruthy();

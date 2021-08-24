@@ -42,11 +42,13 @@
 
 'use strict';
 
-import { createTokenizer, LexicalAnalyzerSelector } from 'thaw-lexical-analyzer';
+import { LanguageSelector, LexicalAnalyzerSelector, ParserSelector } from 'thaw-interpreter-types';
 
-import { areIsomorphic, createGrammar, ILCExpression, ILCVariable, LanguageSelector } from 'thaw-grammar';
+import { createTokenizer } from 'thaw-lexical-analyzer';
 
-import { createParser, ParserSelector, SyntaxException } from '..';
+import { areIsomorphic, createGrammar, ILCExpression, ILCVariable } from 'thaw-grammar';
+
+import { createParser, SyntaxException } from '..';
 
 const ls = LanguageSelector.LambdaCalculus;
 

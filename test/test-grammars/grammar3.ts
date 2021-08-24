@@ -18,22 +18,31 @@
 
 'use strict';
 
-import { Stack } from 'thaw-common-utilities.ts';
+// import { Stack } from 'thaw-common-utilities.ts';
 
 import {
-	// createTokenizer,
-	// LexicalAnalyzerSelector,
+	GrammarSymbol,
+	IToken,
 	LexicalState,
-	Token
-} from 'thaw-lexical-analyzer';
+	ParserSelector,
+	SemanticStackType
+} from 'thaw-interpreter-types';
+
+// import {
+// 	// createTokenizer,
+// 	// LexicalAnalyzerSelector,
+// 	LexicalState,
+// 	Token
+// } from 'thaw-lexical-analyzer';
 
 import {
 	// createGrammar,
+	createProduction,
 	GrammarBase,
-	GrammarException,
+	GrammarException // ,
 	// LanguageSelector,
-	Production,
-	Symbol
+	// Production,
+	// Symbol
 } from 'thaw-grammar';
 
 // import { createParser, ParserSelector } from '../..';
@@ -42,20 +51,20 @@ import {
 
 export class Grammar3 extends GrammarBase {
 	constructor() {
-		super(Symbol.nonterminalStart);
+		super(GrammarSymbol.nonterminalStart);
 
 		// Terminals:
-		this.terminals.push(Symbol.terminalLeftBracket);
-		this.terminals.push(Symbol.terminalRightBracket);
-		this.terminals.push(Symbol.terminalID);
-		this.terminals.push(Symbol.terminalPlus);
-		this.terminals.push(Symbol.terminalMultiply);
-		this.terminals.push(Symbol.terminalEOF);
+		this.terminals.push(GrammarSymbol.terminalLeftBracket);
+		this.terminals.push(GrammarSymbol.terminalRightBracket);
+		this.terminals.push(GrammarSymbol.terminalID);
+		this.terminals.push(GrammarSymbol.terminalPlus);
+		this.terminals.push(GrammarSymbol.terminalMultiply);
+		this.terminals.push(GrammarSymbol.terminalEOF);
 
-		this.nonTerminals.push(Symbol.nonterminalStart);
-		this.nonTerminals.push(Symbol.nonterminalExpression);
-		this.nonTerminals.push(Symbol.nonterminalTerm);
-		this.nonTerminals.push(Symbol.nonterminalPrimary);
+		this.nonTerminals.push(GrammarSymbol.nonterminalStart);
+		this.nonTerminals.push(GrammarSymbol.nonterminalExpression);
+		this.nonTerminals.push(GrammarSymbol.nonterminalTerm);
+		this.nonTerminals.push(GrammarSymbol.nonterminalPrimary);
 
 		// this.productions.push(
 		// 	new Production(
@@ -74,70 +83,92 @@ export class Grammar3 extends GrammarBase {
 
 		// See Fischer and LeBlanc, page 158
 		this.productions.push(
-			new Production(
-				Symbol.nonterminalStart,
-				[Symbol.nonterminalExpression, Symbol.terminalEOF],
+			createProduction(
+				GrammarSymbol.nonterminalStart,
+				[GrammarSymbol.nonterminalExpression, GrammarSymbol.terminalEOF],
 				1
 			)
 		);
 		this.productions.push(
-			new Production(
-				Symbol.nonterminalExpression,
-				[Symbol.nonterminalExpression, Symbol.terminalPlus, Symbol.nonterminalTerm],
+			createProduction(
+				GrammarSymbol.nonterminalExpression,
+				[
+					GrammarSymbol.nonterminalExpression,
+					GrammarSymbol.terminalPlus,
+					GrammarSymbol.nonterminalTerm
+				],
 				2
 			)
 		);
 		this.productions.push(
-			new Production(Symbol.nonterminalExpression, [Symbol.nonterminalTerm], 3)
+			createProduction(
+				GrammarSymbol.nonterminalExpression,
+				[GrammarSymbol.nonterminalTerm],
+				3
+			)
 		);
 		this.productions.push(
-			new Production(
-				Symbol.nonterminalTerm,
-				[Symbol.nonterminalTerm, Symbol.terminalMultiply, Symbol.nonterminalPrimary],
+			createProduction(
+				GrammarSymbol.nonterminalTerm,
+				[
+					GrammarSymbol.nonterminalTerm,
+					GrammarSymbol.terminalMultiply,
+					GrammarSymbol.nonterminalPrimary
+				],
 				4
 			)
 		);
 		this.productions.push(
-			new Production(Symbol.nonterminalTerm, [Symbol.nonterminalPrimary], 5)
+			createProduction(GrammarSymbol.nonterminalTerm, [GrammarSymbol.nonterminalPrimary], 5)
 		);
-		this.productions.push(new Production(Symbol.nonterminalPrimary, [Symbol.terminalID], 6));
 		this.productions.push(
-			new Production(
-				Symbol.nonterminalPrimary,
+			createProduction(GrammarSymbol.nonterminalPrimary, [GrammarSymbol.terminalID], 6)
+		);
+		this.productions.push(
+			createProduction(
+				GrammarSymbol.nonterminalPrimary,
 				[
-					Symbol.terminalLeftBracket,
-					Symbol.nonterminalExpression,
-					Symbol.terminalRightBracket
+					GrammarSymbol.terminalLeftBracket,
+					GrammarSymbol.nonterminalExpression,
+					GrammarSymbol.terminalRightBracket
 				],
 				7
 			)
 		);
 	}
 
+	public get languageName(): string {
+		return 'Grammar3';
+	}
+
+	public get selectorsOfCompatibleParsers(): ParserSelector[] {
+		return [ParserSelector.SLR1];
+	}
+
 	/* eslint-disable @typescript-eslint/no-unused-vars */
 
 	public executeSemanticAction(
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		semanticStack: Stack<any>,
+		semanticStack: SemanticStackType,
 		action: string
 	): void {
 		throw new Error('Grammar3.ExecuteSemanticAction()'); // NotImplementedException
 	}
 
-	public tokenToSymbol(token: Token): Symbol {
+	public tokenToSymbol(token: IToken): GrammarSymbol {
 		switch (token.tokenType) {
 			case LexicalState.tokenLeftBracket:
-				return Symbol.terminalLeftBracket;
+				return GrammarSymbol.terminalLeftBracket;
 			case LexicalState.tokenRightBracket:
-				return Symbol.terminalRightBracket;
+				return GrammarSymbol.terminalRightBracket;
 			case LexicalState.tokenIdent:
-				return Symbol.terminalID;
+				return GrammarSymbol.terminalID;
 			case LexicalState.tokenPlus:
-				return Symbol.terminalPlus;
+				return GrammarSymbol.terminalPlus;
 			case LexicalState.tokenMult:
-				return Symbol.terminalMultiply;
+				return GrammarSymbol.terminalMultiply;
 			case LexicalState.tokenEOF:
-				return Symbol.terminalEOF;
+				return GrammarSymbol.terminalEOF;
 
 			default:
 				throw new GrammarException(
@@ -152,9 +183,9 @@ export class Grammar3 extends GrammarBase {
 
 	public pushTokenOntoSemanticStack(
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		semanticStack: Stack<any>,
-		tokenAsSymbol: Symbol,
-		token: Token
+		semanticStack: SemanticStackType,
+		tokenAsSymbol: GrammarSymbol,
+		token: IToken
 	): void {
 		throw new Error('Grammar3.PushTokenOntoSemanticStack()'); // NotImplementedException
 	}

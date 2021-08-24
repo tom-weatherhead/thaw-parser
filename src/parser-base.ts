@@ -2,19 +2,19 @@
 
 import { createSet, ISet } from 'thaw-common-utilities.ts';
 
-import { Token } from 'thaw-lexical-analyzer';
+import { GrammarSymbol, IGrammar, IParser, IProduction, IToken } from 'thaw-interpreter-types';
 
-import { IGrammar, Production, Symbol } from 'thaw-grammar';
+// import {  } from 'thaw-lexical-analyzer';
+
+// import { IGrammar, Production, Symbol } from 'thaw-grammar';
 
 import { ParserException } from './exceptions/parser';
-import { IParser } from './iparser';
 
-/* eslint-disable @typescript-eslint/ban-types */
 export abstract class ParserBase implements IParser {
 	protected readonly grammar: IGrammar;
-	protected readonly derivesLambda = createSet<Symbol>();
-	protected readonly firstSet = new Map<Symbol, ISet<Symbol>>();
-	protected readonly followSet = new Map<Symbol, ISet<Symbol>>();
+	protected readonly derivesLambda = createSet<GrammarSymbol>();
+	protected readonly firstSet = new Map<GrammarSymbol, ISet<GrammarSymbol>>();
+	protected readonly followSet = new Map<GrammarSymbol, ISet<GrammarSymbol>>();
 
 	protected constructor(g: IGrammar) {
 		this.grammar = g;
@@ -24,13 +24,13 @@ export abstract class ParserBase implements IParser {
 		this.fillFollowSet();
 	}
 
-	public abstract recognize(tokenList: Token[]): void;
+	public abstract recognize(tokenList: IToken[]): void;
 
-	public abstract parse(tokenList: Token[]): unknown;
+	public abstract parse(tokenList: IToken[]): unknown;
 
-	protected withoutLambda(ie: Iterable<Symbol>): ISet<Symbol> {
-		const pred = (n: Symbol) => n !== Symbol.Lambda;
-		const result = createSet<Symbol>();
+	protected withoutLambda(ie: Iterable<GrammarSymbol>): ISet<GrammarSymbol> {
+		const pred = (n: GrammarSymbol) => n !== GrammarSymbol.Lambda;
+		const result = createSet<GrammarSymbol>();
 
 		for (const element of ie) {
 			if (pred(element)) {
@@ -43,21 +43,21 @@ export abstract class ParserBase implements IParser {
 
 	// Adapted from Fischer and LeBlanc, page 104
 
-	protected computeFirst(alpha: Symbol[]): ISet<Symbol> {
+	protected computeFirst(alpha: GrammarSymbol[]): ISet<GrammarSymbol> {
 		const k = alpha.length;
-		const result = createSet<Symbol>();
+		const result = createSet<GrammarSymbol>();
 
-		if (k === 0 || (k === 1 && alpha[0] === Symbol.Lambda)) {
+		if (k === 0 || (k === 1 && alpha[0] === GrammarSymbol.Lambda)) {
 			// ThAW: Originally, this line was just: if (k == 0)
-			result.add(Symbol.Lambda);
+			result.add(GrammarSymbol.Lambda);
 		} else {
 			const firstSetForAlpha0 = this.firstSet.get(alpha[0]);
 
 			if (typeof firstSetForAlpha0 === 'undefined') {
 				throw new ParserException(
-					`computeFirst() : firstSet does not contain the key ${Symbol[alpha[0]]} (${
-						alpha[0]
-					}); k is ${k}; alpha is ${alpha}`
+					`computeFirst() : firstSet does not contain the key ${
+						GrammarSymbol[alpha[0]]
+					} (${alpha[0]}); k is ${k}; alpha is ${alpha}`
 				);
 			}
 
@@ -72,7 +72,7 @@ export abstract class ParserBase implements IParser {
 					break;
 				}
 
-				if (!firstSetForAlphaiMinus1.contains(Symbol.Lambda)) {
+				if (!firstSetForAlphaiMinus1.contains(GrammarSymbol.Lambda)) {
 					break;
 				}
 
@@ -93,10 +93,10 @@ export abstract class ParserBase implements IParser {
 			if (
 				i === k &&
 				typeof firstSetForAlphakMinus1 !== 'undefined' &&
-				firstSetForAlphakMinus1.contains(Symbol.Lambda) &&
-				!result.contains(Symbol.Lambda)
+				firstSetForAlphakMinus1.contains(GrammarSymbol.Lambda) &&
+				!result.contains(GrammarSymbol.Lambda)
 			) {
-				result.add(Symbol.Lambda);
+				result.add(GrammarSymbol.Lambda);
 			}
 		}
 
@@ -107,17 +107,17 @@ export abstract class ParserBase implements IParser {
 
 	protected fillFirstSet(): void {
 		for (const A of this.grammar.nonTerminals) {
-			const s = createSet<Symbol>();
+			const s = createSet<GrammarSymbol>();
 
 			if (this.derivesLambda.contains(A)) {
-				s.add(Symbol.Lambda);
+				s.add(GrammarSymbol.Lambda);
 			}
 
 			this.firstSet.set(A, s);
 		}
 
 		for (const a of this.grammar.terminals) {
-			const s = createSet<Symbol>();
+			const s = createSet<GrammarSymbol>();
 
 			s.add(a);
 			this.firstSet.set(a, s);
@@ -140,16 +140,18 @@ export abstract class ParserBase implements IParser {
 
 			// this.grammar.productions.for Each((p: Production) => {
 			for (const p of this.grammar.productions) {
-				const s = this.computeFirst(p.RHSWithNoSemanticActions());
+				const s = this.computeFirst(p.getRHSWithNoSemanticActions());
 				const firstSetOfPLHSRaw = this.firstSet.get(p.lhs);
 
 				if (typeof firstSetOfPLHSRaw === 'undefined') {
 					throw new ParserException(
-						`FillFirstSet() : ${Symbol[p.lhs]} (${p.lhs}) is not a key in firstSet`
+						`FillFirstSet() : ${GrammarSymbol[p.lhs]} (${
+							p.lhs
+						}) is not a key in firstSet`
 					);
 				}
 
-				const firstSetOfPLHS = firstSetOfPLHSRaw; // as Set<Symbol>;
+				const firstSetOfPLHS = firstSetOfPLHSRaw; // as Set<GrammarSymbol>;
 
 				if (!s.isASubsetOf(firstSetOfPLHS)) {
 					firstSetOfPLHS.unionInPlace(s);
@@ -169,16 +171,16 @@ export abstract class ParserBase implements IParser {
 	// Adapted from Fischer and LeBlanc, page 106
 
 	protected fillFollowSet(): void {
-		// this.grammar.nonTerminals.for Each((A: Symbol) => {
+		// this.grammar.nonTerminals.for Each((A: GrammarSymbol) => {
 		for (const A of this.grammar.nonTerminals) {
-			this.followSet.set(A, createSet<Symbol>());
+			this.followSet.set(A, createSet<GrammarSymbol>());
 		}
 		// });
 
 		const value = this.followSet.get(this.grammar.startSymbol);
 
 		if (typeof value !== 'undefined') {
-			value.add(Symbol.Lambda);
+			value.add(GrammarSymbol.Lambda);
 		}
 
 		let changes = true;
@@ -189,7 +191,7 @@ export abstract class ParserBase implements IParser {
 			// For each production and each occurrence of a nonterminal in its right-hand side.
 
 			for (const p of this.grammar.productions) {
-				const rhs = p.RHSWithNoSemanticActions();
+				const rhs = p.getRHSWithNoSemanticActions();
 
 				for (let i = 0; i < rhs.length; ++i) {
 					const B = rhs[i];
@@ -198,7 +200,7 @@ export abstract class ParserBase implements IParser {
 						continue;
 					}
 
-					const beta: Symbol[] = rhs.slice(i + 1);
+					const beta: GrammarSymbol[] = rhs.slice(i + 1);
 					const s = this.computeFirst(beta);
 					const sWithoutLambda = this.withoutLambda(s);
 					const followSetOfB = this.followSet.get(B);
@@ -215,7 +217,7 @@ export abstract class ParserBase implements IParser {
 
 					if (
 						typeof followSetOfPLhs !== 'undefined' &&
-						s.contains(Symbol.Lambda) &&
+						s.contains(GrammarSymbol.Lambda) &&
 						!followSetOfPLhs.isASubsetOf(followSetOfB)
 					) {
 						followSetOfB.unionInPlace(followSetOfPLhs);
@@ -230,13 +232,13 @@ export abstract class ParserBase implements IParser {
 		}
 	}
 
-	private productionExists(A: Symbol, a: Symbol): boolean {
+	private productionExists(A: GrammarSymbol, a: GrammarSymbol): boolean {
 		return this.grammar.productions.some(
-			(p: Production) =>
+			(p: IProduction) =>
 				p.lhs === A &&
 				p.rhs.length > 0 &&
 				typeof p.rhs[0] !== 'string' &&
-				(p.rhs[0] as Symbol) === a
+				(p.rhs[0] as GrammarSymbol) === a
 		);
 	}
 
@@ -251,8 +253,10 @@ export abstract class ParserBase implements IParser {
 			for (const p of this.grammar.productions) {
 				if (!this.derivesLambda.contains(p.lhs)) {
 					const rhsDerivesLambda = p
-						.RHSWithNoSemanticActions()
-						.every((rhsSymbol: Symbol) => this.derivesLambda.contains(rhsSymbol));
+						.getRHSWithNoSemanticActions()
+						.every((rhsSymbol: GrammarSymbol) =>
+							this.derivesLambda.contains(rhsSymbol)
+						);
 
 					if (rhsDerivesLambda) {
 						this.derivesLambda.add(p.lhs);
@@ -263,4 +267,3 @@ export abstract class ParserBase implements IParser {
 		} while (changes);
 	}
 }
-/* eslint-enable @typescript-eslint/ban-types */

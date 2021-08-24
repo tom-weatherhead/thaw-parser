@@ -8,9 +8,11 @@ import {
 	Stack
 } from 'thaw-common-utilities.ts';
 
-import { Token } from 'thaw-lexical-analyzer';
+import { GrammarSymbol, IGrammar, IProduction, IToken } from 'thaw-interpreter-types';
 
-import { GrammarException, IGrammar, Production, Symbol } from 'thaw-grammar';
+// import { Token } from 'thaw-lexical-analyzer';
+
+import { createProduction, GrammarException } from 'thaw-grammar';
 
 import { InternalErrorException } from './exceptions/internal-error';
 import { ReduceReduceConflictException } from './exceptions/reduce-reduce-conflict';
@@ -27,22 +29,22 @@ export enum ShiftReduceAction {
 	Reduce
 }
 
-/* eslint-disable @typescript-eslint/ban-types */
 export class LR0Configuration implements IEqualityComparable {
-	public static fromProduction(p: Production): LR0Configuration {
-		return new LR0Configuration(p.lhs, [Symbol.Dot, ...p.RHSWithNoSemanticActions()]);
+	public static fromProduction(p: IProduction): LR0Configuration {
+		return new LR0Configuration(p.lhs, [GrammarSymbol.Dot, ...p.getRHSWithNoSemanticActions()]);
 	}
 
-	public readonly ProductionLHS: Symbol;
-	public readonly ProductionRHS: Symbol[] = []; // Will contain exactly one instance of the symbol Dot.
+	public readonly ProductionLHS: GrammarSymbol;
+	public readonly ProductionRHS: GrammarSymbol[] = []; // Will contain exactly one instance of the symbol Dot.
 
-	constructor(lhs: Symbol, rhs: Symbol[] = []) {
+	constructor(lhs: GrammarSymbol, rhs: GrammarSymbol[] = []) {
 		this.ProductionLHS = lhs;
 		this.ProductionRHS = rhs.slice(0); // Clone the array
 	}
 
 	public toString(): string {
-		const fn = (ss: Symbol | string) => (typeof ss === 'string' ? ss : Symbol[ss]);
+		const fn = (ss: GrammarSymbol | string) =>
+			typeof ss === 'string' ? ss : GrammarSymbol[ss];
 
 		return `${fn(this.ProductionLHS)} -> ${this.ProductionRHS.map(fn).join(' ')}`;
 	}
@@ -69,10 +71,12 @@ export class LR0Configuration implements IEqualityComparable {
 	}
 
 	public FindDot(): number {
-		return this.ProductionRHS.findIndex((symbol: Symbol) => symbol === Symbol.Dot);
+		return this.ProductionRHS.findIndex(
+			(symbol: GrammarSymbol) => symbol === GrammarSymbol.Dot
+		);
 	}
 
-	public FindSymbolAfterDot(): Symbol | undefined {
+	public FindSymbolAfterDot(): GrammarSymbol | undefined {
 		const i = this.FindDot();
 
 		if (i >= 0 && i < this.ProductionRHS.length - 1) {
@@ -82,7 +86,7 @@ export class LR0Configuration implements IEqualityComparable {
 		return undefined;
 	}
 
-	public FindSuffix(numSymbolsToSkipAfterDot: number): Symbol[] | undefined {
+	public FindSuffix(numSymbolsToSkipAfterDot: number): GrammarSymbol[] | undefined {
 		const i = this.FindDot();
 
 		if (i < 0) {
@@ -99,7 +103,9 @@ export class LR0Configuration implements IEqualityComparable {
 			throw new InternalErrorException('LR0Configuration.AdvanceDot() : No dot found.');
 		}
 
-		const newRHS = this.ProductionRHS.filter((symbol: Symbol) => symbol !== Symbol.Dot);
+		const newRHS = this.ProductionRHS.filter(
+			(symbol: GrammarSymbol) => symbol !== GrammarSymbol.Dot
+		);
 		const newConf = new LR0Configuration(this.ProductionLHS, newRHS);
 
 		if (dotIndex >= this.ProductionRHS.length - 1) {
@@ -108,30 +114,32 @@ export class LR0Configuration implements IEqualityComparable {
 			);
 		}
 
-		newConf.ProductionRHS.splice(dotIndex + 1, 0, Symbol.Dot);
+		newConf.ProductionRHS.splice(dotIndex + 1, 0, GrammarSymbol.Dot);
 
 		return newConf;
 	}
 
-	public ConvertToProductionIfAllMatched(): Production | undefined {
+	public ConvertToProductionIfAllMatched(): IProduction | undefined {
 		const dotIndex = this.FindDot();
 
 		if (
 			this.ProductionRHS.length === 2 &&
 			dotIndex === 0 &&
-			this.ProductionRHS[1] === Symbol.Lambda
+			this.ProductionRHS[1] === GrammarSymbol.Lambda
 		) {
 			// A necessary hack.
-			return new Production(this.ProductionLHS, [Symbol.Lambda], 0);
+			return createProduction(this.ProductionLHS, [GrammarSymbol.Lambda], 0);
 		}
 
 		if (dotIndex !== this.ProductionRHS.length - 1) {
 			return undefined;
 		}
 
-		return new Production(
+		return createProduction(
 			this.ProductionLHS,
-			this.ProductionRHS.filter((symbol: string | Symbol) => symbol !== Symbol.Dot)
+			this.ProductionRHS.filter(
+				(symbol: string | GrammarSymbol) => symbol !== GrammarSymbol.Dot
+			)
 		);
 	}
 }
@@ -139,7 +147,7 @@ export class LR0Configuration implements IEqualityComparable {
 export class CFSMState {
 	// public readonly ConfigurationSet: Set<LR0Configuration>;
 	// The Transitions graph could contain cycles.
-	public readonly Transitions = new Map<Symbol, CFSMState>();
+	public readonly Transitions = new Map<GrammarSymbol, CFSMState>();
 
 	constructor(public readonly ConfigurationSet: IImmutableSet<LR0Configuration>) {
 		// this.ConfigurationSet = cs;
@@ -187,9 +195,9 @@ export class CharacteristicFiniteStateMachine {
 
 class CFSMStateSymbolPair {
 	public readonly state: CFSMState;
-	public readonly symbol: Symbol;
+	public readonly symbol: GrammarSymbol;
 
-	constructor(st: CFSMState, sy: Symbol) {
+	constructor(st: CFSMState, sy: GrammarSymbol) {
 		this.state = st;
 		this.symbol = sy;
 	}
@@ -211,15 +219,15 @@ class CFSMStateSymbolPair {
 }
 
 export class LR0Parser extends ParserBase {
-	private readonly AllSymbols: IImmutableSet<Symbol>;
+	private readonly AllSymbols: IImmutableSet<GrammarSymbol>;
 	protected readonly machine: CharacteristicFiniteStateMachine;
 	private readonly GoToTable = new Map<string, CFSMState>();
-	private readonly startingProduction: Production;
+	private readonly startingProduction: IProduction;
 
 	constructor(g: IGrammar) {
 		super(g);
 
-		this.AllSymbols = createSet<Symbol>(g.terminals.concat(g.nonTerminals));
+		this.AllSymbols = createSet<GrammarSymbol>(g.terminals.concat(g.nonTerminals));
 		this.machine = this.build_CFSM();
 		this.build_go_to_table();
 		this.startingProduction = g.findStartingProduction(); // No need to .StripOutSemanticActions(); they have already been removed.
@@ -266,7 +274,7 @@ export class LR0Parser extends ParserBase {
 
 	// Adapted from Fischer and LeBlanc, page 147.
 
-	private go_to0(s: IImmutableSet<LR0Configuration>, X: Symbol): ISet<LR0Configuration> {
+	private go_to0(s: IImmutableSet<LR0Configuration>, X: GrammarSymbol): ISet<LR0Configuration> {
 		const sb = createSet<LR0Configuration>();
 
 		for (const c of s) {
@@ -366,7 +374,7 @@ export class LR0Parser extends ParserBase {
 			}
 
 			for (let i = 0; i < this.grammar.productions.length; ++i) {
-				const productionToCompare = this.grammar.productions[i].StripOutSemanticActions();
+				const productionToCompare = this.grammar.productions[i].stripOutSemanticActions();
 
 				// console.log(`Comparing prod ${matchedProduction} to ${productionToCompare} ...`);
 
@@ -434,7 +442,7 @@ export class LR0Parser extends ParserBase {
 	protected GetActionCaller(
 		S: CFSMState,
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		tokenAsSymbol: Symbol
+		tokenAsSymbol: GrammarSymbol
 	): { reduceProductionNum: number; action: ShiftReduceAction } {
 		return this.GetAction(S);
 	}
@@ -457,7 +465,7 @@ export class LR0Parser extends ParserBase {
 		}
 	}
 
-	public go_to(S: CFSMState, tokenAsSymbol: Symbol): CFSMState {
+	public go_to(S: CFSMState, tokenAsSymbol: GrammarSymbol): CFSMState {
 		const pair = new CFSMStateSymbolPair(S, tokenAsSymbol);
 		const value = this.GoToTable.get(pair.toString());
 
@@ -470,7 +478,7 @@ export class LR0Parser extends ParserBase {
 
 	// Adapted from Fischer and LeBlanc, page 142.
 
-	private shift_reduce_driver(tokenList: Token[], parse: boolean): unknown {
+	private shift_reduce_driver(tokenList: IToken[], parse: boolean): unknown {
 		if (tokenList.length === 0) {
 			throw new SyntaxException('Token list is empty');
 		}
@@ -500,7 +508,7 @@ export class LR0Parser extends ParserBase {
 			const callerResult = this.GetActionCaller(S, tokenAsSymbol);
 			const action = callerResult.action;
 			const reduceProductionNum = callerResult.reduceProductionNum;
-			let unstrippedProduction: Production;
+			let unstrippedProduction: IProduction;
 			let numNonLambdaSymbols: number;
 
 			// console.log(
@@ -572,8 +580,8 @@ export class LR0Parser extends ParserBase {
 
 					// Pop the production's non-Lambda symbols off of the parse stack.
 					numNonLambdaSymbols = unstrippedProduction
-						.RHSWithNoSemanticActions()
-						.filter((s: Symbol) => s !== Symbol.Lambda).length;
+						.getRHSWithNoSemanticActions()
+						.filter((s: GrammarSymbol) => s !== GrammarSymbol.Lambda).length;
 
 					// console.log(`Reduce: numNonLambdaSymbols is ${numNonLambdaSymbols}.`);
 
@@ -603,7 +611,7 @@ export class LR0Parser extends ParserBase {
 				case ShiftReduceAction.Error:
 					console.error(`Error: S from parseStack.peek() is ${typeof S} ${S}`, S);
 					console.error(
-						`Error: tokenAsSymbol is ${tokenAsSymbol} ${Symbol[tokenAsSymbol]}`
+						`Error: tokenAsSymbol is ${tokenAsSymbol} ${GrammarSymbol[tokenAsSymbol]}`
 					);
 					console.error('semanticStack.size is', semanticStack.size);
 
@@ -614,7 +622,7 @@ export class LR0Parser extends ParserBase {
 					// 	`default: tokenAsSymbol is ${tokenAsSymbol} ${Symbol[tokenAsSymbol]}`
 					// );
 					throw new SyntaxException(
-						`LR0Parser.shift_reduce_driver() : Syntax error at symbol ${Symbol[tokenAsSymbol]} value ${token.tokenValue}, line ${token.line}, column ${token.column}.`
+						`LR0Parser.shift_reduce_driver() : Syntax error at symbol ${GrammarSymbol[tokenAsSymbol]} value ${token.tokenValue}, line ${token.line}, column ${token.column}.`
 					);
 			}
 		}
@@ -624,13 +632,12 @@ export class LR0Parser extends ParserBase {
 		);
 	}
 
-	public recognize(tokenList: Token[]): void {
+	public recognize(tokenList: IToken[]): void {
 		// Throws an exception if an error is encountered.
 		this.shift_reduce_driver(tokenList, false);
 	}
 
-	public parse(tokenList: Token[]): unknown {
+	public parse(tokenList: IToken[]): unknown {
 		return this.shift_reduce_driver(tokenList, true);
 	}
 }
-/* eslint-enable @typescript-eslint/ban-types */

@@ -2,17 +2,13 @@
 
 'use strict';
 
-import { createTokenizer, LexicalAnalyzerSelector } from 'thaw-lexical-analyzer';
+import { LanguageSelector, LexicalAnalyzerSelector, ParserSelector } from 'thaw-interpreter-types';
 
-import {
-	createGrammar,
-	IExpression,
-	ISExpression,
-	LanguageSelector,
-	LISPGlobalInfo
-} from 'thaw-grammar';
+import { createTokenizer } from 'thaw-lexical-analyzer';
 
-import { createParser, ParserSelector, SyntaxException } from '..';
+import { createGrammar, IExpression, ISExpression, LISPGlobalInfo } from 'thaw-grammar';
+
+import { createParser, SyntaxException } from '..';
 
 test('LL(1) LISP parser instance creation test', () => {
 	// Arrange

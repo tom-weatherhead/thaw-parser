@@ -2,18 +2,19 @@
 
 'use strict';
 
-import { createTokenizer, LexicalAnalyzerSelector } from 'thaw-lexical-analyzer';
+import { LanguageSelector, LexicalAnalyzerSelector, ParserSelector } from 'thaw-interpreter-types';
+
+import { createTokenizer } from 'thaw-lexical-analyzer';
 
 import {
 	createGrammar,
 	IExpression,
 	ISExpression,
-	LanguageSelector,
 	SASLGlobalInfo
 	// SchemeGlobalInfo
 } from 'thaw-grammar';
 
-import { createParser, ParserSelector, SyntaxException } from '..';
+import { createParser, SyntaxException } from '..';
 
 test('LL(1) SASL parser instance creation test', () => {
 	// Arrange

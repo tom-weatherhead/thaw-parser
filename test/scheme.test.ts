@@ -2,18 +2,13 @@
 
 'use strict';
 
-import { createTokenizer, LexicalAnalyzerSelector } from 'thaw-lexical-analyzer';
+import { LanguageSelector, LexicalAnalyzerSelector, ParserSelector } from 'thaw-interpreter-types';
 
-import {
-	createGrammar,
-	IExpression,
-	ISExpression,
-	LanguageSelector,
-	PrimOp,
-	SchemeGlobalInfo
-} from 'thaw-grammar';
+import { createTokenizer } from 'thaw-lexical-analyzer';
 
-import { createParser, ParserSelector, SyntaxException } from '..';
+import { createGrammar, IExpression, ISExpression, PrimOp, SchemeGlobalInfo } from 'thaw-grammar';
+
+import { createParser, SyntaxException } from '..';
 
 const ls = LanguageSelector.Scheme;
 

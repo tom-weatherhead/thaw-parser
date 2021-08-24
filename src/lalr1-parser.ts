@@ -2,7 +2,15 @@
 
 import { createSet, IImmutableSet, ISet, Stack } from 'thaw-common-utilities.ts';
 
-import { IGrammar, Symbol } from 'thaw-grammar';
+import {
+	GrammarSymbol,
+	IGrammar // ,
+	// ParserSelector,
+	// IProduction,
+	// IToken
+} from 'thaw-interpreter-types';
+
+// import { IGrammar, Symbol } from 'thaw-grammar';
 
 import { CFSMState, LR0Configuration, LR0Parser, ShiftReduceAction } from './lr0-parser';
 
@@ -14,12 +22,10 @@ import { ShiftReduceConflictException } from './exceptions/shift-reduce-conflict
 // import { ParserException } from './exceptions/parser';
 // import { SyntaxException } from './exceptions/syntax';
 
-/* eslint-disable @typescript-eslint/ban-types */
-
 export class LALR1Configuration extends LR0Configuration {
 	public static fromLR0(
 		c: LR0Configuration,
-		lookaheads: IImmutableSet<Symbol>
+		lookaheads: IImmutableSet<GrammarSymbol>
 	): LALR1Configuration {
 		const result = new LALR1Configuration(c.ProductionLHS);
 
@@ -29,7 +35,7 @@ export class LALR1Configuration extends LR0Configuration {
 		return result;
 	}
 
-	public static fromLR1(c: LR1Configuration, ...lookaheads: Symbol[]): LALR1Configuration {
+	public static fromLR1(c: LR1Configuration, ...lookaheads: GrammarSymbol[]): LALR1Configuration {
 		const result = new LALR1Configuration(c.ProductionLHS, c.Lookahead);
 
 		result.ProductionRHS.push(...c.ProductionRHS);
@@ -41,10 +47,10 @@ export class LALR1Configuration extends LR0Configuration {
 		return result;
 	}
 
-	public readonly Lookaheads = createSet<Symbol>();
+	public readonly Lookaheads = createSet<GrammarSymbol>();
 	public readonly PropagateLinks = createSet<LALR1Configuration>();
 
-	constructor(lhs: Symbol, ...looks: Symbol[]) {
+	constructor(lhs: GrammarSymbol, ...looks: GrammarSymbol[]) {
 		super(lhs);
 
 		for (const look of looks) {
@@ -117,7 +123,7 @@ export class LALR1Configuration extends LR0Configuration {
 // #region LALR1CFSMState
 
 export class LALR1CFSMState {
-	public readonly Transitions = new Map<Symbol, LALR1CFSMState>();
+	public readonly Transitions = new Map<GrammarSymbol, LALR1CFSMState>();
 
 	constructor(public readonly ConfigurationSet: IImmutableSet<LALR1Configuration>) {}
 
@@ -185,7 +191,7 @@ export class LALR1CFSM {
 }
 
 export class LALR1StateSymbolPair {
-	constructor(public readonly state: LALR1CFSMState, public readonly symbol: Symbol) {}
+	constructor(public readonly state: LALR1CFSMState, public readonly symbol: GrammarSymbol) {}
 
 	public equals(other: unknown): boolean {
 		const that = other as LALR1StateSymbolPair;
@@ -201,7 +207,7 @@ export class LALR1StateSymbolPair {
 export class LookaheadPropagationRecord {
 	constructor(
 		public readonly configuration: LALR1Configuration,
-		public readonly lookahead: Symbol
+		public readonly lookahead: GrammarSymbol
 	) {}
 }
 
@@ -491,14 +497,14 @@ export class LALR1Parser extends LR0Parser {
 					}
 
 					const firstOfGamma = this.computeFirst(gamma);
-					const gammaCanDeriveLambda = firstOfGamma.contains(Symbol.Lambda);
+					const gammaCanDeriveLambda = firstOfGamma.contains(GrammarSymbol.Lambda);
 
 					if (gammaCanDeriveLambda) {
 						// Propagate (adjective) lookaheads.
 						c.PropagateLinks.add(cNext);
 
 						// Should we also add the non-lambda members of firstOfGamma to cNext.Lookaheads?
-						firstOfGamma.remove(Symbol.Lambda);
+						firstOfGamma.remove(GrammarSymbol.Lambda);
 					}
 
 					cNext.Lookaheads.unionInPlace(firstOfGamma); // Add spontaneous lookaheads.
@@ -547,7 +553,7 @@ export class LALR1Parser extends LR0Parser {
 
 	private GetActionLALR(
 		S: CFSMState,
-		tokenAsSymbol: Symbol
+		tokenAsSymbol: GrammarSymbol
 	): { reduceProductionNum: number; action: ShiftReduceAction } {
 		let result = ShiftReduceAction.Error;
 		let reduceResultFound = false; // In order for the grammar to be LALR(1), there must be at most one result per state-symbol pair.
@@ -589,7 +595,7 @@ export class LALR1Parser extends LR0Parser {
 			}
 
 			for (let i = 0; i < this.grammar.productions.length; ++i) {
-				const productionToCompare = this.grammar.productions[i].StripOutSemanticActions();
+				const productionToCompare = this.grammar.productions[i].stripOutSemanticActions();
 
 				if (matchedProduction.equals(productionToCompare)) {
 					if (reduceResultFound && reduceProductionNum !== i) {
@@ -622,7 +628,7 @@ export class LALR1Parser extends LR0Parser {
 			}
 
 			result =
-				tokenAsSymbol == Symbol.terminalEOF
+				tokenAsSymbol == GrammarSymbol.terminalEOF
 					? ShiftReduceAction.Accept
 					: ShiftReduceAction.Shift;
 		}
@@ -635,10 +641,8 @@ export class LALR1Parser extends LR0Parser {
 
 	protected override GetActionCaller(
 		S: CFSMState,
-		tokenAsSymbol: Symbol
+		tokenAsSymbol: GrammarSymbol
 	): { reduceProductionNum: number; action: ShiftReduceAction } {
 		return this.GetActionLALR(S, tokenAsSymbol);
 	}
 }
-
-/* eslint-enable @typescript-eslint/ban-types */

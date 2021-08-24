@@ -6,20 +6,26 @@ import {
 	Stack
 } from 'thaw-common-utilities.ts';
 
-import { Token } from 'thaw-lexical-analyzer';
+import {
+	GrammarSymbol,
+	IGrammar,
+	ParserSelector,
+	IProduction,
+	IToken
+} from 'thaw-interpreter-types';
 
-import { ArgumentException, IGrammar, ParserSelector, Production, Symbol } from 'thaw-grammar';
+// import { Token } from 'thaw-lexical-analyzer';
+
+import { ArgumentException } from 'thaw-grammar';
 
 import { ParserException } from './exceptions/parser';
 import { SyntaxException } from './exceptions/syntax';
 
 import { ParserBase } from './parser-base';
 
-/* eslint-disable @typescript-eslint/ban-types */
-
 export class LL1Parser extends ParserBase {
-	private readonly predict: ReadonlyMap<Production, IImmutableSet<Symbol>>; // TODO: Convert the key type to string?
-	private readonly parseTable: ReadonlyMap<string, Production>;
+	private readonly predict: ReadonlyMap<IProduction, IImmutableSet<GrammarSymbol>>; // TODO: Convert the key type to string?
+	private readonly parseTable: ReadonlyMap<string, IProduction>;
 
 	constructor(g: IGrammar) {
 		super(g);
@@ -36,13 +42,13 @@ export class LL1Parser extends ParserBase {
 		this.parseTable = this.fillParseTable();
 	}
 
-	private fillPredict(): ReadonlyMap<Production, IImmutableSet<Symbol>> {
-		const predict = new Map<Production, IImmutableSet<Symbol>>();
+	private fillPredict(): ReadonlyMap<IProduction, IImmutableSet<GrammarSymbol>> {
+		const predict = new Map<IProduction, IImmutableSet<GrammarSymbol>>();
 
 		for (const p of this.grammar.productions) {
-			let s = this.computeFirst(p.RHSWithNoSemanticActions());
+			let s = this.computeFirst(p.getRHSWithNoSemanticActions());
 
-			if (s.contains(Symbol.Lambda)) {
+			if (s.contains(GrammarSymbol.Lambda)) {
 				s = this.withoutLambda(s);
 
 				const followSet = this.followSet.get(p.lhs);
@@ -60,8 +66,8 @@ export class LL1Parser extends ParserBase {
 		return predict;
 	}
 
-	private fillParseTable(): ReadonlyMap<string, Production> {
-		const parseTable = new Map<string, Production>();
+	private fillParseTable(): ReadonlyMap<string, IProduction> {
+		const parseTable = new Map<string, IProduction>();
 
 		for (const p of this.grammar.productions) {
 			const pValue = this.predict.get(p);
@@ -78,8 +84,8 @@ export class LL1Parser extends ParserBase {
 				if (typeof pParseTableSPRaw !== 'undefined') {
 					throw new ParserException(
 						`Error in FillParseTable() : Table entry not unique; p.lhs = ${p.lhs} ${
-							Symbol[p.lhs]
-						}; t = ${t} ${Symbol[t]}; p1 = ${pParseTableSPRaw}; p2 = ${p}`
+							GrammarSymbol[p.lhs]
+						}; t = ${t} ${GrammarSymbol[t]}; p1 = ${pParseTableSPRaw}; p2 = ${p}`
 					);
 				}
 
@@ -92,7 +98,7 @@ export class LL1Parser extends ParserBase {
 
 	// Adapted from Fischer and LeBlanc, page 121 (function lldriver())
 
-	private llDriver(tokenList: Token[], parse: boolean): unknown {
+	private llDriver(tokenList: IToken[], parse: boolean): unknown {
 		if (tokenList.length === 0) {
 			throw new ParserException('Token list is empty');
 		}
@@ -100,7 +106,7 @@ export class LL1Parser extends ParserBase {
 		let tokenNum = 0;
 		let token = tokenList[tokenNum];
 		let tokenAsSymbol = this.grammar.tokenToSymbol(token);
-		const parseStack = new Stack<Symbol | string>();
+		const parseStack = new Stack<GrammarSymbol | string>();
 		// The semanticStack contains items of type e.g. IExpression<ISExpression>
 		const semanticStack = new Stack<unknown>();
 
@@ -118,10 +124,10 @@ export class LL1Parser extends ParserBase {
 
 				parseStack.pop();
 			} else if (typeof X === 'number') {
-				const symbolX = X as Symbol;
+				const symbolX = X as GrammarSymbol;
 				// const sp = new SymbolPair(symbolX, tokenAsSymbol);
 				const sp = `(${symbolX}, ${tokenAsSymbol})`;
-				const parseTableGetSP = this.parseTable.get(sp) as Production;
+				const parseTableGetSP = this.parseTable.get(sp) as IProduction;
 
 				if (
 					this.grammar.nonTerminals.indexOf(symbolX) >= 0 &&
@@ -133,7 +139,7 @@ export class LL1Parser extends ParserBase {
 					parseStack.pop();
 
 					for (let i = p.rhs.length - 1; i >= 0; --i) {
-						if ((p.rhs[i] as Symbol) !== Symbol.Lambda) {
+						if ((p.rhs[i] as GrammarSymbol) !== GrammarSymbol.Lambda) {
 							// Push semantic actions, and any symbols except Lambda.
 							parseStack.push(p.rhs[i]);
 						}
@@ -165,8 +171,10 @@ export class LL1Parser extends ParserBase {
 					}
 				} else {
 					throw new SyntaxException(
-						`Failed to match symbol ${X} ${Symbol[X]} (type ${typeof X}) to symbol ${
-							Symbol[tokenAsSymbol]
+						`Failed to match symbol ${X} ${
+							GrammarSymbol[X]
+						} (type ${typeof X}) to symbol ${
+							GrammarSymbol[tokenAsSymbol]
 						} (${tokenAsSymbol}) (token ${tokenList[tokenNum].tokenType}) value ${
 							tokenList[tokenNum].tokenValue
 						}`,
@@ -202,14 +210,12 @@ export class LL1Parser extends ParserBase {
 		return result;
 	}
 
-	public recognize(tokenList: Token[]): void {
+	public recognize(tokenList: IToken[]): void {
 		// Throws an exception if an error is encountered.
 		this.llDriver(tokenList, false);
 	}
 
-	public parse(tokenList: Token[]): unknown {
+	public parse(tokenList: IToken[]): unknown {
 		return this.llDriver(tokenList, true);
 	}
 }
-
-/* eslint-enable @typescript-eslint/ban-types */

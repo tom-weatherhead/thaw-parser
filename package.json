@@ -87,6 +87,7 @@
 		"prettier": "^2.3.2",
 		"rollup": "^2.56.2",
 		"rollup-plugin-terser": "^7.0.2",
+		"thaw-interpreter-types": "file:thaw-interpreter-types.tgz",
 		"typescript": "^4.3.5",
 		"typescript-eslint-language-service": "^4.1.4"
 	},

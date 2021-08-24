@@ -1,9 +1,11 @@
 // src/parser-factory.ts
 
-import { IGrammar, ParserSelector } from 'thaw-grammar';
+// import { GrammarSymbol, IGrammar, IParser, IProduction, IToken } from 'thaw-interpreter-types';
+
+import { IGrammar, IParser, ParserSelector } from 'thaw-interpreter-types';
 
 import { ParserException } from './exceptions/parser';
-import { IParser } from './iparser';
+// import { IParser } from './iparser';
 import { LL1Parser } from './ll1-parser';
 import { LR0Parser } from './lr0-parser';
 import { LR1Parser } from './lr1-parser';

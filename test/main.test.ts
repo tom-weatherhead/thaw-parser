@@ -2,9 +2,15 @@
 
 'use strict';
 
-import { createGrammar, LanguageSelector } from 'thaw-grammar';
+import {
+	LanguageSelector,
+	// LexicalAnalyzerSelector,
+	ParserSelector
+} from 'thaw-interpreter-types';
 
-import { createParser, ParserSelector } from '..';
+import { createGrammar } from 'thaw-grammar';
+
+import { createParser } from '..';
 
 // **** LL(1) Parser Tests ****
 

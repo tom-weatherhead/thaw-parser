@@ -2,11 +2,13 @@
 
 'use strict';
 
-import { createTokenizer, LexicalAnalyzerSelector } from 'thaw-lexical-analyzer';
+import { LanguageSelector, LexicalAnalyzerSelector, ParserSelector } from 'thaw-interpreter-types';
 
-import { createGrammar, LanguageSelector, PrologGlobalInfo } from 'thaw-grammar';
+import { createTokenizer } from 'thaw-lexical-analyzer';
 
-import { createParser, ParserSelector, SyntaxException } from '..';
+import { createGrammar, PrologClause, PrologGlobalInfo, PrologGoal } from 'thaw-grammar';
+
+import { createParser, SyntaxException } from '..';
 
 test('LL(1) Prolog parser instance creation test', () => {
 	// Arrange
@@ -87,7 +89,9 @@ function prologTest(
 
 	for (const [input, expectedResult] of data) {
 		// Act
-		const actualResult = prologGlobalInfo.ProcessInput(parser.parse(tokenizer.tokenize(input)));
+		const actualResult = prologGlobalInfo.ProcessInput(
+			parser.parse(tokenizer.tokenize(input)) as PrologClause | PrologGoal[]
+		);
 
 		// console.log(`input: ${input}\nactualResult:\n${actualResult}\n\n`);
 

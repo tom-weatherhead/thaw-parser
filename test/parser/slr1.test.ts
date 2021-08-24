@@ -18,23 +18,25 @@
 
 'use strict';
 
+import { LanguageSelector, LexicalAnalyzerSelector, ParserSelector } from 'thaw-interpreter-types';
+
 import {
-	createTokenizer,
-	LexicalAnalyzerSelector // ,
+	createTokenizer // ,
+	// LexicalAnalyzerSelector // ,
 	// LexicalState,
 	// Token
 } from 'thaw-lexical-analyzer';
 
 import {
-	createGrammar,
+	createGrammar // ,
 	// GrammarBase,
 	// GrammarException,
-	LanguageSelector // ,
+	// LanguageSelector // ,
 	// Production,
 	// Symbol
 } from 'thaw-grammar';
 
-import { createParser, ParserSelector } from '../..';
+import { createParser } from '../..';
 
 import { Grammar3 } from '../test-grammars/grammar3';
 
