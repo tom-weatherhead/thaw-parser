@@ -4,7 +4,9 @@ import { IImmutableSet } from 'thaw-common-utilities.ts';
 
 import { GrammarSymbol, IGrammar } from 'thaw-interpreter-types';
 
-import { CFSMState, LR0Configuration, LR0Parser, ShiftReduceAction } from './lr0-parser';
+import { CFSMState, LR0Configuration, LR0Parser } from './lr0-parser';
+
+import { ShiftReduceAction } from './shift-reduce-actions';
 
 import { ReduceReduceConflictException } from './exceptions/reduce-reduce-conflict';
 import { ShiftReduceConflictException } from './exceptions/shift-reduce-conflict';

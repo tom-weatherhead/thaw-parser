@@ -4,23 +4,9 @@
 
 import { LanguageSelector, LexicalAnalyzerSelector, ParserSelector } from 'thaw-interpreter-types';
 
-import {
-	createTokenizer // ,
-	// LexicalAnalyzerSelector
-	// LexicalState,
-	// Token
-} from 'thaw-lexical-analyzer';
+import { createTokenizer } from 'thaw-lexical-analyzer';
 
-import {
-	Chapter1GlobalInfo,
-	createGrammar,
-	// GrammarBase,
-	// GrammarException,
-	IExpression // ,
-	// LanguageSelector // ,
-	// Production,
-	// Symbol
-} from 'thaw-grammar';
+import { Chapter1GlobalInfo, createGrammar, IExpression } from 'thaw-grammar';
 
 import { createParser, SyntaxException } from '../..';
 

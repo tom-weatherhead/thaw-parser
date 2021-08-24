@@ -10,8 +10,6 @@ import {
 
 import { GrammarSymbol, IGrammar, IProduction, IToken } from 'thaw-interpreter-types';
 
-// import { Token } from 'thaw-lexical-analyzer';
-
 import { createProduction, GrammarException } from 'thaw-grammar';
 
 import { InternalErrorException } from './exceptions/internal-error';
@@ -22,12 +20,13 @@ import { SyntaxException } from './exceptions/syntax';
 
 import { ParserBase } from './parser-base';
 
-export enum ShiftReduceAction {
-	Error,
-	Accept,
-	Shift,
-	Reduce
-}
+import { ShiftReduceAction } from './shift-reduce-actions';
+// export enum ShiftReduceAction {
+// 	Error,
+// 	Accept,
+// 	Shift,
+// 	Reduce
+// }
 
 export class LR0Configuration implements IEqualityComparable {
 	public static fromProduction(p: IProduction): LR0Configuration {

@@ -4,10 +4,6 @@ import { createSet, ISet } from 'thaw-common-utilities.ts';
 
 import { GrammarSymbol, IGrammar, IParser, IProduction, IToken } from 'thaw-interpreter-types';
 
-// import {  } from 'thaw-lexical-analyzer';
-
-// import { IGrammar, Production, Symbol } from 'thaw-grammar';
-
 import { ParserException } from './exceptions/parser';
 
 export abstract class ParserBase implements IParser {

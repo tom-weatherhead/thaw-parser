@@ -2,19 +2,13 @@
 
 import { createSet, IImmutableSet, ISet, Stack } from 'thaw-common-utilities.ts';
 
-import {
-	GrammarSymbol,
-	IGrammar // ,
-	// ParserSelector,
-	// IProduction,
-	// IToken
-} from 'thaw-interpreter-types';
+import { GrammarSymbol, IGrammar } from 'thaw-interpreter-types';
 
-// import { IGrammar, Symbol } from 'thaw-grammar';
-
-import { CFSMState, LR0Configuration, LR0Parser, ShiftReduceAction } from './lr0-parser';
+import { CFSMState, LR0Configuration, LR0Parser } from './lr0-parser';
 
 import { LR1Configuration, LR1Parser } from './lr1-parser';
+
+import { ShiftReduceAction } from './shift-reduce-actions';
 
 import { InternalErrorException } from './exceptions/internal-error';
 import { ReduceReduceConflictException } from './exceptions/reduce-reduce-conflict';
@@ -102,11 +96,8 @@ export class LALR1Configuration extends LR0Configuration {
 		return 'LALR1Configuration.toString()';
 	}
 
-	// public override AdvanceDot(): LR1Configuration {
-	// 	return LR1Configuration.fromLR0(super.AdvanceDot(), this.Lookahead);
-	// }
-
-	// The "new" keyword is used here because this function hides a function in the base class which differs only by return type.
+	// The "new" keyword is used here (in C#) because this function hides
+	// a function in the base class which differs only by return type.
 
 	public override AdvanceDot(): LALR1Configuration {
 		return LALR1Configuration.fromLR0(super.AdvanceDot(), this.Lookaheads);
@@ -118,29 +109,16 @@ export class LALR1Configuration extends LR0Configuration {
 	}
 }
 
-// #endregion
-
-// #region LALR1CFSMState
-
 export class LALR1CFSMState {
 	public readonly Transitions = new Map<GrammarSymbol, LALR1CFSMState>();
 
 	constructor(public readonly ConfigurationSet: IImmutableSet<LALR1Configuration>) {}
 
-	// public override bool Equals(object obj) {
-	// 	// TODO: Find a better implementation for this function.  Beware of cycles in the finite state machine (or ignore the transitions in this function).
-	//
-	// 	// if (object.ReferenceEquals(this, obj)) {
-	// 	// 	return true;
-	// 	// }
-	//
-	// 	var that = obj as LALR1CFSMState;
-	//
-	// 	// TODO: Should we also consider Transitions.Keys?
-	// 	return that != null && ConfigurationSet.IsSubsetOf(that.ConfigurationSet) && that.ConfigurationSet.IsSubsetOf(ConfigurationSet);
-	// }
-
 	public equals(other: unknown): boolean {
+		// TODO: Find a better implementation for this function.  Beware of cycles in the finite state machine (or ignore the transitions in this function).
+
+		// TODO: Should we also consider Transitions.Keys?
+
 		const that = other as LALR1CFSMState;
 
 		return typeof that !== 'undefined' && this.ConfigurationSet.equals(that.ConfigurationSet);
@@ -217,16 +195,9 @@ export class LALR1Parser extends LR0Parser {
 	constructor(g: IGrammar) {
 		super(g);
 
-		// console.log('this.machine is:', this.machine);
-		// console.log('this.machine.StateList.length is:', this.machine.StateList.length);
-
 		if (this.machine.StateList.every((state: CFSMState) => state.Transitions.size === 0)) {
 			throw new InternalErrorException('All machine states have zero transitions.');
 		}
-
-		// for (const state of this.machine.StateList) {
-		// 	console.log('Number of transitions for this state:', state.Transitions.size);
-		// }
 
 		this.BuildLALR1CFSM();
 	}
@@ -284,7 +255,6 @@ export class LALR1Parser extends LR0Parser {
 		for (const s of stateList) {
 			const s_core = this.Core(s);
 
-			// if (!s_bar.IsSubsetOf(s_core) || !s_core.IsSubsetOf(s_bar))
 			if (!s_bar.equals(s_core)) {
 				continue;
 			}
@@ -559,11 +529,6 @@ export class LALR1Parser extends LR0Parser {
 		let reduceResultFound = false; // In order for the grammar to be LALR(1), there must be at most one result per state-symbol pair.
 		let reduceProductionNum = -1;
 
-		// console.log('GetActionLALR() : S is', S);
-		// console.log('GetActionLALR() : S.toString() is', S.toString());
-
-		// console.log('GetActionLALR() : cognateDict size is', this.cognateDict.size);
-
 		// 1) Search for Reduce actions.
 		const cognateS = this.cognateDict.get(S.toString());
 
@@ -571,24 +536,12 @@ export class LALR1Parser extends LR0Parser {
 			throw new InternalErrorException('GetActionLALR() : cognateS is undefined');
 		}
 
-		// console.log('GetActionLALR() : cognateS is', typeof cognateS, cognateS);
-		// console.log('GetActionLALR() : cognateS.toArray().length is', cognateS.toArray().length);
-
 		for (const c of cognateS.toArray()) {
-			// console.log('GetActionLALR() : tokenAsSymbol is', tokenAsSymbol, Symbol[tokenAsSymbol]);
-			// console.log('GetActionLALR() : c.Lookaheads is', c.Lookaheads);
-
-			// for (const l of c.Lookaheads) {
-			// 	console.log('GetActionLALR() : lookahead in c.Lookaheads is', l, Symbol[l]);
-			// }
-
 			if (!c.Lookaheads.contains(tokenAsSymbol)) {
 				continue;
 			}
 
 			const matchedProduction = c.ConvertToProductionIfAllMatched();
-
-			// console.log(`GetActionLALR() : matchedProduction is ${matchedProduction}`);
 
 			if (typeof matchedProduction === 'undefined') {
 				continue;

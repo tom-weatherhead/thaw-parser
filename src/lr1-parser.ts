@@ -8,9 +8,11 @@ import { GrammarSymbol, IGrammar, IProduction, IToken } from 'thaw-interpreter-t
 
 import { GrammarException } from 'thaw-grammar';
 
-import { LR0Configuration, ShiftReduceAction } from './lr0-parser';
+import { LR0Configuration } from './lr0-parser';
 
 import { ParserBase } from './parser-base';
+
+import { ShiftReduceAction } from './shift-reduce-actions';
 
 import { InternalErrorException } from './exceptions/internal-error';
 import { ReduceReduceConflictException } from './exceptions/reduce-reduce-conflict';

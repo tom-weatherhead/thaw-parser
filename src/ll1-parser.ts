@@ -14,8 +14,6 @@ import {
 	IToken
 } from 'thaw-interpreter-types';
 
-// import { Token } from 'thaw-lexical-analyzer';
-
 import { ArgumentException } from 'thaw-grammar';
 
 import { ParserException } from './exceptions/parser';

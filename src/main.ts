@@ -1,9 +1,6 @@
 // tom-weatherhead/thaw-parser/src/main.ts
 
-// export { ParserSelector } from 'thaw-grammar';
-
 export { createParser } from './parser-factory';
-// export { IParser } from './iparser';
 
 export { InternalErrorException } from './exceptions/internal-error';
 export { ReduceReduceConflictException } from './exceptions/reduce-reduce-conflict';
