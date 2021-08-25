@@ -4,10 +4,6 @@ import { createSet, IImmutableSet, Stack } from 'thaw-common-utilities.ts';
 
 import { GrammarSymbol, IGrammar, IProduction, IToken } from 'thaw-interpreter-types';
 
-// import { Token } from 'thaw-lexical-analyzer';
-
-import { GrammarException } from 'thaw-grammar';
-
 import { LR0Configuration } from './lr0-parser';
 
 import { ParserBase } from './parser-base';
@@ -17,7 +13,7 @@ import { ShiftReduceAction } from './shift-reduce-actions';
 import { InternalErrorException } from './exceptions/internal-error';
 import { ReduceReduceConflictException } from './exceptions/reduce-reduce-conflict';
 import { ShiftReduceConflictException } from './exceptions/shift-reduce-conflict';
-// import { ParserException } from './exceptions/parser';
+import { ParserException } from './exceptions/parser';
 import { SyntaxException } from './exceptions/syntax';
 
 export class LR1Configuration extends LR0Configuration {
@@ -472,7 +468,7 @@ export class LR1Parser extends ParserBase {
 
 						console.log('End of semantic stack dump.');
 
-						throw new GrammarException(
+						throw new ParserException(
 							`There were ${semanticStackSize} objects on the semantic stack; expected exactly one`
 						);
 					}

@@ -16,9 +16,6 @@ import {
 	ProductionRhsElementType
 } from 'thaw-interpreter-types';
 
-// import { createProduction, GrammarException } from 'thaw-grammar';
-// import { GrammarException } from 'thaw-grammar';
-
 import { InternalErrorException } from './exceptions/internal-error';
 import { ReduceReduceConflictException } from './exceptions/reduce-reduce-conflict';
 import { ShiftReduceConflictException } from './exceptions/shift-reduce-conflict';

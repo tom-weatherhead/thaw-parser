@@ -14,8 +14,6 @@ import {
 	IToken
 } from 'thaw-interpreter-types';
 
-// import { ArgumentException } from 'thaw-grammar';
-
 import { ParserException } from './exceptions/parser';
 import { SyntaxException } from './exceptions/syntax';
 
