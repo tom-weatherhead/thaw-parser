@@ -126,11 +126,7 @@ export class Grammar3 extends GrammarBase {
 
 	/* eslint-disable @typescript-eslint/no-unused-vars */
 
-	public executeSemanticAction(
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		semanticStack: SemanticStackType,
-		action: string
-	): void {
+	public executeSemanticAction(semanticStack: SemanticStackType, action: string): void {
 		throw new Error('Grammar3.ExecuteSemanticAction()'); // NotImplementedException
 	}
 
@@ -161,7 +157,6 @@ export class Grammar3 extends GrammarBase {
 	}
 
 	public pushTokenOntoSemanticStack(
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		semanticStack: SemanticStackType,
 		tokenAsSymbol: GrammarSymbol,
 		token: IToken

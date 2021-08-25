@@ -14,7 +14,7 @@ import {
 	IToken
 } from 'thaw-interpreter-types';
 
-import { ArgumentException } from 'thaw-grammar';
+// import { ArgumentException } from 'thaw-grammar';
 
 import { ParserException } from './exceptions/parser';
 import { SyntaxException } from './exceptions/syntax';
@@ -30,9 +30,9 @@ export class LL1Parser extends ParserBase {
 
 		// error TS2339: Property 'includes' does not exist on type 'number[]'.
 		if (!arrayIncludes(g.selectorsOfCompatibleParsers, ParserSelector.LL1)) {
-			throw new ArgumentException(
-				`LL1Parser constructor: Error: The provided grammar for ${g.languageName} cannot be parsed by an LL(1) parser`,
-				'g'
+			throw new ParserException(
+				`LL1Parser constructor: Error: The provided grammar for ${g.languageName} cannot be parsed by an LL(1) parser` // ,
+				// 'g'
 			);
 		}
 

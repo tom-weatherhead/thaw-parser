@@ -2,8 +2,6 @@
 
 'use strict';
 
-// import { Stack } from 'thaw-common-utilities.ts';
-
 import {
 	GrammarSymbol,
 	IToken,
@@ -12,24 +10,7 @@ import {
 	SemanticStackType
 } from 'thaw-interpreter-types';
 
-// import {
-// 	// createTokenizer,
-// 	// LexicalAnalyzerSelector,
-// 	LexicalState,
-// 	Token
-// } from 'thaw-lexical-analyzer';
-
-import {
-	// createGrammar,
-	createProduction,
-	GrammarBase,
-	GrammarException // ,
-	// LanguageSelector,
-	// Production,
-	// Symbol
-} from 'thaw-grammar';
-
-// import { createParser, ParserSelector } from '../..';
+import { createProduction, GrammarBase, GrammarException } from 'thaw-grammar';
 
 export class Grammar1 extends GrammarBase {
 	// The "G1" grammar from Chapter 6 of Fischer and LeBlanc
