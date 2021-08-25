@@ -17,12 +17,12 @@ import {
 } from 'thaw-interpreter-types';
 
 // import { createProduction, GrammarException } from 'thaw-grammar';
-import { GrammarException } from 'thaw-grammar';
+// import { GrammarException } from 'thaw-grammar';
 
 import { InternalErrorException } from './exceptions/internal-error';
 import { ReduceReduceConflictException } from './exceptions/reduce-reduce-conflict';
 import { ShiftReduceConflictException } from './exceptions/shift-reduce-conflict';
-// import { ParserException } from './exceptions/parser';
+import { ParserException } from './exceptions/parser';
 import { SyntaxException } from './exceptions/syntax';
 
 import { ParserBase } from './parser-base';
@@ -130,8 +130,8 @@ export class LR0Configuration implements IEqualityComparable {
 			// A necessary hack.
 			// return createProduction(this.ProductionLHS, [GrammarSymbol.Lambda], 0);
 
-			// Here, we fake the creation of a Production withouut calling createProduction
-			// so that thaw-parser will not depend on thaw-grammar.
+			// (1 of 2) Here, we fake the creation of a Production withouut calling
+			// createProduction so that thaw-parser will not depend on thaw-grammar.
 
 			return {
 				lhs: this.ProductionLHS,
@@ -168,6 +168,9 @@ export class LR0Configuration implements IEqualityComparable {
 		// 		(symbol: string | GrammarSymbol) => symbol !== GrammarSymbol.Dot
 		// 	)
 		// );
+
+		// (2 of 2) Here, we fake the creation of a Production withouut calling
+		// createProduction so that thaw-parser will not depend on thaw-grammar.
 
 		const newRHS = this.ProductionRHS.filter(
 			(symbol: string | GrammarSymbol) => symbol !== GrammarSymbol.Dot
@@ -585,7 +588,7 @@ export class LR0Parser extends ParserBase {
 					}
 
 					if (semanticStack.size !== 1) {
-						throw new GrammarException(
+						throw new ParserException(
 							`There were ${semanticStack.size} objects on the semantic stack; expected exactly one`
 						);
 					}
