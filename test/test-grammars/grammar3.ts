@@ -26,7 +26,7 @@ import {
 	SemanticStackType
 } from 'thaw-interpreter-types';
 
-import { createProduction, GrammarBase, GrammarException } from 'thaw-grammar';
+import { createProduction, GrammarBase, GrammarException } from 'thaw-interpreter-core';
 
 export class Grammar3 extends GrammarBase {
 	constructor() {

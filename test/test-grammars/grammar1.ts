@@ -10,7 +10,7 @@ import {
 	SemanticStackType
 } from 'thaw-interpreter-types';
 
-import { createProduction, GrammarBase, GrammarException } from 'thaw-grammar';
+import { createProduction, GrammarBase, GrammarException } from 'thaw-interpreter-core';
 
 export class Grammar1 extends GrammarBase {
 	// The "G1" grammar from Chapter 6 of Fischer and LeBlanc

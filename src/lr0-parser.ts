@@ -12,9 +12,11 @@ import {
 	GrammarSymbol,
 	IGrammar,
 	IProduction,
-	IToken,
-	ProductionRhsElementType
+	IToken // ,
+	// ProductionRhsElementType
 } from 'thaw-interpreter-types';
+
+import { createProduction } from 'thaw-interpreter-core';
 
 import { InternalErrorException } from './exceptions/internal-error';
 import { ReduceReduceConflictException } from './exceptions/reduce-reduce-conflict';
@@ -125,34 +127,34 @@ export class LR0Configuration implements IEqualityComparable {
 			this.ProductionRHS[1] === GrammarSymbol.Lambda
 		) {
 			// A necessary hack.
-			// return createProduction(this.ProductionLHS, [GrammarSymbol.Lambda], 0);
+			return createProduction(this.ProductionLHS, [GrammarSymbol.Lambda]);
 
 			// (1 of 2) Here, we fake the creation of a Production withouut calling
 			// createProduction so that thaw-parser will not depend on thaw-grammar.
 
-			return {
-				lhs: this.ProductionLHS,
-				rhs: [GrammarSymbol.Lambda],
-				// readonly num: 0,
-				getRHSWithNoSemanticActions: () => [GrammarSymbol.Lambda],
-				stripOutSemanticActions: () => {
-					throw new Error(
-						'LR0 ConvertToProductionIfAllMatched() : necessary hack : stripOutSemanticActions()'
-					);
-				},
-				containsSymbol: (symbol: GrammarSymbol) =>
-					symbol === this.ProductionLHS || symbol === GrammarSymbol.Lambda,
-				toString: () => `0: ${this.ProductionLHS} -> Lambda`,
-				equals: (other: unknown) => {
-					const otherProduction = other as IProduction;
-
-					return (
-						otherProduction.lhs === this.ProductionLHS &&
-						otherProduction.rhs.length === 1 &&
-						otherProduction.rhs[0] === GrammarSymbol.Lambda
-					);
-				}
-			};
+			// return {
+			// 	lhs: this.ProductionLHS,
+			// 	rhs: [GrammarSymbol.Lambda],
+			// 	// readonly num: 0,
+			// 	getRHSWithNoSemanticActions: () => [GrammarSymbol.Lambda],
+			// 	stripOutSemanticActions: () => {
+			// 		throw new Error(
+			// 			'LR0 ConvertToProductionIfAllMatched() : necessary hack : stripOutSemanticActions()'
+			// 		);
+			// 	},
+			// 	containsSymbol: (symbol: GrammarSymbol) =>
+			// 		symbol === this.ProductionLHS || symbol === GrammarSymbol.Lambda,
+			// 	toString: () => `0: ${this.ProductionLHS} -> Lambda`,
+			// 	equals: (other: unknown) => {
+			// 		const otherProduction = other as IProduction;
+			//
+			// 		return (
+			// 			otherProduction.lhs === this.ProductionLHS &&
+			// 			otherProduction.rhs.length === 1 &&
+			// 			otherProduction.rhs[0] === GrammarSymbol.Lambda
+			// 		);
+			// 	}
+			// };
 		}
 
 		if (dotIndex !== this.ProductionRHS.length - 1) {
@@ -169,38 +171,42 @@ export class LR0Configuration implements IEqualityComparable {
 		// (2 of 2) Here, we fake the creation of a Production withouut calling
 		// createProduction so that thaw-parser will not depend on thaw-grammar.
 
+		// Create a copy of the RHS with the dot removed.
 		const newRHS = this.ProductionRHS.filter(
 			(symbol: string | GrammarSymbol) => symbol !== GrammarSymbol.Dot
 		);
-		const newRHSWithNoSemanticActions = newRHS
-			.filter((s: ProductionRhsElementType) => typeof s !== 'string')
-			.map((s: ProductionRhsElementType) => s as GrammarSymbol);
 
-		return {
-			lhs: this.ProductionLHS,
-			rhs: newRHS,
-			// readonly num: 0,
-			getRHSWithNoSemanticActions: () => newRHSWithNoSemanticActions,
-			stripOutSemanticActions: () => {
-				throw new Error(
-					'LR0 ConvertToProductionIfAllMatched() : necessary hack part 2 : stripOutSemanticActions()'
-				);
-			},
-			containsSymbol: (symbol: GrammarSymbol) =>
-				symbol === this.ProductionLHS ||
-				typeof newRHS.find((s: ProductionRhsElementType) => s === symbol) !== 'undefined',
-			// toString: () => `0: ${this.ProductionLHS} -> Lambda`,
-			toString: () => 'Grrr. Arrrgh.',
-			equals: (other: unknown) => {
-				const otherProduction = other as IProduction;
+		return createProduction(this.ProductionLHS, newRHS);
 
-				return (
-					otherProduction.lhs === this.ProductionLHS &&
-					otherProduction.rhs.length === newRHS.length &&
-					newRHS.every((s, i: number) => s === otherProduction.rhs[i])
-				);
-			}
-		};
+		// const newRHSWithNoSemanticActions = newRHS
+		// 	.filter((s: ProductionRhsElementType) => typeof s !== 'string')
+		// 	.map((s: ProductionRhsElementType) => s as GrammarSymbol);
+		//
+		// return {
+		// 	lhs: this.ProductionLHS,
+		// 	rhs: newRHS,
+		// 	// readonly num: 0,
+		// 	getRHSWithNoSemanticActions: () => newRHSWithNoSemanticActions,
+		// 	stripOutSemanticActions: () => {
+		// 		throw new Error(
+		// 			'LR0 ConvertToProductionIfAllMatched() : necessary hack part 2 : stripOutSemanticActions()'
+		// 		);
+		// 	},
+		// 	containsSymbol: (symbol: GrammarSymbol) =>
+		// 		symbol === this.ProductionLHS ||
+		// 		typeof newRHS.find((s: ProductionRhsElementType) => s === symbol) !== 'undefined',
+		// 	// toString: () => `0: ${this.ProductionLHS} -> Lambda`,
+		// 	toString: () => 'Grrr. Arrrgh.',
+		// 	equals: (other: unknown) => {
+		// 		const otherProduction = other as IProduction;
+		//
+		// 		return (
+		// 			otherProduction.lhs === this.ProductionLHS &&
+		// 			otherProduction.rhs.length === newRHS.length &&
+		// 			newRHS.every((s, i: number) => s === otherProduction.rhs[i])
+		// 		);
+		// 	}
+		// };
 	}
 }
 

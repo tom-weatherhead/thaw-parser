@@ -22,7 +22,7 @@ import { LanguageSelector, LexicalAnalyzerSelector, ParserSelector } from 'thaw-
 
 import { createTokenizer } from 'thaw-lexical-analyzer';
 
-import { createGrammar } from 'thaw-grammar';
+// import { createGrammar } from 'thaw-grammar';
 
 import { createParser } from '../..';
 
@@ -39,18 +39,18 @@ function makeGrammar3Recognizer(): (input: string) => void {
 	};
 }
 
-function makeSchemeRecognizer(): (input: string) => void {
-	// const ls = LanguageSelector.Inference;
-	const ls = LanguageSelector.Scheme;
-	// const schemeGlobalInfo = new SchemeGlobalInfo();
-	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
-	const grammar = createGrammar(ls);
-	const parser = createParser(ParserSelector.SLR1, grammar);
-
-	return (input: string) => {
-		parser.recognize(tokenizer.tokenize(input));
-	};
-}
+// function makeSchemeRecognizer(): (input: string) => void {
+// 	// const ls = LanguageSelector.Inference;
+// 	const ls = LanguageSelector.Scheme;
+// 	// const schemeGlobalInfo = new SchemeGlobalInfo();
+// 	const tokenizer = createTokenizer(LexicalAnalyzerSelector.MidnightHack, ls);
+// 	const grammar = createGrammar(ls);
+// 	const parser = createParser(ParserSelector.SLR1, grammar);
+//
+// 	return (input: string) => {
+// 		parser.recognize(tokenizer.tokenize(input));
+// 	};
+// }
 
 test('SLR(1) bogus test 1', () => {
 	expect(true).toBeTruthy();
@@ -65,20 +65,20 @@ test('SLR(1) Grammar3 recognize test 1', () => {
 	// f('(a + b) * c');
 });
 
-test('SLR(1) Scheme recognize test 1', () => {
-	const f = makeSchemeRecognizer();
-
-	// f('');
-	// f('@isMan(?x) -> @isMortal(?x)');
-
-	// f('pred1.');
-	// f('?- pred1.');
-
-	// f('soln(13).');
-	// f('?- soln(X).');
-
-	f('(+ 2 3)');
-});
+// test('SLR(1) Scheme recognize test 1', () => {
+// 	const f = makeSchemeRecognizer();
+//
+// 	// f('');
+// 	// f('@isMan(?x) -> @isMortal(?x)');
+//
+// 	// f('pred1.');
+// 	// f('?- pred1.');
+//
+// 	// f('soln(13).');
+// 	// f('?- soln(X).');
+//
+// 	f('(+ 2 3)');
+// });
 
 // class SLR1Parser_Fixture {
 //     private readonly ITokenizer tokenizer;
