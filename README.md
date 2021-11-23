@@ -37,6 +37,10 @@ Obligatory BadgeFest:
 [![code style: prettier][prettier-badge-image]][prettier-url]
 [![license][license-badge-image]][license-url]
 
+Much of the code in this library was based on or inspired by the book 'Crafting a Compiler with C', by Charles N. Fischer and Richard J. LeBlanc, Jr., 1991, Benjamin/Cummings, ISBN 0-8053-2166-7.
+
+This was the textbook for the course CS 444 (Compiler Construction) at the University of Waterloo, Ontario, Canada, which I took in January-April 1994.
+
 ## Features
 
 - Lots of Foo.
