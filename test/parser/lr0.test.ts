@@ -4,21 +4,7 @@
 
 import { LanguageSelector, LexicalAnalyzerSelector, ParserSelector } from 'thaw-interpreter-types';
 
-import {
-	createTokenizer // ,
-	// LexicalAnalyzerSelector
-	// LexicalState,
-	// Token
-} from 'thaw-lexical-analyzer';
-
-// import {
-// 	// createGrammar,
-// 	// GrammarBase,
-// 	// GrammarException,
-// 	LanguageSelector // ,
-// 	// Production,
-// 	// Symbol
-// } from 'thaw-grammar';
+import { createTokenizer } from 'thaw-lexical-analyzer';
 
 import { createParser } from '../..';
 
@@ -26,8 +12,7 @@ import { Grammar1 } from '../test-grammars/grammar1';
 
 test('LR(0) parser instance creation test', () => {
 	// Arrange
-	// const ls = LanguageSelector.Scheme;
-	const grammar = new Grammar1(); // createGrammar(ls);
+	const grammar = new Grammar1();
 
 	// Act
 	const parser = createParser(ParserSelector.LR0, grammar);
@@ -36,13 +21,8 @@ test('LR(0) parser instance creation test', () => {
 	expect(parser).toBeTruthy();
 });
 
-function grammar1RecognizeTest(
-	// data: Array<[input: string, expectedResult: string | string[]]>
-	input: string
-): void {
+function grammar1RecognizeTest(input: string): void {
 	// Arrange
-	// const ls = LanguageSelector.Scheme;
-	// const schemeGlobalInfo = new SchemeGlobalInfo();
 	const grammar = new Grammar1();
 	const tokenizer = createTokenizer(
 		LexicalAnalyzerSelector.MidnightHack,
@@ -51,26 +31,6 @@ function grammar1RecognizeTest(
 	const parser = createParser(ParserSelector.LR0, grammar);
 
 	parser.recognize(tokenizer.tokenize(input));
-
-	// for (const [input, expectedResult] of data) {
-	// 	// Act
-	// 	const parseResult = parser.recognize(tokenizer.tokenize(input));
-	// 	const expr = parseResult as IExpression<ISExpression>;
-	// 	const actualResult = expr
-	// 		.evaluate(schemeGlobalInfo.globalEnvironment, schemeGlobalInfo)
-	// 		.toString();
-
-	// 	console.log(`input: ${input}\nactualResult:\n${actualResult}\n\n`);
-
-	// 	// Assert
-	// 	if (typeof expectedResult === 'string') {
-	// 		expect(actualResult).toBe(expectedResult);
-	// 	} else {
-	// 		for (const str of expectedResult) {
-	// 			expect(actualResult.includes(str)).toBe(true);
-	// 		}
-	// 	}
-	// }
 }
 
 test('LR(0) Grammar1 recognize test 1', () => {

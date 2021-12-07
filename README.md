@@ -1,15 +1,17 @@
 # thaw-parser
-Programming language parsers, including LL(1), SLR(1), and LALR(1).
+Programming language parsers, including LL(1), LR(0), LR(1), SLR(1), and LALR(1).
 
 Obligatory BadgeFest:
 
+[![apple][apple-badge-image]][apple-url]
+[![atom][atom-badge-image]][atom-url]
+[![circleci][circleci-badge-image]][circleci-url]
 [![codeclimate][codeclimate-badge-image]][codeclimate-url]
 [![git][git-badge-image]][git-url]
 [![github][github-badge-image]][github-url]
 [![npm][npm-badge-image]][npm-url]
 [![packagephobia][packagephobia-badge-image]][packagephobia-url]
 [![terminal][terminal-badge-image]][terminal-url]
-[![travis][travis-badge-image]][travis-url]
 [![typescript][typescript-badge-image]][typescript-url]
 
 [![status][status-badge-image]][status-url]
@@ -41,13 +43,15 @@ Much of the code in this library was based on or inspired by the book 'Crafting 
 
 This was the textbook for the course CS 444 (Compiler Construction) at the University of Waterloo, Ontario, Canada, which I took in January-April 1994.
 
-## Features
-
-- Lots of Foo.
-
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
 
+[apple-badge-image]: https://badgen.net/badge/icon/apple?icon=apple&label
+[apple-url]: https://www.apple.com
+[atom-badge-image]: https://badgen.net/badge/icon/atom?icon=atom&label
+[atom-url]: https://atom.io
+[circleci-badge-image]: https://badgen.net/badge/icon/circleci?icon=circleci&label
+[circleci-url]: https://circleci.com
 [codeclimate-badge-image]: https://badgen.net/badge/icon/codeclimate?icon=codeclimate&label
 [codeclimate-url]: https://codeclimate.com
 [git-badge-image]: https://badgen.net/badge/icon/git?icon=git&label
@@ -60,15 +64,13 @@ This was the textbook for the course CS 444 (Compiler Construction) at the Unive
 [packagephobia-url]: https://packagephobia.com/
 [terminal-badge-image]: https://badgen.net/badge/icon/terminal?icon=terminal&label
 [terminal-url]: https://en.wikipedia.org/wiki/History_of_Unix
-[travis-badge-image]: https://badgen.net/badge/icon/travis?icon=travis&label
-[travis-url]: https://travis-ci.com
 [typescript-badge-image]: https://badgen.net/badge/icon/typescript?icon=typescript&label
 [typescript-url]: https://www.typescriptlang.org
 
 [status-badge-image]: https://badgen.net/github/status/tom-weatherhead/thaw-parser
 [status-url]: https://badgen.net/github/status/tom-weatherhead/thaw-parser
-[build-status-badge-image]: https://secure.travis-ci.org/tom-weatherhead/thaw-parser.svg
-[build-status-url]: https://travis-ci.org/tom-weatherhead/thaw-parser
+[build-status-badge-image]: https://circleci.com/gh/tom-weatherhead/thaw-parser.svg?style=shield
+[build-status-url]: https://circleci.com/gh/tom-weatherhead/thaw-parserÂ
 [npm-version-badge-image]: https://img.shields.io/npm/v/thaw-parser.svg
 [npm-version-url]: https://www.npmjs.com/package/thaw-parser
 [latest-tag-badge-image]: https://badgen.net/github/tag/tom-weatherhead/thaw-parser

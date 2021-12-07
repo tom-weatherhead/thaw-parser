@@ -29,6 +29,9 @@ import {
 import { createProduction, GrammarBase, GrammarException } from 'thaw-interpreter-core';
 
 export class Grammar3 extends GrammarBase {
+	// The "G3" grammar from Chapter 6 (?) of Fischer and LeBlanc.
+	// Used to test the SLR(1) parser.
+
 	constructor() {
 		super(GrammarSymbol.nonterminalStart);
 

@@ -13,7 +13,8 @@ import {
 import { createProduction, GrammarBase, GrammarException } from 'thaw-interpreter-core';
 
 export class Grammar1 extends GrammarBase {
-	// The "G1" grammar from Chapter 6 of Fischer and LeBlanc
+	// The "G1" grammar from Chapter 6 of Fischer and LeBlanc.
+	// Used to test the LR(0) parser.
 
 	constructor() {
 		super(GrammarSymbol.nonterminalStart);

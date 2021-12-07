@@ -52,33 +52,14 @@ function makeGrammar3Recognizer(): (input: string) => void {
 // 	};
 // }
 
-test('SLR(1) bogus test 1', () => {
-	expect(true).toBeTruthy();
-});
-
 test('SLR(1) Grammar3 recognize test 1', () => {
 	const f = makeGrammar3Recognizer();
 
 	f('a');
-	// f('a + b');
-	// f('a * b');
-	// f('(a + b) * c');
+	f('a + b');
+	f('a * b');
+	f('(a + b) * c');
 });
-
-// test('SLR(1) Scheme recognize test 1', () => {
-// 	const f = makeSchemeRecognizer();
-//
-// 	// f('');
-// 	// f('@isMan(?x) -> @isMortal(?x)');
-//
-// 	// f('pred1.');
-// 	// f('?- pred1.');
-//
-// 	// f('soln(13).');
-// 	// f('?- soln(X).');
-//
-// 	f('(+ 2 3)');
-// });
 
 // class SLR1Parser_Fixture {
 //     private readonly ITokenizer tokenizer;
@@ -251,35 +232,4 @@ test('SLR(1) Grammar3 recognize test 1', () => {
 //     {
 //         Assert.Throws<SyntaxException>(() => parser.Parse(tokenizer.Tokenize("@f(?x) @g(?y)")));
 //     }
-
-// #if DEAD_CODE
-//     [Test]
-//     public void BrokenPrologGrammarTest()
-//     {
-//         var t = TokenizerFactory.Create(GrammarSelector.Prolog2);
-//         var p = new SLR1Parser(new BrokenPrologGrammar());
-
-//         Assert.Throws<ReduceReduceConflictException>(() => p.Recognize(t.Tokenize("?- mia(X) = mia(t).")));
 //     }
-
-//     [Test]
-//     public void FixedPrologGrammarTest()
-//     {
-//         var t = TokenizerFactory.Create(GrammarSelector.Prolog2);
-//         var p = new SLR1Parser(new FixedPrologGrammar());
-
-//         //Assert.Throws<ReduceReduceConflictException>(() => p.Recognize(t.Tokenize("?- mia(X) = mia(t).")));
-//         p.Recognize(t.Tokenize("?- mia(X) = mia(t)."));
-// #if DEAD_CODE
-//         p.Recognize(t.Tokenize("number(1).")); // This causes a shift-reduce conflict.
-//         p.Recognize(t.Tokenize("Number(1)."));
-//         p.Recognize(t.Tokenize("foo(X) :- bar(X)."));
-//         p.Recognize(t.Tokenize("foo(X) :- Bar(X)."));
-//         p.Recognize(t.Tokenize("Foo(X) :- bar(X)."));
-//         p.Recognize(t.Tokenize("Foo(X) :- Bar(X)."));
-//         p.Recognize(t.Tokenize("?- number(X), print(X)."));
-//         //p.Recognize(t.Tokenize("."));
-// #endif
-//     }
-// #endif
-// }
