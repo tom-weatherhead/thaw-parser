@@ -70,7 +70,7 @@ This was the textbook for the course CS 444 (Compiler Construction) at the Unive
 [status-badge-image]: https://badgen.net/github/status/tom-weatherhead/thaw-parser
 [status-url]: https://badgen.net/github/status/tom-weatherhead/thaw-parser
 [build-status-badge-image]: https://circleci.com/gh/tom-weatherhead/thaw-parser.svg?style=shield
-[build-status-url]: https://circleci.com/gh/tom-weatherhead/thaw-parserÂ
+[build-status-url]: https://circleci.com/gh/tom-weatherhead/thaw-parser
 [npm-version-badge-image]: https://img.shields.io/npm/v/thaw-parser.svg
 [npm-version-url]: https://www.npmjs.com/package/thaw-parser
 [latest-tag-badge-image]: https://badgen.net/github/tag/tom-weatherhead/thaw-parser

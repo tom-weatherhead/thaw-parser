@@ -19,8 +19,7 @@ export default {
 			// Create a CommonJS version for Node.js
 			file: 'dist/thaw-parser.cjs.js',
 			format: 'cjs',
-			exports: 'named' //,
-			// plugins: [nodeResolve()]
+			exports: 'named'
 		},
 		{
 			// Create an ESModule version
