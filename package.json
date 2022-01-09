@@ -1,6 +1,6 @@
 {
 	"name": "thaw-parser",
-	"version": "0.0.8",
+	"version": "0.0.9",
 	"description": "Programming language parsers, including LL(1), LR(0), LR(1), SLR(1), and LALR(1).",
 	"keywords": [
 		"LL(1)",
@@ -68,7 +68,7 @@
 	"publishConfig": {},
 	"dependencies": {
 		"thaw-common-utilities.ts": "^0.0.11",
-		"thaw-interpreter-core": "^0.0.4"
+		"thaw-interpreter-core": "file:thaw-interpreter-core.tgz"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.16.5",
@@ -86,8 +86,8 @@
 		"prettier": "^2.5.1",
 		"rollup": "^2.61.1",
 		"rollup-plugin-terser": "^7.0.2",
-		"thaw-interpreter-types": "^0.0.4",
-		"thaw-lexical-analyzer": "^0.0.8",
+		"thaw-interpreter-types": "file:thaw-interpreter-types.tgz",
+		"thaw-lexical-analyzer": "file:thaw-lexical-analyzer.tgz",
 		"typescript": "^4.5.4",
 		"typescript-eslint-language-service": "^5.0.0"
 	},

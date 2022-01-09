@@ -75,7 +75,7 @@ export class SLR1Parser extends LR0Parser {
 							// tokenAsSymbol, grammar.Productions[reduceProductionNum].ToString(), grammar.Productions[i].ToString())); // The .ToString() here may be unnecessary.
 
 							throw new ReduceReduceConflictException(
-								`GetActionSLR1() : Multiple actions found; grammar is not SLR(1). GrammarSymbol ${tokenAsSymbol}, productions ${this.grammar.productions[reduceProductionNum]} and ${this.grammar.productions[i]}.`
+								`GetActionSLR1() : Multiple actions found (Reduce-Reduce Conflict); grammar is not SLR(1). GrammarSymbol ${GrammarSymbol[tokenAsSymbol]}, productions ${this.grammar.productions[reduceProductionNum]} and ${this.grammar.productions[i]}.`
 							);
 						}
 
@@ -103,7 +103,7 @@ export class SLR1Parser extends LR0Parser {
 				// tokenAsSymbol, grammar.Productions[reduceProductionNum].ToString())); // The .ToString() here may be unnecessary.
 
 				throw new ShiftReduceConflictException(
-					`GetActionSLR1() : Multiple actions found; grammar is not SLR(1).  GrammarSymbol ${tokenAsSymbol}, production ${this.grammar.productions[reduceProductionNum]}.`
+					`GetActionSLR1() : Multiple actions found (Shift-Reduce Conflict); grammar is not SLR(1).  GrammarSymbol ${GrammarSymbol[tokenAsSymbol]}, production ${this.grammar.productions[reduceProductionNum]}.`
 				);
 			}
 
