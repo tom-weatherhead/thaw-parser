@@ -88,22 +88,31 @@ export class SLR1Parser extends LR0Parser {
 		}
 
 		// 2) Search for Shift and Accept actions.
-		const shiftOrAcceptResultFound = S.ConfigurationSet.toArray().some(
-			(c: LR0Configuration) => {
-				const symbol = c.FindSymbolAfterDot();
+		// const shiftOrAcceptResultFound = S.ConfigurationSet.toArray().some(
+		// 	(c: LR0Configuration) => {
+		// 		const symbol = c.FindSymbolAfterDot();
+		//
+		// 		return typeof symbol !== 'undefined' && symbol === tokenAsSymbol;
+		// 	}
+		// );
+		const shiftOrAcceptResults = S.ConfigurationSet.toArray().filter((c: LR0Configuration) => {
+			const symbol = c.FindSymbolAfterDot();
 
-				return typeof symbol !== 'undefined' && symbol === tokenAsSymbol;
-			}
-		);
+			return typeof symbol !== 'undefined' && symbol === tokenAsSymbol;
+		});
 
-		if (shiftOrAcceptResultFound) {
+		if (shiftOrAcceptResults.length > 0) {
 			if (reduceResultFound) {
 				// throw new ShiftReduceConflictException(string.Format(
 				// "GetActionSLR1() : Multiple actions found; grammar is not SLR(1).  Symbol {0}, production {1}.",
 				// tokenAsSymbol, grammar.Productions[reduceProductionNum].ToString())); // The .ToString() here may be unnecessary.
 
 				throw new ShiftReduceConflictException(
-					`GetActionSLR1() : Multiple actions found (Shift-Reduce Conflict); grammar is not SLR(1).  GrammarSymbol ${GrammarSymbol[tokenAsSymbol]}, production ${this.grammar.productions[reduceProductionNum]}.`
+					`GetActionSLR1() : Multiple actions found (Shift-Reduce Conflict); grammar is not SLR(1).  GrammarSymbol ${
+						GrammarSymbol[tokenAsSymbol]
+					}; shift configurations ${shiftOrAcceptResults.join(', ')}; reduce production ${
+						this.grammar.productions[reduceProductionNum]
+					}.`
 				);
 			}
 
